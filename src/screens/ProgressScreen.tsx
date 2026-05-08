@@ -3,28 +3,11 @@ import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '@/lib/theme';
 import { ALL_LESSONS } from '@/lib/lessons';
-import { getAllProgress, getExamHistory, type ExamAttempt } from '@/lib/db';
+import { getAllProgress } from '@/lib/db';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Progress'>;
-
-function fmtDate(ts: number) {
-  const d = new Date(ts);
-  const dd = String(d.getDate()).padStart(2, '0');
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const yy = String(d.getFullYear()).slice(2);
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mi = String(d.getMinutes()).padStart(2, '0');
-  return `${dd}/${mm}/${yy} ${hh}:${mi}`;
-}
-
-function fmtDuration(sec: number | null) {
-  if (sec == null) return '';
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return ` • ${m}m${String(s).padStart(2, '0')}`;
-}
 
 export default function ProgressScreen({ navigation }: Props) {
   const [tick, setTick] = useState(0);
@@ -32,7 +15,6 @@ export default function ProgressScreen({ navigation }: Props) {
 
   const map = new Map(getAllProgress().map((p) => [p.lessonId, p]));
   const modules = Array.from(new Set(ALL_LESSONS.map((l) => l.module)));
-  const exams: ExamAttempt[] = getExamHistory(20);
   const done = ALL_LESSONS.filter((l) => map.get(l.id)?.status === 'done').length;
   const total = ALL_LESSONS.length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
@@ -51,31 +33,6 @@ export default function ProgressScreen({ navigation }: Props) {
             <View style={[styles.progressFill, { width: `${pct}%` }]} />
           </View>
         </View>
-
-        {exams.length > 0 && (
-          <View style={{ gap: 8 }}>
-            <Text style={styles.module}>Historique des examens blancs</Text>
-            {exams.map((e) => {
-              const pctScore = Math.round((e.score / e.total) * 100);
-              const passed = pctScore >= 70;
-              return (
-                <View key={e.id} style={styles.examRow}>
-                  <Text style={[styles.examIcon, { color: passed ? theme.success : theme.danger }]}>
-                    {passed ? '✓' : '✗'}
-                  </Text>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.rowTitle}>
-                      {e.score}/{e.total} ({pctScore} %)
-                    </Text>
-                    <Text style={styles.dim}>
-                      {fmtDate(e.ts)}{fmtDuration(e.durationSec)}
-                    </Text>
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-        )}
 
         {modules.map((mod) => (
           <View key={mod} style={{ gap: 8 }}>
@@ -138,15 +95,4 @@ const styles = StyleSheet.create({
   rowIcon: { fontSize: 18 },
   rowTitle: { color: theme.text, fontSize: 15, fontWeight: '600' },
   dim: { color: theme.textDim, fontSize: 12, marginTop: 2 },
-  examRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: theme.card,
-    borderColor: theme.border,
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 12,
-  },
-  examIcon: { fontSize: 22, fontWeight: '700' },
 });

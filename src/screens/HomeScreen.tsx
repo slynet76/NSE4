@@ -33,7 +33,6 @@ export default function HomeScreen({ navigation }: Props) {
         <View style={styles.header}>
           <View>
             <Text style={styles.h1}>NSE4 Daily</Text>
-            <Text style={styles.dim}>Un peu chaque jour, comme Duolingo.</Text>
           </View>
           <Pressable onPress={() => navigation.navigate('Settings')} hitSlop={10}>
             <Text style={styles.gear}>⚙︎</Text>
@@ -72,25 +71,27 @@ export default function HomeScreen({ navigation }: Props) {
 
         <View style={styles.examCard}>
           <Text style={styles.examLabel}>Examen blanc</Text>
-          <Text style={styles.examTitle}>30 questions tirées au hasard</Text>
+          <Text style={styles.examTitle}>30 questions • 50 min • chrono</Text>
           <Text style={styles.dim}>
             Banque de {totalQ} questions • réussite à 70 %
-            {lastExam ? ` • dernière tentative : ${lastExam.score}/${lastExam.total}` : ''}
+            {lastExam ? ` • dernier : ${lastExam.score}/${lastExam.total}` : ''}
           </Text>
           <Pressable
             style={styles.examCta}
-            onPress={() => navigation.navigate('Exam', { count: 30 })}
+            onPress={() => navigation.navigate('Exam', { count: 30, durationMin: 50 })}
           >
             <Text style={styles.ctaText}>Lancer un examen blanc</Text>
           </Pressable>
         </View>
 
-        <Pressable
-          style={styles.secondary}
-          onPress={() => navigation.navigate('Progress')}
-        >
-          <Text style={styles.secondaryText}>Voir ma progression et l'historique</Text>
-        </Pressable>
+        <View style={styles.row}>
+          <Pressable style={styles.secondaryFlex} onPress={() => navigation.navigate('Progress')}>
+            <Text style={styles.secondaryText}>📚 Progression</Text>
+          </Pressable>
+          <Pressable style={styles.secondaryFlex} onPress={() => navigation.navigate('ExamHistory')}>
+            <Text style={styles.secondaryText}>📋 Historique</Text>
+          </Pressable>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -171,7 +172,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
-  secondary: {
+  secondaryFlex: {
+    flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
     borderColor: theme.border,
