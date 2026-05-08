@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '@/lib/theme';
-import { ALL_LESSONS, pickTodayLesson } from '@/lib/lessons';
-import { getAllProgress, getStreak } from '@/lib/db';
+import { ALL_LESSONS, pickTodayLesson, totalAvailableQuestions } from '@/lib/lessons';
+import { getAllProgress, getStreak, getExamHistory } from '@/lib/db';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation';
 
@@ -23,6 +23,9 @@ export default function HomeScreen({ navigation }: Props) {
   const progress = getAllProgress();
   const done = progress.filter((p) => p.status === 'done').length;
   const total = ALL_LESSONS.length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const totalQ = totalAvailableQuestions();
+  const lastExam = getExamHistory(1)[0];
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -43,6 +46,16 @@ export default function HomeScreen({ navigation }: Props) {
           <Stat label="Leçons" value={`${done}/${total}`} />
         </View>
 
+        <View style={styles.progressBlock}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressLabel}>Progression globale</Text>
+            <Text style={styles.progressValue}>{pct} %</Text>
+          </View>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${pct}%` }]} />
+          </View>
+        </View>
+
         <View style={styles.card}>
           <Text style={styles.cardLabel}>Aujourd'hui</Text>
           <Text style={styles.cardTitle}>{today.title}</Text>
@@ -57,11 +70,26 @@ export default function HomeScreen({ navigation }: Props) {
           </Pressable>
         </View>
 
+        <View style={styles.examCard}>
+          <Text style={styles.examLabel}>Examen blanc</Text>
+          <Text style={styles.examTitle}>30 questions tirées au hasard</Text>
+          <Text style={styles.dim}>
+            Banque de {totalQ} questions • réussite à 70 %
+            {lastExam ? ` • dernière tentative : ${lastExam.score}/${lastExam.total}` : ''}
+          </Text>
+          <Pressable
+            style={styles.examCta}
+            onPress={() => navigation.navigate('Exam', { count: 30 })}
+          >
+            <Text style={styles.ctaText}>Lancer un examen blanc</Text>
+          </Pressable>
+        </View>
+
         <Pressable
           style={styles.secondary}
           onPress={() => navigation.navigate('Progress')}
         >
-          <Text style={styles.secondaryText}>Voir ma progression</Text>
+          <Text style={styles.secondaryText}>Voir ma progression et l'historique</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
@@ -95,6 +123,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: { color: theme.text, fontSize: 18, fontWeight: '700' },
+  progressBlock: {
+    backgroundColor: theme.card,
+    borderColor: theme.border,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    gap: 8,
+  },
+  progressHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  progressLabel: { color: theme.textDim, fontSize: 13, letterSpacing: 1 },
+  progressValue: { color: theme.text, fontWeight: '700', fontSize: 16 },
+  progressTrack: { height: 10, backgroundColor: theme.bg, borderRadius: 5, overflow: 'hidden' },
+  progressFill: { height: 10, backgroundColor: theme.primary },
   card: {
     backgroundColor: theme.card,
     borderColor: theme.border,
@@ -113,6 +154,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ctaText: { color: '#fff', fontWeight: '700' },
+  examCard: {
+    backgroundColor: theme.card,
+    borderColor: theme.warn,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 18,
+    gap: 6,
+  },
+  examLabel: { color: theme.warn, fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  examTitle: { color: theme.text, fontSize: 18, fontWeight: '700' },
+  examCta: {
+    marginTop: 12,
+    backgroundColor: theme.warn,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
   secondary: {
     paddingVertical: 14,
     borderRadius: 12,

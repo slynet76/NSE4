@@ -66,3 +66,28 @@ export function pickQuizQuestions(lesson: Lesson, n = 5): QuizQuestion[] {
   if (pool.length <= n) return shuffle(pool);
   return shuffle(pool).slice(0, n);
 }
+
+/**
+ * Aggregate every available question across all lessons (using questionPool when present,
+ * falling back to legacy quiz). Returns the global question bank size, useful for the UI.
+ */
+export function totalAvailableQuestions(): number {
+  return ALL_LESSONS.reduce((acc, l) => {
+    const pool = l.questionPool && l.questionPool.length > 0 ? l.questionPool : l.quiz;
+    return acc + pool.length;
+  }, 0);
+}
+
+/**
+ * Pick N random questions across the ENTIRE corpus (all lessons combined).
+ * Used for exam mode. Returns fewer if the corpus is smaller than N.
+ */
+export function pickExamQuestions(n = 30): QuizQuestion[] {
+  const all: QuizQuestion[] = [];
+  for (const l of ALL_LESSONS) {
+    const pool = l.questionPool && l.questionPool.length > 0 ? l.questionPool : l.quiz;
+    all.push(...pool);
+  }
+  if (all.length <= n) return shuffle(all);
+  return shuffle(all).slice(0, n);
+}

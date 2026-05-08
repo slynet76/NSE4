@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import HomeScreen from '@/screens/HomeScreen';
 import LessonScreen from '@/screens/LessonScreen';
 import QuizScreen from '@/screens/QuizScreen';
+import ExamScreen from '@/screens/ExamScreen';
 import ProgressScreen from '@/screens/ProgressScreen';
 import SettingsScreen from '@/screens/SettingsScreen';
 import { initDb } from '@/lib/db';
@@ -58,6 +59,7 @@ export default function App() {
           />
           <Stack.Screen name="Lesson" component={LessonScreen} options={{ title: 'Leçon' }} />
           <Stack.Screen name="Quiz" component={QuizScreen} options={{ title: 'Quiz' }} />
+          <Stack.Screen name="Exam" component={ExamScreen} options={{ title: 'Examen blanc' }} />
           <Stack.Screen
             name="Progress"
             component={ProgressScreen}

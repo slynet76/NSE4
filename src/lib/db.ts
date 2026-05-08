@@ -9,6 +9,14 @@ export type LessonProgress = {
   completedAt: number | null;
 };
 
+export type ExamAttempt = {
+  id: number;
+  ts: number;
+  score: number;
+  total: number;
+  durationSec: number | null;
+};
+
 export function initDb() {
   db.execSync(`
     CREATE TABLE IF NOT EXISTS progress (
@@ -24,6 +32,13 @@ export function initDb() {
       lastDay TEXT
     );
     INSERT OR IGNORE INTO streak (id, current, best) VALUES (1, 0, 0);
+    CREATE TABLE IF NOT EXISTS exam_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ts INTEGER NOT NULL,
+      score INTEGER NOT NULL,
+      total INTEGER NOT NULL,
+      durationSec INTEGER
+    );
   `);
 }
 
@@ -75,5 +90,19 @@ function bumpStreak() {
   db.runSync(
     'UPDATE streak SET current = ?, best = ?, lastDay = ? WHERE id = 1',
     [next, best, today],
+  );
+}
+
+export function recordExamAttempt(score: number, total: number, durationSec: number | null = null) {
+  db.runSync(
+    'INSERT INTO exam_history (ts, score, total, durationSec) VALUES (?, ?, ?, ?)',
+    [Date.now(), score, total, durationSec],
+  );
+}
+
+export function getExamHistory(limit = 50): ExamAttempt[] {
+  return db.getAllSync<ExamAttempt>(
+    'SELECT id, ts, score, total, durationSec FROM exam_history ORDER BY ts DESC LIMIT ?',
+    [limit],
   );
 }
