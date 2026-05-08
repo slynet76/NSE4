@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '@/lib/theme';
-import { lessonById, passingScore } from '@/lib/lessons';
+import { lessonById, passingScore, pickQuizQuestions } from '@/lib/lessons';
 import { setLessonResult } from '@/lib/db';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation';
@@ -11,12 +11,14 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Quiz'>;
 
 export default function QuizScreen({ route, navigation }: Props) {
   const lesson = lessonById(route.params.id);
+  // Pick a random selection ONCE at mount — preserved through the run.
+  const questions = useMemo(() => (lesson ? pickQuizQuestions(lesson, 5) : []), [lesson]);
   const [idx, setIdx] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
 
-  const total = lesson?.quiz.length ?? 0;
+  const total = questions.length;
   const pass = useMemo(() => passingScore(total), [total]);
 
   if (!lesson) {
@@ -33,16 +35,11 @@ export default function QuizScreen({ route, navigation }: Props) {
       <SafeAreaView style={styles.safe}>
         <View style={styles.center}>
           <Text style={styles.bigEmoji}>{passed ? '🎉' : '💪'}</Text>
-          <Text style={styles.title}>
-            {passed ? 'Bravo !' : 'Presque !'}
-          </Text>
+          <Text style={styles.title}>{passed ? 'Bravo !' : 'Presque !'}</Text>
           <Text style={styles.body}>
             Score : {score}/{total} (réussite à {pass})
           </Text>
-          <Pressable
-            style={styles.cta}
-            onPress={() => navigation.popToTop()}
-          >
+          <Pressable style={styles.cta} onPress={() => navigation.popToTop()}>
             <Text style={styles.ctaText}>Retour à l'accueil</Text>
           </Pressable>
         </View>
@@ -50,7 +47,7 @@ export default function QuizScreen({ route, navigation }: Props) {
     );
   }
 
-  const q = lesson.quiz[idx];
+  const q = questions[idx];
   const isAnswered = picked !== null;
   const isCorrect = picked === q.answer;
 
@@ -59,7 +56,7 @@ export default function QuizScreen({ route, navigation }: Props) {
     if (nextIdx >= total) {
       const finalScore = score + (isCorrect ? 1 : 0);
       setScore(finalScore);
-      setLessonResult(lesson.id, finalScore, finalScore >= pass);
+      setLessonResult(lesson!.id, finalScore, finalScore >= pass);
       setDone(true);
       return;
     }
@@ -106,9 +103,7 @@ export default function QuizScreen({ route, navigation }: Props) {
           disabled={!isAnswered}
           onPress={next}
         >
-          <Text style={styles.ctaText}>
-            {idx + 1 === total ? 'Terminer' : 'Suivant'}
-          </Text>
+          <Text style={styles.ctaText}>{idx + 1 === total ? 'Terminer' : 'Suivant'}</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>

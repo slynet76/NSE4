@@ -10,3 +10,4 @@ ios/
 *.apk
 *.aab
 *.pdf
+tools/audit-report.json
