@@ -1,0 +1,96 @@
+[
+  {
+    "id": "intro-01",
+    "module": "Introduction",
+    "title": "Qu'est-ce que FortiGate ?",
+    "durationMin": 5,
+    "content": "FortiGate est la plateforme NGFW (Next-Generation Firewall) de Fortinet. Elle combine pare-feu stateful, IPS, antivirus, filtrage Web, contrôle applicatif, VPN et SD-WAN sur un même OS : FortiOS.\n\nPoints clés :\n• Architecture basée sur les ASIC SPU (Security Processing Units) pour accélérer le trafic et l'inspection.\n• FortiOS expose une CLI (SSH/console) et une GUI HTTPS.\n• Le mode de fonctionnement par défaut est NAT/Route ; un mode Transparent existe (L2).\n• Les VDOM permettent de virtualiser le firewall en plusieurs instances logiques.\n\nPour la NSE4, vous devez maîtriser les fonctionnalités principales, l'administration de base, et les concepts d'inspection (flow-based vs proxy-based).",
+    "quiz": [
+      {
+        "q": "Quel est le système d'exploitation du FortiGate ?",
+        "choices": ["FortiOS", "FortiNAC", "FortiManager OS", "Cisco IOS"],
+        "answer": 0,
+        "explain": "FortiOS est l'OS qui tourne sur tous les FortiGate."
+      },
+      {
+        "q": "Quel mode de fonctionnement est utilisé par défaut sur FortiGate ?",
+        "choices": ["Transparent", "NAT/Route", "Sniffer", "Bridge uniquement"],
+        "answer": 1
+      },
+      {
+        "q": "Que permettent les VDOM ?",
+        "choices": [
+          "Sauvegarder la config",
+          "Virtualiser le firewall en instances logiques séparées",
+          "Mettre à jour FortiOS",
+          "Activer le SD-WAN"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Quel composant matériel accélère l'inspection sur FortiGate ?",
+        "choices": ["GPU", "TPM", "SPU/ASIC", "NPU PCIe-only"],
+        "answer": 2
+      },
+      {
+        "q": "Quels sont les deux types principaux d'inspection ?",
+        "choices": [
+          "Stateful et stateless",
+          "Flow-based et proxy-based",
+          "L2 et L3",
+          "TCP et UDP"
+        ],
+        "answer": 1
+      }
+    ]
+  },
+  {
+    "id": "policy-01",
+    "module": "Firewall Policies",
+    "title": "Politiques de pare-feu — bases",
+    "durationMin": 7,
+    "content": "Une firewall policy contrôle quel trafic est autorisé entre les interfaces. L'ordre d'évaluation est top-down : la première policy qui matche est appliquée.\n\nÉléments clés d'une policy :\n• Incoming/Outgoing interface (ou 'any' selon la version)\n• Source / Destination (adresse, user, FSSO, ISDB)\n• Service (port/protocol)\n• Schedule\n• Action : ACCEPT / DENY / IPSEC\n• Security profiles (AV, IPS, Web Filter, App Control, SSL inspection)\n• NAT (source NAT, central NAT)\n• Logging\n\nUne policy implicite 'deny all' termine la liste. Pensez à activer le logging pour le dépannage.",
+    "quiz": [
+      {
+        "q": "Comment FortiGate évalue-t-il les firewall policies ?",
+        "choices": [
+          "Par ordre alphabétique",
+          "Top-down, première qui matche",
+          "Aléatoirement",
+          "Par priorité numérique inverse"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Que se passe-t-il si aucune policy ne matche ?",
+        "choices": [
+          "Le trafic est autorisé par défaut",
+          "Le trafic est dropé par la policy implicite deny",
+          "FortiGate redémarre",
+          "La session est mise en quarantaine"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Lequel n'est PAS un security profile ?",
+        "choices": ["Antivirus", "Web Filter", "DHCP Server", "IPS"],
+        "answer": 2
+      },
+      {
+        "q": "À quoi sert le champ Schedule ?",
+        "choices": [
+          "Définir des plages horaires d'application",
+          "Planifier des reboots",
+          "Limiter la bande passante",
+          "Configurer le NTP"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Quelle action permet de monter un tunnel IPsec via la policy ?",
+        "choices": ["ACCEPT", "DENY", "IPSEC", "LEARN"],
+        "answer": 2
+      }
+    ]
+  }
+]
