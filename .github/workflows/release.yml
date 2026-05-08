@@ -1,0 +1,63 @@
+name: Build & Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name for the release (e.g. v0.1.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [ -n "${{ inputs.tag }}" ]; then TAG="${{ inputs.tag }}"; fi
+          echo "name=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Build Android APK (EAS, no-wait off)
+        run: eas build --platform android --profile preview --non-interactive --no-wait=false --json > build.json
+
+      - name: Extract APK URL
+        id: apk
+        run: |
+          URL=$(node -e "const b=require('./build.json'); const arr=Array.isArray(b)?b:[b]; console.log(arr[0].artifacts.buildUrl)")
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Download APK
+        run: curl -L -o nse4-${{ steps.tag.outputs.name }}.apk "${{ steps.apk.outputs.url }}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          name: NSE4 Daily ${{ steps.tag.outputs.name }}
+          generate_release_notes: true
+          files: nse4-${{ steps.tag.outputs.name }}.apk

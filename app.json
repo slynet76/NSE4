@@ -17,7 +17,10 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#0b1220"
       },
-      "permissions": ["SCHEDULE_EXACT_ALARM", "POST_NOTIFICATIONS"]
+      "permissions": [
+        "SCHEDULE_EXACT_ALARM",
+        "POST_NOTIFICATIONS"
+      ]
     },
     "plugins": [
       [
@@ -29,7 +32,10 @@
       ]
     ],
     "extra": {
-      "eas": { "projectId": "REPLACE_WITH_EAS_ID" }
-    }
+      "eas": {
+        "projectId": "de73b771-fb6e-4c5e-bf18-7d247f97e879"
+      }
+    },
+    "owner": "slynet762"
   }
 }
