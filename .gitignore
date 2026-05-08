@@ -11,3 +11,5 @@ ios/
 *.aab
 *.pdf
 tools/audit-report.json
+_*.txt
+_*.pdf
