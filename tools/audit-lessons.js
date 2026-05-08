@@ -87,9 +87,11 @@ let totalQ = 0, brokenQ = 0;
 
 for (const lesson of lessons) {
   const issues = [];
-  for (let i = 0; i < lesson.quiz.length; i++) {
+  // Check questionPool if present, else fall back to quiz.
+  const questions = lesson.questionPool && lesson.questionPool.length > 0 ? lesson.questionPool : lesson.quiz;
+  for (let i = 0; i < questions.length; i++) {
     totalQ++;
-    const q = lesson.quiz[i];
+    const q = questions[i];
     const correct = q.choices[q.answer];
     const r = check(correct, lesson.content);
     if (!r.ok) {
@@ -103,7 +105,7 @@ for (const lesson of lessons) {
       module: lesson.module,
       title: lesson.title,
       brokenCount: issues.length,
-      total: lesson.quiz.length,
+      total: questions.length,
       issues,
     });
   }
