@@ -1,0 +1,181 @@
+{
+  "id": "ch12-l6",
+  "module": "SD-WAN Configuration and Monitoring",
+  "title": "Monitoring et dépannage SD-WAN",
+  "durationMin": 7,
+  "content": "## Outils de monitoring GUI\n\n### Network Dashboard\n\nLe tableau de bord réseau contient des **widgets** dédiés : routage, IPsec, et SD-WAN. Le widget SD-WAN affiche l'état de chaque membre monitoré (actif, dégradé, mort).\n\n### Network → SD-WAN → Zones\n\nCette page affiche des **graphiques de répartition** du trafic entre membres : **bandwidth** (bande passante), **volume** (données transférées) et **sessions** actives.\n\n### Network → SD-WAN → Rules\n\nListe les règles SD-WAN dans leur ordre d'évaluation. Supporte le **drag-and-drop** pour réordonner les règles. Affiche la **dernière utilisation** de chaque règle, utile pour diagnostiquer si une règle est atteinte.\n\n### Performance SLAs\n\nAffiche des graphes en temps réel pour chaque SLA : **packet loss**, **latency** (latence) et **jitter** sur la **dernière minute**.\n- Ligne pointillée = SLA target (seuil configuré)\n- Flèche verte = beacon up (membre accessible)\n- Flèche rouge = dead (membre inaccessible)\n\n### Log & Report → System Events → SD-WAN Events\n\nSource clé pour analyser les changements de comportement SD-WAN. Enregistre :\n- Les **changements d'état SLA** (membre qui passe alive → dead ou inversement)\n- Les **modifications d'ordre de préférence** entre membres (failover, best quality recalcul)\n\n![Outils de monitoring SD-WAN](diagram:0)\n\n## Logs Forward Traffic\n\nDans les logs de trafic transféré (Forward Traffic), deux colonnes sont essentielles pour le dépannage SD-WAN :\n- **Destination Interface** : permet de vérifier quelle interface egress a été utilisée\n- **SD-WAN Rule Name** : indique la règle SD-WAN ayant sélectionné cette interface\n  - Si cette colonne est **vide** → le trafic a suivi la **règle implicite** (routage standard)\n\n## Commandes CLI de dépannage\n\n### diagnose firewall proute list\n\nListe toutes les policy routes créées par le SD-WAN. Champs importants :\n- **vwl_service** : identifiant de la règle SD-WAN (rule SD-WAN) ayant généré cette entrée\n- **vwl_mbr** : membre SD-WAN choisi pour le steering\n- **hit count** : nombre de fois que cette policy route a été utilisée\n\n### diagnose sys session filter + diagnose sys session list\n\nPermettent d'inspecter le détail des sessions actives. Champs SD-WAN spécifiques :\n- **sdwan_mbr_seq** : numéro de séquence du membre SD-WAN utilisé (ID membre). Permet d'identifier quel membre est utilisé pour une session.\n- **sdwan_service_id** : ID de la règle SD-WAN appliquée\n- Si ces champs sont **absents** → la session suit la règle implicite\n\n### diagnose sys session6 list\n\nÉquivalent IPv6 de `diagnose sys session list`. Affiche les sessions IPv6 avec les mêmes champs SD-WAN (sdwan_mbr_seq, sdwan_service_id).\n\n### diagnose sniffer packet\n\nCapture de paquets avec verbosité **4 à 6** : affiche l'interface egress utilisée, permettant de confirmer visuellement par quelle interface physique le trafic sort.\n\n> **Workflow de dépannage** : commencer par les SD-WAN Events pour comprendre l'historique → vérifier Forward Traffic logs (Destination Interface + SD-WAN Rule Name) → utiliser `diagnose firewall proute list` (vwl_service, vwl_mbr) → affiner avec `diagnose sys session list` (sdwan_mbr_seq, sdwan_service_id) → capturer avec sniffer verbosity 4-6 pour confirmer l'interface egress.",
+  "diagrams": [
+    {
+      "caption": "Carte des outils de monitoring SD-WAN : GUI et CLI.",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 180'><rect x='20' y='10' width='265' height='160' rx='8' fill='#1a1a2e' stroke='#3b82f6' stroke-width='2'/><text x='152' y='30' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#93c5fd'>GUI</text><rect x='30' y='36' width='245' height='22' rx='4' fill='#1e3a5f' stroke='#3b82f6' stroke-width='1'/><text x='152' y='51' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#bfdbfe'>Network Dashboard (widgets SD-WAN)</text><rect x='30' y='62' width='245' height='22' rx='4' fill='#1e3a5f' stroke='#3b82f6' stroke-width='1'/><text x='152' y='77' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#bfdbfe'>SD-WAN Zones (bandwidth / volume / sessions)</text><rect x='30' y='88' width='245' height='22' rx='4' fill='#1e3a5f' stroke='#3b82f6' stroke-width='1'/><text x='152' y='103' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#bfdbfe'>SD-WAN Rules (drag-and-drop, dernière utilisation)</text><rect x='30' y='114' width='245' height='22' rx='4' fill='#1e3a5f' stroke='#3b82f6' stroke-width='1'/><text x='152' y='129' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#bfdbfe'>Performance SLAs (packet loss / latency / jitter)</text><rect x='30' y='140' width='245' height='22' rx='4' fill='#1e3a5f' stroke='#3b82f6' stroke-width='1'/><text x='152' y='155' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#bfdbfe'>Log &amp; Report → SD-WAN Events</text><rect x='315' y='10' width='265' height='160' rx='8' fill='#1a2e1a' stroke='#22c55e' stroke-width='2'/><text x='447' y='30' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#86efac'>CLI</text><rect x='325' y='36' width='245' height='22' rx='4' fill='#14532d' stroke='#22c55e' stroke-width='1'/><text x='447' y='51' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#bbf7d0'>diagnose firewall proute list</text><rect x='325' y='62' width='245' height='22' rx='4' fill='#14532d' stroke='#22c55e' stroke-width='1'/><text x='447' y='77' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#bbf7d0'>diagnose sys session filter + session list</text><rect x='325' y='88' width='245' height='22' rx='4' fill='#14532d' stroke='#22c55e' stroke-width='1'/><text x='447' y='103' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#bbf7d0'>diagnose sys session6 list (IPv6)</text><rect x='325' y='114' width='245' height='22' rx='4' fill='#14532d' stroke='#22c55e' stroke-width='1'/><text x='447' y='129' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#bbf7d0'>diagnose sniffer packet (verbosity 4-6)</text><rect x='325' y='140' width='245' height='22' rx='4' fill='#14532d' stroke='#22c55e' stroke-width='1'/><text x='447' y='155' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#bbf7d0'>Forward Traffic logs (egress + SD-WAN Rule Name)</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "À quoi sert la commande `diagnose firewall proute list` en contexte SD-WAN ?",
+      "choices": [
+        "Elle affiche les routes statiques de la FIB",
+        "Elle liste les policy routes créées par le SD-WAN avec vwl_service, vwl_mbr et hit count",
+        "Elle affiche les sessions BGP actives",
+        "Elle liste les membres SD-WAN avec leur état alive/dead"
+      ],
+      "answer": 1,
+      "explain": "La commande `diagnose firewall proute list` liste toutes les policy routes générées par le SD-WAN. Les champs clés sont vwl_service (règle SD-WAN), vwl_mbr (membre choisi) et hit count (nombre d'utilisations)."
+    },
+    {
+      "q": "Que représente le champ `vwl_service` dans la sortie de `diagnose firewall proute list` ?",
+      "choices": [
+        "L'identifiant du membre SD-WAN sélectionné",
+        "Le nombre de hits sur cette policy route",
+        "L'identifiant de la règle SD-WAN (rule SD-WAN) ayant créé l'entrée",
+        "Le nom de la zone SD-WAN de sortie"
+      ],
+      "answer": 2,
+      "explain": "Le champ vwl_service indique l'identifiant de la règle SD-WAN (rule SD-WAN) qui a généré cette policy route. Il permet d'identifier quelle règle est active pour un flux donné."
+    },
+    {
+      "q": "Que représente le champ `vwl_mbr` dans la sortie de `diagnose firewall proute list` ?",
+      "choices": [
+        "Le membre SD-WAN choisi pour le steering",
+        "La métrique de qualité calculée pour ce membre",
+        "Le nom de la règle SD-WAN",
+        "L'adresse IP de la gateway utilisée"
+      ],
+      "answer": 0,
+      "explain": "Le champ vwl_mbr indique le membre SD-WAN choisi pour le steering par cette policy route. Combiné à vwl_service, il permet de savoir exactement quelle règle utilise quel membre."
+    },
+    {
+      "q": "Dans les logs Forward Traffic, que signifie une colonne SD-WAN Rule Name vide ?",
+      "choices": [
+        "Le trafic a été droppé par le pare-feu",
+        "Le trafic a suivi la règle implicite (routage standard)",
+        "Le trafic n'a pas été soumis au SD-WAN",
+        "La journalisation SD-WAN est désactivée"
+      ],
+      "answer": 1,
+      "explain": "Si la colonne SD-WAN Rule Name est vide dans les logs Forward Traffic, cela indique que le trafic a suivi la règle implicite SD-WAN, équivalant au routage standard (FIB)."
+    },
+    {
+      "q": "Que représente le champ `sdwan_mbr_seq` dans `diagnose sys session list` ?",
+      "choices": [
+        "L'ID de la règle SD-WAN appliquée à la session",
+        "Le numéro de séquence (ID) du membre SD-WAN utilisé pour la session",
+        "Le nombre de paquets traités par le SD-WAN",
+        "L'ordre d'évaluation de la règle SD-WAN"
+      ],
+      "answer": 1,
+      "explain": "Le champ sdwan_mbr_seq est le numéro de séquence (ID) du membre SD-WAN utilisé pour cette session. C'est le moyen principal pour identifier quel membre est utilisé pour une session active."
+    },
+    {
+      "q": "Que représente le champ `sdwan_service_id` dans `diagnose sys session list` ?",
+      "choices": [
+        "L'ID du service FortiGuard associé",
+        "Le numéro de port du service applicatif",
+        "L'ID de la règle SD-WAN (SD-WAN rule) appliquée à la session",
+        "L'identifiant de la zone SD-WAN"
+      ],
+      "answer": 2,
+      "explain": "Le champ sdwan_service_id identifie la règle SD-WAN (SD-WAN rule) qui a pris la décision de steering pour cette session. Absent si la session suit la règle implicite."
+    },
+    {
+      "q": "Quelle verbosité de `diagnose sniffer packet` permet de voir l'interface egress ?",
+      "choices": [
+        "1 ou 2",
+        "3",
+        "4 à 6",
+        "7 ou plus"
+      ],
+      "answer": 2,
+      "explain": "Une verbosité de 4 à 6 dans `diagnose sniffer packet` affiche l'interface egress utilisée, permettant de confirmer visuellement par quelle interface physique le trafic sort."
+    },
+    {
+      "q": "À quoi sert `diagnose sys session6 list` ?",
+      "choices": [
+        "Afficher les 6 dernières sessions fermées",
+        "Équivalent IPv6 de diagnose sys session list pour inspecter les sessions IPv6",
+        "Afficher les sessions sur le membre SD-WAN numéro 6",
+        "Lister les sessions avec verbosité niveau 6"
+      ],
+      "answer": 1,
+      "explain": "`diagnose sys session6 list` est l'équivalent IPv6 de `diagnose sys session list`. Il affiche les sessions IPv6 actives avec les mêmes champs SD-WAN (sdwan_mbr_seq, sdwan_service_id)."
+    },
+    {
+      "q": "Où se trouvent les SD-WAN Events dans la GUI FortiGate ?",
+      "choices": [
+        "Network → SD-WAN → Performance SLAs",
+        "Dashboard → SD-WAN Widget",
+        "Log & Report → System Events → SD-WAN Events",
+        "Monitor → Routing Monitor → SD-WAN"
+      ],
+      "answer": 2,
+      "explain": "Les SD-WAN Events se trouvent dans Log & Report → System Events → SD-WAN Events. Ils enregistrent les changements d'état SLA et les modifications d'ordre de préférence entre membres."
+    },
+    {
+      "q": "Quelle est la période couverte par les graphes de Performance SLAs dans la GUI ?",
+      "choices": [
+        "Les 24 dernières heures",
+        "Les 7 derniers jours",
+        "La dernière minute",
+        "Les 5 dernières minutes"
+      ],
+      "answer": 2,
+      "explain": "Les graphes de Performance SLAs affichent les métriques (packet loss, latency, jitter) sur la dernière minute, avec une ligne pointillée indiquant le SLA target."
+    },
+    {
+      "q": "Dans les logs Forward Traffic, quelle colonne permet de vérifier l'interface egress utilisée ?",
+      "choices": [
+        "SD-WAN Rule Name",
+        "Source Interface",
+        "Destination Interface",
+        "Policy ID"
+      ],
+      "answer": 2,
+      "explain": "La colonne Destination Interface dans les logs Forward Traffic permet de vérifier quelle interface egress a été utilisée. La colonne SD-WAN Rule Name indique quelle règle SD-WAN a pris la décision."
+    },
+    {
+      "q": "Quels types de graphiques sont disponibles dans Network → SD-WAN → Zones ?",
+      "choices": [
+        "Latence, jitter, packet loss",
+        "CPU, mémoire, sessions",
+        "Bandwidth, volume, sessions",
+        "Uptime, routes, BGP peers"
+      ],
+      "answer": 2,
+      "explain": "La page Network → SD-WAN → Zones affiche des graphiques de répartition du trafic entre membres : bandwidth (bande passante), volume (données transférées) et sessions actives."
+    },
+    {
+      "q": "Quelle fonctionnalité de la page Network → SD-WAN → Rules facilite la gestion de l'ordre des règles ?",
+      "choices": [
+        "Import/export en CSV",
+        "Tri automatique par priorité",
+        "Drag-and-drop pour réordonner les règles",
+        "Groupement par zone SD-WAN"
+      ],
+      "answer": 2,
+      "explain": "La page Network → SD-WAN → Rules supporte le drag-and-drop pour réordonner les règles SD-WAN. Elle affiche aussi la dernière utilisation de chaque règle pour faciliter le diagnostic."
+    },
+    {
+      "q": "Que trackent les SD-WAN Events ? (Sélectionner la réponse la plus complète)",
+      "choices": [
+        "Uniquement les membres qui passent en état dead",
+        "Les changements d'état SLA et les modifications d'ordre de préférence entre membres",
+        "Uniquement les nouvelles connexions SD-WAN établies",
+        "Les modifications de configuration des règles SD-WAN"
+      ],
+      "answer": 1,
+      "explain": "Les SD-WAN Events trackent les changements d'état SLA (membre alive → dead ou inversement) et les modifications d'ordre de préférence entre membres (failover, recalcul Best Quality). C'est la source clé pour analyser les changements de comportement."
+    },
+    {
+      "q": "Comment identifier quel membre SD-WAN est utilisé pour une session active via CLI ?",
+      "choices": [
+        "Vérifier le champ vwl_service dans diagnose firewall proute list",
+        "Examiner le champ sdwan_mbr_seq dans diagnose sys session list",
+        "Consulter le widget SD-WAN dans le Network Dashboard",
+        "Lire le champ hit count dans diagnose firewall proute list"
+      ],
+      "answer": 1,
+      "explain": "Le champ sdwan_mbr_seq dans `diagnose sys session list` indique le numéro de séquence (ID) du membre SD-WAN utilisé pour une session active. C'est le moyen le plus direct pour identifier le membre par session."
+    }
+  ]
+}

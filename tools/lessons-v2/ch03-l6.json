@@ -1,0 +1,181 @@
+{
+  "id": "ch03-l6",
+  "module": "Firewall Policies and NAT",
+  "title": "DNAT et Virtual IPs (VIPs)",
+  "durationMin": 7,
+  "content": "## DNAT via les Virtual IPs (VIPs)\n\nLe **DNAT** (Destination NAT) sur FortiGate est implémenté via les **Virtual IPs (VIPs)**. Un VIP mappe une adresse IP (et optionnellement un port) **externe** vers une adresse IP (et port) **interne**. Cela permet de **publier des services internes** vers Internet.\n\n## Configuration d'un VIP\n\n1. Créer un objet VIP : définir l'**External IP** (IP publique visible de l'extérieur) et le **Mapped IP** (IP interne réelle du serveur). Optionnellement activer le **port forwarding** pour spécifier les ports.\n2. Sélectionner l'objet VIP comme **Destination** dans une politique firewall entrante (ex. : WAN→LAN).\n3. Dès que le VIP est utilisé en destination d'une politique, le DNAT est actif.\n\n## Type Static NAT (défaut)\n\nLe type par défaut d'un VIP est **Static NAT** : mapping **un-pour-un** entre External IP et Mapped IP.\n\n- **Port forwarding désactivé** : tout le trafic entrant vers l'External IP est DNATé vers la Mapped IP, **tous protocols et tous ports**. L'External IP devient entièrement dédiée au serveur interne.\n- **Port forwarding activé** : seul le trafic correspondant au port spécifié est DNATé. Permet de mapper la **même External IP vers plusieurs Mapped IPs** selon le port (ex. : TCP/80 → serveur web, TCP/25 → serveur mail).\n\n## Comportement SNAT avec Static NAT\n\nSi la Mapped IP (IP interne) initie un trafic sortant et qu'une politique sortante avec NAT activé est configurée, FortiGate utilise l'**External IP du VIP** comme adresse source traduite (SNAT). Cela assure une cohérence : les connexions entrantes et sortantes utilisent la même IP publique.\n\n## ARP Reply\n\nLe FortiGate **répond automatiquement aux ARP requests** pour l'**External IP** du VIP. Cela est essentiel quand l'External IP est une adresse dans le même sous-réseau que l'interface WAN mais n'est pas directement assignée à l'interface. Sans l'ARP reply, le routeur amont ne saurait pas que c'est le FortiGate qui détient cette IP, et le trafic ne serait jamais acheminé correctement.\n\n## VIP = objet adresse destination\n\nUn VIP est un type d'objet adresse. Il est toujours placé en **destination** d'une politique entrante. Le simple fait de sélectionner un VIP en destination d'une politique active le DNAT — aucune configuration supplémentaire n'est nécessaire au niveau de la politique elle-même.\n\n> **ARP reply** sur un VIP : FortiGate répond aux ARP requests pour l'External IP, permettant aux équipements amont (routeur, **FAI**) de lui acheminer le trafic.",
+  "diagrams": [
+    {
+      "caption": "VIP Static NAT : External IP → FortiGate → Mapped IP",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8f9fa'/><rect x='10' y='60' width='80' height='40' rx='6' fill='#4a90d9'/><text x='50' y='84' text-anchor='middle' font-family='sans-serif' font-size='12' fill='white' font-weight='bold'>Client</text><text x='50' y='52' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#555'>Internet</text><line x1='90' y1='80' x2='150' y2='80' stroke='#555' stroke-width='2' marker-end='url(#ar1)'/><text x='120' y='72' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#333'>dst: 1.2.3.4</text><rect x='150' y='45' width='130' height='70' rx='8' fill='#fff' stroke='#e07b30' stroke-width='2'/><text x='215' y='65' text-anchor='middle' font-family='sans-serif' font-size='12' fill='#b5590a' font-weight='bold'>FortiGate</text><text x='215' y='82' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#555'>VIP: 1.2.3.4</text><text x='215' y='97' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#e07b30'>→ 192.168.1.10</text><text x='215' y='108' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#888'>DNAT + ARP reply</text><line x1='280' y1='80' x2='340' y2='80' stroke='#28a745' stroke-width='2' marker-end='url(#ar2)'/><text x='310' y='72' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#28a745'>dst: 192.168.1.10</text><rect x='340' y='55' width='120' height='50' rx='6' fill='#28a745'/><text x='400' y='78' text-anchor='middle' font-family='sans-serif' font-size='12' fill='white' font-weight='bold'>Serveur web</text><text x='400' y='96' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#d4f4dd'>192.168.1.10</text><rect x='480' y='10' width='110' height='60' rx='6' fill='#fff3e0' stroke='#e07b30' stroke-width='1.5'/><text x='535' y='28' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#b5590a' font-weight='bold'>VIP config</text><text x='535' y='44' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#333'>External: 1.2.3.4</text><text x='535' y='58' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#333'>Mapped: 192.168.1.10</text><rect x='470' y='100' width='120' height='50' rx='6' fill='#e8f4fd' stroke='#4a90d9' stroke-width='1.5'/><text x='530' y='118' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#2c6fad' font-weight='bold'>Politique entrante</text><text x='530' y='133' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#333'>Dst: VIP_WebServer</text><text x='530' y='146' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#555'>Action: Accept</text><defs><marker id='ar1' markerWidth='8' markerHeight='8' refX='4' refY='4' orient='auto'><path d='M0,0 L8,4 L0,8 Z' fill='#555'/></marker><marker id='ar2' markerWidth='8' markerHeight='8' refX='4' refY='4' orient='auto'><path d='M0,0 L8,4 L0,8 Z' fill='#28a745'/></marker></defs></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel type d'objet FortiGate est utilisé pour implémenter le DNAT ?",
+      "choices": [
+        "IP Pool",
+        "Virtual IP (VIP)",
+        "Address Group",
+        "Internet Service Object"
+      ],
+      "answer": 1,
+      "explain": "Le DNAT sur FortiGate est implémenté via les Virtual IPs (VIPs). Un VIP mappe une External IP vers une Mapped IP pour publier des services internes."
+    },
+    {
+      "q": "Avec un VIP Static NAT et le port forwarding désactivé, quel trafic est DNATé vers la Mapped IP ?",
+      "choices": [
+        "Uniquement le trafic TCP/80 et TCP/443",
+        "Uniquement le trafic UDP",
+        "Tout le trafic entrant vers l'External IP — tous protocoles et tous ports",
+        "Uniquement les protocoles de couche 7"
+      ],
+      "answer": 2,
+      "explain": "Avec Static NAT et port forwarding désactivé, tout le trafic entrant vers l'External IP est transféré vers la Mapped IP, sans distinction de protocole ou de port."
+    },
+    {
+      "q": "Pourquoi le FortiGate émet-il des ARP replies pour l'External IP d'un VIP ?",
+      "choices": [
+        "Pour accélérer la résolution DNS de l'External IP",
+        "Pour que les équipements amont (routeur, FAI) sachent que le FortiGate détient cette IP et lui envoient le trafic",
+        "Pour bloquer les requêtes ARP malveillantes (ARP spoofing)",
+        "Pour synchroniser la table ARP entre le FortiGate et le switch"
+      ],
+      "answer": 1,
+      "explain": "Le FortiGate répond automatiquement aux ARP requests pour l'External IP du VIP. Cela permet au routeur amont de savoir que c'est le FortiGate qui détient cette adresse et d'y acheminer le trafic."
+    },
+    {
+      "q": "Quel est l'avantage du port forwarding activé sur un VIP ?",
+      "choices": [
+        "Il permet d'utiliser plusieurs External IPs pour un seul serveur",
+        "Il permet de mapper la même External IP vers plusieurs Mapped IPs différentes selon le port",
+        "Il double les performances réseau du serveur interne",
+        "Il empêche les scans de ports sur l'External IP"
+      ],
+      "answer": 1,
+      "explain": "Avec le port forwarding activé, on peut mapper TCP/80 vers un serveur web, TCP/25 vers un serveur mail, TCP/443 vers un autre serveur — tout depuis la même External IP."
+    },
+    {
+      "q": "Lorsqu'un serveur interne (Mapped IP d'un VIP Static NAT) initie une connexion sortante, quelle IP source le FortiGate utilise-t-il pour le SNAT ?",
+      "choices": [
+        "L'adresse IP de l'interface WAN du FortiGate",
+        "L'IP privée du serveur interne (non traduite)",
+        "L'External IP du VIP Static NAT",
+        "Une IP du pool Overload par défaut"
+      ],
+      "answer": 2,
+      "explain": "Avec Static NAT, si le serveur interne (Mapped IP) initie une connexion sortante et qu'une politique avec NAT est activée, le FortiGate utilise l'External IP du VIP comme source traduite (SNAT)."
+    },
+    {
+      "q": "Où place-t-on un objet VIP dans une politique firewall entrante ?",
+      "choices": [
+        "En source de la politique",
+        "En destination de la politique",
+        "Dans le champ Service de la politique",
+        "Dans les Security Profiles de la politique"
+      ],
+      "answer": 1,
+      "explain": "Un VIP est toujours placé en destination d'une politique entrante. Le sélectionner en destination active automatiquement le DNAT pour ce trafic."
+    },
+    {
+      "q": "Quelle est la différence de direction entre DNAT et SNAT ?",
+      "choices": [
+        "DNAT traduit les adresses source des paquets entrants ; SNAT traduit les adresses destination des paquets sortants",
+        "DNAT traduit l'adresse destination des paquets entrants ; SNAT traduit l'adresse source des paquets sortants",
+        "DNAT et SNAT s'appliquent tous deux aux paquets sortants",
+        "DNAT est pour IPv6, SNAT pour IPv4"
+      ],
+      "answer": 1,
+      "explain": "DNAT modifie la destination du trafic entrant (ex. : IP publique → IP serveur interne). SNAT modifie la source du trafic sortant (ex. : IP privée → IP publique)."
+    },
+    {
+      "q": "Quels sont les trois champs principaux à configurer pour créer un objet VIP sur FortiGate ?",
+      "choices": [
+        "Source IP, Destination IP, Protocol",
+        "External IP, Mapped IP, et optionnellement Port Forwarding",
+        "Public IP, Private IP, et NAT Type",
+        "WAN IP, LAN IP, et TTL"
+      ],
+      "answer": 1,
+      "explain": "La configuration d'un VIP requiert : External IP (IP publique vue de l'extérieur), Mapped IP (IP interne du serveur réel), et optionnellement le port forwarding pour préciser les ports."
+    },
+    {
+      "q": "Quel est le type par défaut d'un VIP nouvellement créé sur FortiGate ?",
+      "choices": [
+        "Dynamic NAT",
+        "Load Balance",
+        "Static NAT",
+        "Port Block Allocation"
+      ],
+      "answer": 2,
+      "explain": "Le type par défaut d'un VIP FortiGate est Static NAT, qui crée un mapping un-pour-un entre l'External IP et la Mapped IP."
+    },
+    {
+      "q": "Dans quel cas l'ARP reply du FortiGate pour un VIP est-il particulièrement nécessaire ?",
+      "choices": [
+        "Quand l'External IP est dans un sous-réseau différent de l'interface WAN",
+        "Quand l'External IP est dans le même sous-réseau que l'interface WAN mais non directement assignée à l'interface",
+        "Quand le VIP utilise le port forwarding",
+        "Quand la Mapped IP est sur un VLAN isolé"
+      ],
+      "answer": 1,
+      "explain": "L'ARP reply est crucial quand l'External IP est dans le même sous-réseau que l'interface WAN mais n'est pas assignée directement à l'interface. Le routeur amont envoie une ARP request pour cette IP ; le FortiGate doit y répondre pour que le trafic lui parvienne."
+    },
+    {
+      "q": "Quelle est la configuration minimale pour qu'un VIP permette l'accès à un seul serveur interne sur tous les ports ?",
+      "choices": [
+        "External IP, Mapped IP, et port forwarding activé avec port 0-65535",
+        "External IP et Mapped IP uniquement (port forwarding désactivé par défaut)",
+        "External IP, Mapped IP, et un profil SSL obligatoire",
+        "External IP, Mapped IP, et une route statique vers la Mapped IP"
+      ],
+      "answer": 1,
+      "explain": "Avec seulement External IP et Mapped IP (port forwarding désactivé), tout le trafic entrant vers l'External IP est DNATé vers la Mapped IP sur tous les protocoles et ports. C'est la configuration minimale."
+    },
+    {
+      "q": "Comment utiliser un VIP pour publier à la fois un serveur web (TCP/80) et un serveur mail (TCP/25) sur la même External IP ?",
+      "choices": [
+        "Créer deux External IPs différentes, une pour chaque serveur",
+        "Créer un VIP avec port forwarding activé, mappant TCP/80 vers le serveur web et TCP/25 vers le serveur mail",
+        "Créer un VIP unique pointant vers un load balancer interne",
+        "Ce n'est pas possible avec un seul VIP sur FortiGate"
+      ],
+      "answer": 1,
+      "explain": "Avec le port forwarding activé, un même VIP (même External IP) peut mapper différents ports vers différentes Mapped IPs. TCP/80 → serveur web, TCP/25 → serveur mail — tout depuis la même IP publique."
+    },
+    {
+      "q": "Qu'est-ce que l'External IP d'un VIP FortiGate ?",
+      "choices": [
+        "L'adresse IP privée de l'interface LAN du FortiGate",
+        "L'adresse IP publique (côté WAN) visible depuis Internet, vers laquelle les clients se connectent",
+        "L'adresse IP de la passerelle par défaut du FAI",
+        "L'adresse IP du FortiManager associé"
+      ],
+      "answer": 1,
+      "explain": "L'External IP est l'adresse publique visible depuis Internet. Les clients se connectent à cette IP ; le FortiGate la traduit (DNAT) vers la Mapped IP interne."
+    },
+    {
+      "q": "Qu'est-ce que la Mapped IP dans un VIP FortiGate ?",
+      "choices": [
+        "L'adresse IP publique vers laquelle les connexions entrantes sont redirigées",
+        "L'adresse IP interne réelle du serveur vers lequel le trafic est DNATé",
+        "L'adresse IP de l'interface WAN du FortiGate",
+        "L'adresse IP de la route par défaut"
+      ],
+      "answer": 1,
+      "explain": "La Mapped IP est l'adresse IP réelle du serveur interne. C'est vers cette adresse que le FortiGate traduit (DNAT) le trafic entrant dont la destination était l'External IP."
+    },
+    {
+      "q": "Quelle est la direction de la translation DNAT ?",
+      "choices": [
+        "Le FortiGate modifie l'adresse source des paquets entrants",
+        "Le FortiGate modifie l'adresse destination des paquets entrants (External IP → Mapped IP)",
+        "Le FortiGate modifie à la fois la source et la destination",
+        "Le FortiGate modifie l'adresse destination des paquets sortants"
+      ],
+      "answer": 1,
+      "explain": "DNAT = Destination NAT : le FortiGate modifie l'adresse destination des paquets entrants. L'External IP du VIP est remplacée par la Mapped IP (l'IP réelle du serveur interne)."
+    }
+  ]
+}

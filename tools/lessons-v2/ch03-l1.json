@@ -1,0 +1,181 @@
+{
+  "id": "ch03-l1",
+  "module": "Firewall Policies and NAT",
+  "title": "Rôles et types de politiques",
+  "durationMin": 7,
+  "content": "## Qu'est-ce qu'une politique firewall ?\n\nUne **politique** (policy) est un ensemble de règles qui contrôle le trafic traversant le FortiGate : qui passe, comment il est traité (NAT, authentification, UTM). **Tout trafic traversant le FortiGate est soumis** à l'évaluation des politiques.\n\n## Décision en 2 temps\n\nL'évaluation d'un paquet se fait en deux étapes :\n1. **Match** : le FortiGate vérifie si le trafic correspond aux critères de la politique (source, destination, service, interfaces). Si oui → action accept ou deny.\n2. **Inspection UTM** : si la politique est acceptée et que des **security profiles** (profils de sécurité) sont attachés, l'inspection UTM (antivirus, IPS, web filtering, app control) est effectuée **après** le match.\n\n## Ordre d'évaluation : top-down, first match wins\n\nLe FortiGate évalue les politiques **de haut en bas** (top-down). La **première politique qui correspond** (first match) est appliquée immédiatement. Les politiques suivantes ne sont pas évaluées.\n\nTout en bas se trouve l'**implicit deny** : si aucune politique ne matche, le trafic est **rejeté** silencieusement.\n\n## Trafic bidirectionnel : une seule politique\n\nLe FortiGate est **stateful** : il maintient un état de session. Pour un trafic TCP/UDP, **une seule politique** dans le sens de l'initiateur suffit. Les paquets de réponse sont automatiquement trackés par la session existante et autorisés sans évaluation supplémentaire.\n\n## Types de politiques\n\n- **Standard firewall policy** : contrôle le trafic en **transit** entre interfaces (le cas le plus courant).\n- **Local-in policy** : contrôle le trafic **destiné au FortiGate lui-même** (ex. : accès SSH/HTTPS au management, RADIUS, etc.).\n- **Implicit deny** : règle implicite en bas de la liste — tout trafic sans match est rejeté.\n\n## UUID\n\nChaque politique possède un **UUID** (Universally Unique Identifier) : identifiant unique généré automatiquement. Il sert à la **corrélation des logs** et à l'**intégration FortiManager / FortiAnalyzer** pour identifier précisément une règle quelle que soit sa position dans la liste.\n\n> La règle **implicit deny** est **implicite** et **non configurable** — **toujours active** en bas de liste.\n\n> **UUID** (Universally Unique Identifier) : identifie la politique de **façon unique** dans les logs et les **outils de gestion** centralisée (FortiManager, FortiAnalyzer).\n\n> **First-match et ordre** : une règle **trop large** en haut de liste **empêche** les règles plus **précises** d'être évaluées — placer les règles spécifiques **au-dessus**.\n\n> FortiGate est **stateful** : les **réponses** sont **autorisées** via le **suivi** de session, sans **reparcourir** les politiques.\n\n> Un **VIP** (Virtual IP) est utilisé en destination de la politique pour publier un serveur interne.",
+  "diagrams": [
+    {
+      "caption": "Flux d'évaluation des politiques (top-down, first match, implicit deny)",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8f9fa'/><rect x='20' y='10' width='120' height='36' rx='6' fill='#4a90d9' stroke='#2c6fad' stroke-width='1.5'/><text x='80' y='33' text-anchor='middle' font-family='sans-serif' font-size='13' fill='white' font-weight='bold'>Trafic entrant</text><line x1='80' y1='46' x2='80' y2='62' stroke='#555' stroke-width='1.5' marker-end='url(#arr)'/><rect x='20' y='62' width='120' height='30' rx='4' fill='#fff' stroke='#4a90d9' stroke-width='1.5'/><text x='80' y='82' text-anchor='middle' font-family='sans-serif' font-size='12' fill='#333'>Policy 1 ?</text><line x1='140' y1='77' x2='180' y2='77' stroke='#28a745' stroke-width='1.5' marker-end='url(#arG)'/><text x='155' y='71' font-family='sans-serif' font-size='10' fill='#28a745'>match</text><line x1='80' y1='92' x2='80' y2='108' stroke='#555' stroke-width='1.5' marker-end='url(#arr)'/><text x='90' y='104' font-family='sans-serif' font-size='10' fill='#888'>no match</text><rect x='20' y='108' width='120' height='30' rx='4' fill='#fff' stroke='#4a90d9' stroke-width='1.5'/><text x='80' y='128' text-anchor='middle' font-family='sans-serif' font-size='12' fill='#333'>Policy 2 ?</text><line x1='140' y1='123' x2='180' y2='123' stroke='#28a745' stroke-width='1.5' marker-end='url(#arG)'/><text x='155' y='117' font-family='sans-serif' font-size='10' fill='#28a745'>match</text><rect x='180' y='62' width='130' height='30' rx='4' fill='#28a745'/><text x='245' y='82' text-anchor='middle' font-family='sans-serif' font-size='12' fill='white'>Accept + UTM</text><rect x='180' y='108' width='130' height='30' rx='4' fill='#28a745'/><text x='245' y='128' text-anchor='middle' font-family='sans-serif' font-size='12' fill='white'>Accept + UTM</text><rect x='360' y='108' width='130' height='30' rx='4' fill='#dc3545'/><text x='425' y='128' text-anchor='middle' font-family='sans-serif' font-size='12' fill='white'>Implicit Deny</text><line x1='80' y1='138' x2='80' y2='148' stroke='#dc3545' stroke-width='1.5' stroke-dasharray='4'/><line x1='80' y1='148' x2='360' y2='148' stroke='#dc3545' stroke-width='1.5' stroke-dasharray='4'/><line x1='360' y1='148' x2='360' y2='138' stroke='#dc3545' stroke-width='1.5' marker-end='url(#arR)'/><defs><marker id='arr' markerWidth='8' markerHeight='8' refX='4' refY='4' orient='auto'><path d='M0,0 L8,4 L0,8 Z' fill='#555'/></marker><marker id='arG' markerWidth='8' markerHeight='8' refX='4' refY='4' orient='auto'><path d='M0,0 L8,4 L0,8 Z' fill='#28a745'/></marker><marker id='arR' markerWidth='8' markerHeight='8' refX='4' refY='4' orient='auto'><path d='M0,0 L8,4 L0,8 Z' fill='#dc3545'/></marker></defs></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Dans quel ordre le FortiGate évalue-t-il les politiques firewall ?",
+      "choices": [
+        "De bas en haut (bottom-up)",
+        "De haut en bas (top-down), première correspondance appliquée",
+        "Par priorité numérique décroissante",
+        "Aléatoirement selon la charge CPU"
+      ],
+      "answer": 1,
+      "explain": "Le FortiGate évalue les politiques top-down : la première politique qui matche est appliquée (first match wins). Les suivantes ne sont pas examinées."
+    },
+    {
+      "q": "Pour un flux TCP initié depuis le LAN vers Internet, combien de politiques firewall sont nécessaires ?",
+      "choices": [
+        "Deux : une pour l'aller, une pour le retour",
+        "Une seule, dans le sens de l'initiateur",
+        "Une pour chaque interface impliquée",
+        "Aucune si le NAT est activé"
+      ],
+      "answer": 1,
+      "explain": "Le FortiGate est stateful : les paquets de retour sont trackés par la session existante. Une seule politique dans le sens de l'initiateur suffit."
+    },
+    {
+      "q": "À quel moment les security profiles UTM (AV, IPS, web filter) sont-ils appliqués ?",
+      "choices": [
+        "Avant la recherche de politique (pre-match)",
+        "Simultanément avec l'évaluation des critères de match",
+        "Après que la politique a matché et accepté le trafic",
+        "Uniquement sur les politiques deny"
+      ],
+      "answer": 2,
+      "explain": "L'inspection UTM intervient en deuxième temps, après le match de la politique. Étape 1 = match, étape 2 = inspection des security profiles attachés."
+    },
+    {
+      "q": "Qu'arrive-t-il à un paquet qui ne correspond à aucune politique configurée ?",
+      "choices": [
+        "Il est accepté par la règle par défaut",
+        "Il est mis en attente (queued) pendant 30 secondes",
+        "Il est rejeté par l'implicit deny en bas de la liste",
+        "Il déclenche une alerte critique"
+      ],
+      "answer": 2,
+      "explain": "L'implicit deny est une règle implicite toujours présente en bas de la liste. Tout trafic sans match est rejeté silencieusement."
+    },
+    {
+      "q": "Quel est le rôle d'une local-in policy sur un FortiGate ?",
+      "choices": [
+        "Contrôler le trafic entre deux VLANs internes",
+        "Contrôler le trafic destiné au FortiGate lui-même (management, services)",
+        "Appliquer le NAT sur les flux sortants",
+        "Gérer les tunnels VPN IPsec"
+      ],
+      "answer": 1,
+      "explain": "La local-in policy contrôle le trafic destiné au FortiGate lui-même, par exemple les accès SSH/HTTPS de gestion, les requêtes RADIUS, etc."
+    },
+    {
+      "q": "À quoi sert l'UUID d'une politique firewall ?",
+      "choices": [
+        "À définir la priorité de la politique dans la liste",
+        "À chiffrer le contenu de la politique",
+        "À identifier la politique de façon unique dans les logs et les outils de gestion centralisée",
+        "À activer l'inspection SSL sur la politique"
+      ],
+      "answer": 2,
+      "explain": "L'UUID est un identifiant unique qui permet de corréler les logs avec la politique exacte et d'intégrer précisément les règles avec FortiManager et FortiAnalyzer."
+    },
+    {
+      "q": "Une règle implicite de refus (implicit deny) est-elle visible dans la liste des politiques GUI ?",
+      "choices": [
+        "Oui, elle apparaît comme une politique modifiable en bas de liste",
+        "Non, elle est implicite et non configurable ; elle est toujours active",
+        "Elle s'affiche uniquement si l'administrateur l'active manuellement",
+        "Elle n'existe pas : le trafic non matché est accepté par défaut"
+      ],
+      "answer": 1,
+      "explain": "L'implicit deny est une règle implicite, non modifiable et toujours active. Elle n'apparaît pas comme une entrée de politique classique dans la GUI."
+    },
+    {
+      "q": "Un administrateur veut qu'un serveur interne soit accessible depuis Internet. Combien de politiques doit-il créer (en supposant un VIP déjà configuré) ?",
+      "choices": [
+        "Deux politiques : entrante et sortante",
+        "Aucune, le VIP gère automatiquement l'accès",
+        "Une seule politique entrante autorisant le trafic vers le VIP (serveur publié)",
+        "Trois : entrante, sortante et locale"
+      ],
+      "answer": 2,
+      "explain": "Une seule politique entrante (WAN → DMZ/LAN) avec le VIP en destination suffit. Le FortiGate étant stateful, les réponses sont gérées par la session."
+    },
+    {
+      "q": "Quels sont les deux types principaux de politiques firewall sur FortiGate pour contrôler le trafic en transit ?",
+      "choices": [
+        "Policy type A et Policy type B",
+        "Standard firewall policy et local-in policy",
+        "Inbound policy et outbound policy",
+        "IPv4 policy et IPv6 policy"
+      ],
+      "answer": 1,
+      "explain": "Les deux principaux types sont la standard firewall policy (trafic en transit entre interfaces) et la local-in policy (trafic destiné au FortiGate lui-même)."
+    },
+    {
+      "q": "Quels sont des exemples de security profiles UTM pouvant être attachés à une politique ?",
+      "choices": [
+        "OSPF, BGP, RIP",
+        "Antivirus, IPS, web filter, application control",
+        "NAT, PAT, SNAT",
+        "VLAN, trunk, LAG"
+      ],
+      "answer": 1,
+      "explain": "Les security profiles UTM incluent l'antivirus (AV), l'IPS (Intrusion Prevention System), le web filtering et l'application control, entre autres."
+    },
+    {
+      "q": "Pourquoi le principe « first match wins » est-il important pour l'ordre des politiques ?",
+      "choices": [
+        "Il permet d'accélérer le traitement CPU en ignorant les politiques suivantes",
+        "Une règle trop large en haut de liste empêche les règles plus précises d'être évaluées",
+        "Il garantit que toutes les politiques sont toujours évaluées",
+        "Il n'a d'importance que sur les politiques deny"
+      ],
+      "answer": 1,
+      "explain": "Si une règle générale est placée au-dessus d'une règle spécifique, elle va matcher en premier et la règle spécifique ne sera jamais atteinte. L'ordre est donc critique."
+    },
+    {
+      "q": "Comment le FortiGate gère-t-il les paquets de retour d'une connexion TCP acceptée ?",
+      "choices": [
+        "Il réévalue chaque paquet de retour contre toutes les politiques",
+        "FortiGate est stateful : les réponses sont autorisées via le suivi de session, sans reparcourir les politiques",
+        "Les paquets de retour nécessitent une politique séparée dans le sens inverse",
+        "Ils sont bloqués par l'implicit deny si aucune politique inverse n'existe"
+      ],
+      "answer": 1,
+      "explain": "Le FortiGate est stateful : la table de sessions garde l'état de chaque connexion. Les paquets de retour sont reconnus et autorisés via la session existante."
+    },
+    {
+      "q": "L'évaluation des politiques se fait en 2 temps. Quel est le premier temps ?",
+      "choices": [
+        "L'inspection UTM des contenus",
+        "Le chiffrement SSL du trafic",
+        "Le match des critères (source/dest/service/interfaces) et action accept/deny",
+        "La journalisation dans FortiAnalyzer"
+      ],
+      "answer": 2,
+      "explain": "Le premier temps est le match : le FortiGate vérifie si le trafic correspond aux critères de la politique. L'inspection UTM (deuxième temps) n'intervient qu'après un accept."
+    },
+    {
+      "q": "Qu'est-ce que la standard firewall policy sur FortiGate ?",
+      "choices": [
+        "Une politique qui s'applique uniquement au trafic VPN",
+        "Une politique qui contrôle le trafic en transit entre interfaces du FortiGate",
+        "Une politique qui gère uniquement le trafic de management",
+        "Une politique automatique générée par le système"
+      ],
+      "answer": 1,
+      "explain": "La standard firewall policy est le type le plus courant : elle contrôle le trafic qui traverse (transit) le FortiGate d'une interface vers une autre."
+    },
+    {
+      "q": "Dans quel scénario l'UUID d'une politique est-il particulièrement utile ?",
+      "choices": [
+        "Pour renommer une politique rapidement",
+        "Pour réordonner les politiques par glisser-déposer",
+        "Pour identifier la politique de façon unique dans les logs et les outils de gestion",
+        "Pour activer le NAT sur une politique"
+      ],
+      "answer": 2,
+      "explain": "L'UUID identifie de façon unique chaque politique. Dans FortiAnalyzer, il permet de corréler précisément chaque log avec la politique qui a généré l'événement."
+    }
+  ]
+}

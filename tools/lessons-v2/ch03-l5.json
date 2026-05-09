@@ -1,0 +1,181 @@
+{
+  "id": "ch03-l5",
+  "module": "Firewall Policies and NAT",
+  "title": "SNAT : NAT source et IP pools",
+  "durationMin": 7,
+  "content": "## Rappel des concepts NAT\n\n- **NAT** (Network Address Translation) : traduit les adresses IP.\n- **PAT** (Port Address Translation) : traduit aussi les ports source — souvent inclus dans le terme NAT.\n- **SNAT** (Source NAT) : traduit l'adresse IP **source** des paquets sortants. Utilisé pour masquer les IPs privées derrière une IP publique.\n- **DNAT** (Destination NAT) : traduit l'adresse IP **destination** des paquets entrants. Utilisé pour publier des serveurs internes.\n\n## Configurer le SNAT sur une politique\n\nPour activer le SNAT sur une politique FortiGate : activer l'option **NAT** dans la section **Firewall/Network Options** de la politique.\n\nDeux choix s'offrent alors :\n1. **Use Outgoing Interface Address** : utilise l'adresse IP de l'interface de sortie comme adresse source traduite. C'est l'option **la plus courante** et la plus simple.\n2. **IP Pool** : utilise un pool d'adresses IP dédiées pour la translation.\n\n## Types de IP Pools\n\n### Overload (défaut)\nPlusieurs hôtes internes partagent la **même adresse IP publique**. Les ports source sont traduits (PAT) pour distinguer les connexions. C'est le mode **économique** — une seule IP publique suffit pour tout un réseau.\n\n### One-to-one\nMapping **1:1** entre IPs internes et IPs du pool. Chaque IP interne obtient sa propre IP publique. Si le pool est **épuisé** (toutes les IPs utilisées), les **nouveaux clients sont droppés** — pas de port translation de secours.\n\n### Fixed Port Range\nAttribue des **plages de ports sources fixes** par client. Conçu pour le **carrier-grade NAT** (grands opérateurs). Permet la traçabilité des connexions par plage de ports.\n\n### Port Block Allocation (PBA)\nSimilaire à Fixed Port Range. Alloue des **blocs de ports** par abonné. Également conçu pour le **carrier-grade NAT**. Facilite la journalisation et la corrélation des connexions.\n\n### Fixed Port\nDésactive la **traduction du port source**. Le port source original est conservé. Utile pour les **protocoles incompatibles avec PAT** (certains protocoles multimédias ou propriétaires qui encodent le port source dans leur payload).\n\n## Résumé des types IP Pool\n\n| Type | Ports traduits | Usage principal |\n|---|---|---|\n| Overload | Oui (PAT) | Par défaut, économique |\n| One-to-one | Non | Mapping 1:1 dédié |\n| Fixed Port Range | Plages fixes | Carrier-grade NAT |\n| Port Block Allocation | Blocs par abonné | Carrier-grade NAT |\n| Fixed Port | Non (port conservé) | Protocoles incompatibles PAT |",
+  "diagrams": [
+    {
+      "caption": "Comparaison des types de IP Pools SNAT",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8f9fa'/><rect x='10' y='10' width='100' height='130' rx='6' fill='#e8f4fd' stroke='#4a90d9' stroke-width='1.5'/><text x='60' y='28' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#2c6fad' font-weight='bold'>Overload</text><text x='60' y='48' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#333'>192.168.1.2</text><text x='60' y='63' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#333'>192.168.1.3</text><text x='60' y='78' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#333'>192.168.1.4</text><line x1='80' y1='53' x2='120' y2='95' stroke='#4a90d9' stroke-width='1'/><line x1='80' y1='68' x2='120' y2='95' stroke='#4a90d9' stroke-width='1'/><line x1='80' y1='83' x2='120' y2='95' stroke='#4a90d9' stroke-width='1'/><rect x='120' y='82' width='70' height='24' rx='4' fill='#4a90d9'/><text x='155' y='98' text-anchor='middle' font-family='sans-serif' font-size='10' fill='white'>1.2.3.4:PAT</text><text x='60' y='118' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#28a745'>1 IP publique</text><text x='60' y='132' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#28a745'>ports traduits</text><rect x='210' y='10' width='100' height='130' rx='6' fill='#fff3e0' stroke='#e07b30' stroke-width='1.5'/><text x='260' y='28' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#b5590a' font-weight='bold'>One-to-one</text><text x='260' y='48' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#333'>192.168.1.2</text><text x='260' y='63' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#333'>192.168.1.3</text><line x1='278' y1='48' x2='320' y2='48' stroke='#e07b30' stroke-width='1'/><line x1='278' y1='63' x2='320' y2='63' stroke='#e07b30' stroke-width='1'/><text x='335' y='52' font-family='sans-serif' font-size='10' fill='#e07b30'>1.2.3.4</text><text x='335' y='67' font-family='sans-serif' font-size='10' fill='#e07b30'>1.2.3.5</text><text x='260' y='105' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#e07b30'>Mapping 1:1</text><text x='260' y='118' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#dc3545'>Pool épuisé →</text><text x='260' y='131' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#dc3545'>drop nouveaux</text><rect x='410' y='10' width='100' height='130' rx='6' fill='#f0fff0' stroke='#28a745' stroke-width='1.5'/><text x='460' y='28' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#1a7a1a' font-weight='bold'>Fixed Port</text><text x='460' y='50' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#333'>192.168.1.2:5000</text><line x1='480' y1='50' x2='510' y2='70' stroke='#28a745' stroke-width='1'/><text x='515' y='74' font-family='sans-serif' font-size='10' fill='#28a745'>1.2.3.4:5000</text><text x='460' y='105' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#28a745'>Port source</text><text x='460' y='118' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#28a745'>conservé</text><text x='460' y='131' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#555'>Anti-PAT</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel est le type de IP Pool utilisé par défaut lors de l'activation du NAT sur une politique FortiGate ?",
+      "choices": [
+        "One-to-one",
+        "Fixed Port Range",
+        "Overload",
+        "Port Block Allocation"
+      ],
+      "answer": 2,
+      "explain": "Le type Overload est le type de IP Pool par défaut. Plusieurs hôtes internes partagent la même IP publique avec translation de ports (PAT)."
+    },
+    {
+      "q": "Que se passe-t-il avec un IP Pool de type One-to-one lorsque toutes les IPs du pool sont épuisées ?",
+      "choices": [
+        "Le FortiGate bascule automatiquement sur le type Overload",
+        "Les nouveaux clients sont droppés — plus aucune IP disponible dans le pool",
+        "Une nouvelle IP est automatiquement ajoutée au pool",
+        "Les connexions existantes sont terminées pour libérer des IPs"
+      ],
+      "answer": 1,
+      "explain": "Avec un pool One-to-one, chaque IP interne obtient une IP publique dédiée. Si le pool est épuisé, il n'y a pas de mécanisme de secours : les nouveaux clients tentant de se connecter sont droppés."
+    },
+    {
+      "q": "Quels types de IP Pool sont conçus spécifiquement pour le carrier-grade NAT ?",
+      "choices": [
+        "Overload et One-to-one",
+        "Fixed Port Range et Port Block Allocation (PBA)",
+        "One-to-one et Fixed Port",
+        "Overload et Fixed Port Range"
+      ],
+      "answer": 1,
+      "explain": "Fixed Port Range et Port Block Allocation (PBA) sont tous deux conçus pour le carrier-grade NAT (utilisé par les grands opérateurs), permettant la traçabilité des connexions par plages ou blocs de ports."
+    },
+    {
+      "q": "Quel est l'effet de l'option 'Fixed Port' dans un IP Pool FortiGate ?",
+      "choices": [
+        "Elle fixe l'IP de destination à une adresse statique",
+        "Elle désactive la traduction du port source, conservant le port original",
+        "Elle fixe le port destination à 80 pour tout le trafic",
+        "Elle active la translation de port pour tous les protocoles"
+      ],
+      "answer": 1,
+      "explain": "L'option Fixed Port désactive la traduction du port source (PAT). Le port source original du client est conservé dans le paquet traduit. Utile pour les protocoles incompatibles avec PAT."
+    },
+    {
+      "q": "Pourquoi le type Overload est-il qualifié de PAT ?",
+      "choices": [
+        "Parce qu'il traduit uniquement les adresses de destination",
+        "Parce que plusieurs hôtes partagent la même IP publique et les ports source sont traduits pour distinguer les connexions",
+        "Parce qu'il surcharge le CPU avec des opérations de traduction",
+        "Parce qu'il traduit les paquets par ordre de priorité"
+      ],
+      "answer": 1,
+      "explain": "Overload = PAT (Port Address Translation) : plusieurs hôtes internes partagent une même IP publique. Les ports source sont traduits (modifiés) pour que le FortiGate puisse distinguer les connexions de chaque hôte."
+    },
+    {
+      "q": "Quelle est l'option SNAT la plus courante et la plus simple sur FortiGate ?",
+      "choices": [
+        "IP Pool de type One-to-one",
+        "Use Outgoing Interface Address (utiliser l'IP de l'interface de sortie)",
+        "Fixed Port Range pour carrier NAT",
+        "Port Block Allocation"
+      ],
+      "answer": 1,
+      "explain": "L'option 'Use Outgoing Interface Address' est la plus courante : le trafic sortant est traduit avec l'adresse IP de l'interface de sortie. Simple à configurer, ne nécessite pas de pool dédié."
+    },
+    {
+      "q": "Quelle est la différence entre SNAT et DNAT ?",
+      "choices": [
+        "SNAT traduit l'adresse destination, DNAT traduit l'adresse source",
+        "SNAT traduit l'adresse source des paquets sortants ; DNAT traduit l'adresse destination des paquets entrants",
+        "SNAT et DNAT sont synonymes",
+        "SNAT est pour l'IPv4, DNAT est pour l'IPv6"
+      ],
+      "answer": 1,
+      "explain": "SNAT (Source NAT) modifie l'adresse IP source — utilisé pour masquer les IPs privées. DNAT (Destination NAT) modifie l'adresse IP destination — utilisé pour publier des serveurs internes."
+    },
+    {
+      "q": "Où active-t-on le NAT (SNAT) dans une politique FortiGate ?",
+      "choices": [
+        "Dans System > Feature Visibility",
+        "Dans la section Firewall/Network Options de la politique",
+        "Dans Network > Routing",
+        "Dans Security Profiles > NAT Profile"
+      ],
+      "answer": 1,
+      "explain": "Le NAT (SNAT) s'active dans la section Firewall/Network Options de chaque politique firewall, avec le choix entre 'Use Outgoing Interface Address' et un 'IP Pool' dédié."
+    },
+    {
+      "q": "Plusieurs hôtes internes partagent la même IP publique dans un IP Pool Overload. Comment le FortiGate distingue-t-il leurs connexions ?",
+      "choices": [
+        "Par l'adresse MAC source de chaque hôte",
+        "Par les ports source traduits (PAT — chaque connexion a un port source unique)",
+        "Par le VLAN d'origine de chaque hôte",
+        "Par l'ordre d'arrivée des paquets"
+      ],
+      "answer": 1,
+      "explain": "Dans un pool Overload, le FortiGate utilise la translation de port (PAT) : chaque connexion reçoit un port source unique, permettant de démultiplexer le trafic retour vers le bon hôte interne."
+    },
+    {
+      "q": "Un client utilise un protocole multimédia incompatible avec la translation de port. Quel type de IP Pool est adapté ?",
+      "choices": [
+        "Overload — car il gère tous les protocoles",
+        "One-to-one — mapping 1:1 sans modification de port",
+        "Fixed Port — désactive la traduction du port source",
+        "Port Block Allocation — optimisé pour les protocoles multimédias"
+      ],
+      "answer": 2,
+      "explain": "Le type Fixed Port désactive la traduction du port source. Il est conçu précisément pour les protocoles qui encodent le port source dans leur payload et sont incompatibles avec PAT."
+    },
+    {
+      "q": "À quoi sert le Port Block Allocation (PBA) dans les IP Pools FortiGate ?",
+      "choices": [
+        "À bloquer des plages de ports spécifiques dans le trafic entrant",
+        "À allouer des blocs de ports par abonné pour le carrier-grade NAT avec traçabilité",
+        "À réserver des ports pour les services locaux du FortiGate",
+        "À distribuer la charge entre plusieurs IP pools"
+      ],
+      "answer": 1,
+      "explain": "PBA (Port Block Allocation) alloue des blocs de ports par abonné/utilisateur. Conçu pour le carrier-grade NAT, il facilite la journalisation et la corrélation des connexions par opérateur."
+    },
+    {
+      "q": "Quelle est la définition du PAT (Port Address Translation) ?",
+      "choices": [
+        "La translation d'adresses IP uniquement, sans modification des ports",
+        "La translation simultanée des adresses IP et des ports source (PAT)",
+        "Un type de VPN qui utilise des ports dynamiques",
+        "La translation des ports destination uniquement"
+      ],
+      "answer": 1,
+      "explain": "PAT (Port Address Translation) traduit à la fois l'adresse IP source ET le port source. C'est ce qui permet à plusieurs hôtes de partager une même IP publique (mode Overload)."
+    },
+    {
+      "q": "Quels sont les deux choix proposés lors de l'activation du NAT dans une politique FortiGate ?",
+      "choices": [
+        "SNAT et DNAT",
+        "Use Outgoing Interface Address et IP Pool",
+        "One-to-one et Overload",
+        "Static NAT et Dynamic NAT"
+      ],
+      "answer": 1,
+      "explain": "Lors de l'activation du NAT dans une politique, deux options sont disponibles : 'Use Outgoing Interface Address' (utilise l'IP de l'interface de sortie) ou 'IP Pool' (pool d'IPs dédiées)."
+    },
+    {
+      "q": "Quel avantage le type One-to-one offre-t-il par rapport à Overload ?",
+      "choices": [
+        "Il permet de partager une seule IP publique entre des milliers d'hôtes",
+        "Il fournit une IP publique dédiée et fixe pour chaque hôte interne",
+        "Il réduit la consommation de RAM du FortiGate",
+        "Il supporte des protocoles carrier-grade mieux que les autres types"
+      ],
+      "answer": 1,
+      "explain": "Le type One-to-one attribue une IP publique fixe et dédiée à chaque IP interne. Utile quand un hôte interne doit toujours apparaître avec la même IP publique (ex. : serveur de messagerie)."
+    },
+    {
+      "q": "Pour quel type de déploiement les pools Fixed Port Range sont-ils conçus ?",
+      "choices": [
+        "Pour les petites entreprises avec une seule IP publique",
+        "Pour les opérateurs télécoms déployant du carrier-grade NAT à grande échelle",
+        "Pour les FortiGate en mode transparent",
+        "Pour les déploiements HA (High Availability)"
+      ],
+      "answer": 1,
+      "explain": "Fixed Port Range est conçu pour le carrier-grade NAT utilisé par les opérateurs télécoms. Il attribue des plages de ports sources fixes par client, permettant la traçabilité des connexions à grande échelle."
+    }
+  ]
+}

@@ -1,0 +1,181 @@
+{
+  "id": "ch03-l2",
+  "module": "Firewall Policies and NAT",
+  "title": "Critères de matching et objets",
+  "durationMin": 7,
+  "content": "## Les critères de matching d'une politique\n\nPour qu'une politique firewall corresponde (match) à un paquet, **tous** les critères suivants doivent être vérifiés simultanément :\n\n- **Incoming interface** : l'interface par laquelle le paquet arrive sur le FortiGate.\n- **Outgoing interface** : l'interface par laquelle le paquet sortira. Elle est **déterminée par le routage** (la table de routage), pas par l'administrateur à la volée.\n- **Source** : adresse IP source, et optionnellement un **utilisateur ou groupe** authentifié, ou un objet **Internet Service (ISDB)**.\n- **Destination** : adresse IP de destination, ou un objet Internet Service.\n- **Schedule** : plage horaire d'application de la règle (ex. : heures de bureau uniquement).\n- **Service** : combinaison protocole IP + numéro de port (ex. : TCP/443 = HTTPS).\n\n## ET logique : tous les critères doivent matcher\n\nTous ces critères fonctionnent en **AND logique** : le trafic doit correspondre à **tous** les éléments sélectionnés dans la politique pour qu'elle s'applique. Si un seul critère ne correspond pas, la politique n'est pas sélectionnée.\n\n## Identification utilisateur : à l'ingress, avant le forwarding\n\nL'identification utilisateur (user/group en source) est effectuée à **l'ingress** (entrée du paquet), **avant le forwarding**. Cela signifie qu'on peut utiliser un utilisateur ou groupe **en source**, mais **jamais en destination** — le FortiGate ne peut pas identifier l'utilisateur du côté destinataire.\n\n## Objets adresse FQDN\n\nUn objet adresse peut être un **FQDN** (Fully Qualified Domain Name, ex. : `www.example.com`). Le FortiGate résout le nom DNS et utilise l'IP correspondante pour le match. Cela nécessite une **résolution DNS fonctionnelle** configurée sur le FortiGate.\n\n## Internet Service Object (ISDB)\n\nL'**ISDB** (Internet Service Database) est une base de données d'objets représentant des services Internet connus (Google, Office 365, Dropbox, etc.) avec leurs plages IP et ports. Important : en source ou destination, un objet Internet Service et un objet adresse IP sont **mutuellement exclusifs** — c'est **l'un ou l'autre** (either/or), pas les deux simultanément.\n\n## Multiple Interface Policies\n\nPar défaut, une politique n'accepte qu'une seule interface source. Pour sélectionner **plusieurs interfaces sources** dans une même politique, il faut activer la fonctionnalité **Multiple Interface Policies** dans **Feature Visibility** (System > Feature Visibility).\n\n> **Schedule** : **Limite** l'**application** de la politique à une plage horaire **définie**.",
+  "diagrams": [
+    {
+      "caption": "Critères de match d'une politique — tous en AND logique",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8f9fa'/><rect x='10' y='60' width='80' height='40' rx='5' fill='#4a90d9'/><text x='50' y='85' text-anchor='middle' font-family='sans-serif' font-size='11' fill='white'>Incoming</text><rect x='110' y='60' width='80' height='40' rx='5' fill='#4a90d9'/><text x='150' y='85' text-anchor='middle' font-family='sans-serif' font-size='11' fill='white'>Outgoing</text><rect x='210' y='60' width='80' height='40' rx='5' fill='#5ba55b'/><text x='250' y='85' text-anchor='middle' font-family='sans-serif' font-size='11' fill='white'>Source</text><rect x='310' y='60' width='80' height='40' rx='5' fill='#5ba55b'/><text x='350' y='85' text-anchor='middle' font-family='sans-serif' font-size='11' fill='white'>Destination</text><rect x='410' y='60' width='80' height='40' rx='5' fill='#e07b30'/><text x='450' y='85' text-anchor='middle' font-family='sans-serif' font-size='11' fill='white'>Schedule</text><rect x='510' y='60' width='75' height='40' rx='5' fill='#e07b30'/><text x='547' y='85' text-anchor='middle' font-family='sans-serif' font-size='11' fill='white'>Service</text><text x='50' y='48' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#555'>Interface</text><text x='150' y='48' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#555'>Via routage</text><text x='250' y='48' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#555'>IP+User+ISDB</text><text x='350' y='48' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#555'>IP ou ISDB</text><text x='450' y='48' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#555'>Plage horaire</text><text x='547' y='48' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#555'>Proto+Port</text><rect x='180' y='120' width='240' height='30' rx='6' fill='#4a90d9'/><text x='300' y='140' text-anchor='middle' font-family='sans-serif' font-size='13' fill='white' font-weight='bold'>AND logique — tous requis</text><line x1='90' y1='100' x2='180' y2='135' stroke='#aaa' stroke-width='1' stroke-dasharray='3'/><line x1='150' y1='100' x2='220' y2='135' stroke='#aaa' stroke-width='1' stroke-dasharray='3'/><line x1='300' y1='100' x2='300' y2='120' stroke='#aaa' stroke-width='1' stroke-dasharray='3'/><line x1='450' y1='100' x2='380' y2='135' stroke='#aaa' stroke-width='1' stroke-dasharray='3'/><line x1='547' y1='100' x2='420' y2='135' stroke='#aaa' stroke-width='1' stroke-dasharray='3'/></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel opérateur logique relie tous les critères de matching d'une politique FortiGate ?",
+      "choices": [
+        "OR logique : un seul critère suffit",
+        "AND logique : tous les critères doivent correspondre",
+        "XOR logique : un seul critère doit correspondre, pas tous",
+        "NOT logique : les critères excluent le trafic"
+      ],
+      "answer": 1,
+      "explain": "Tous les critères (incoming interface, outgoing interface, source, destination, schedule, service) fonctionnent en AND logique : le trafic doit correspondre à TOUS les éléments sélectionnés."
+    },
+    {
+      "q": "Pourquoi ne peut-on pas sélectionner un utilisateur ou groupe en destination dans une politique ?",
+      "choices": [
+        "C'est une limitation de licence Fortinet",
+        "L'identification utilisateur se fait à l'ingress (entrée), avant le forwarding, donc uniquement côté source",
+        "Les groupes d'utilisateurs ne peuvent être utilisés qu'avec le VPN",
+        "FortiGate ne supporte pas l'authentification utilisateur"
+      ],
+      "answer": 1,
+      "explain": "L'identification utilisateur est effectuée à l'ingress (entrée du paquet) avant le forwarding. Le FortiGate ne peut pas identifier l'utilisateur du côté destinataire — donc user/group uniquement en source."
+    },
+    {
+      "q": "Un objet adresse de type FQDN dans une politique nécessite quoi pour fonctionner correctement ?",
+      "choices": [
+        "Un certificat SSL valide sur le FortiGate",
+        "Une résolution DNS fonctionnelle configurée sur le FortiGate",
+        "Une licence UTM active",
+        "Un accès Internet direct depuis le FortiGate"
+      ],
+      "answer": 1,
+      "explain": "Un objet FQDN (ex. : www.example.com) est résolu en IP par le FortiGate. Si la résolution DNS ne fonctionne pas, l'objet ne peut pas être utilisé correctement dans la politique."
+    },
+    {
+      "q": "Peut-on combiner un objet adresse IP et un objet Internet Service (ISDB) dans le même champ source d'une politique ?",
+      "choices": [
+        "Oui, les deux peuvent être sélectionnés simultanément en source",
+        "Non, ils sont mutuellement exclusifs — c'est l'un ou l'autre",
+        "Oui, mais uniquement si le schedule est activé",
+        "Non, les objets ISDB ne peuvent être utilisés qu'en destination"
+      ],
+      "answer": 1,
+      "explain": "Un objet Internet Service (ISDB) et un objet adresse IP sont mutuellement exclusifs dans le champ source ou destination : either/or, pas les deux en même temps."
+    },
+    {
+      "q": "Comment activer la possibilité de sélectionner plusieurs interfaces sources dans une même politique ?",
+      "choices": [
+        "En modifiant le fichier de configuration CLI directement",
+        "En activant Multiple Interface Policies dans Feature Visibility (System > Feature Visibility)",
+        "En passant en mode VDOM",
+        "C'est activé par défaut, aucune action requise"
+      ],
+      "answer": 1,
+      "explain": "Multiple Interface Policies doit être activé dans System > Feature Visibility. Sans cela, une politique n'accepte qu'une seule interface source."
+    },
+    {
+      "q": "Comment l'outgoing interface (interface de sortie) est-elle déterminée dans une politique ?",
+      "choices": [
+        "Elle est définie manuellement par l'administrateur dans chaque politique",
+        "Elle est déterminée par la table de routage du FortiGate",
+        "Elle correspond toujours à l'interface avec l'IP la plus basse",
+        "Elle est déterminée par le VLAN tag du paquet"
+      ],
+      "answer": 1,
+      "explain": "L'outgoing interface est déterminée par le routage : le FortiGate consulte sa table de routage pour savoir par quelle interface le paquet doit sortir."
+    },
+    {
+      "q": "À quel moment précis le FortiGate identifie-t-il l'utilisateur pour le matching de politique ?",
+      "choices": [
+        "Après le forwarding, lorsque le paquet atteint la destination",
+        "À l'egress (sortie) juste avant l'envoi",
+        "À l'ingress (entrée), avant le forwarding",
+        "Lors de l'inspection UTM uniquement"
+      ],
+      "answer": 2,
+      "explain": "L'identification utilisateur se fait à l'ingress, avant le forwarding. C'est pourquoi un utilisateur ou groupe ne peut être défini qu'en source, jamais en destination."
+    },
+    {
+      "q": "Quel est le rôle du critère Schedule dans une politique firewall ?",
+      "choices": [
+        "Définir la fréquence de mise à jour des signatures UTM",
+        "Limiter l'application de la politique à une plage horaire définie",
+        "Programmer des sauvegardes automatiques de configuration",
+        "Définir l'intervalle de rotation des logs"
+      ],
+      "answer": 1,
+      "explain": "Le critère Schedule permet de définir une plage horaire durant laquelle la politique est active (ex. : heures de bureau, du lundi au vendredi de 8h à 18h)."
+    },
+    {
+      "q": "Qu'est-ce que l'ISDB (Internet Service Database) sur FortiGate ?",
+      "choices": [
+        "Une base de données locale des utilisateurs Active Directory",
+        "Une base de données de services Internet connus (Google, Office 365…) avec leurs IPs et ports",
+        "Un annuaire LDAP intégré pour l'authentification",
+        "La liste des certificats SSL révoqués"
+      ],
+      "answer": 1,
+      "explain": "L'ISDB est une base de données Fortinet qui référence des services Internet populaires (Google, Microsoft, Amazon…) avec leurs plages IP et ports associés."
+    },
+    {
+      "q": "Quelles options peut-on inclure dans le champ Source d'une politique firewall FortiGate ?",
+      "choices": [
+        "Uniquement une adresse IP ou un sous-réseau",
+        "Adresse IP, utilisateur/groupe authentifié, et/ou objet Internet Service (ISDB)",
+        "Uniquement des groupes d'utilisateurs LDAP",
+        "Adresse IP et numéro de port uniquement"
+      ],
+      "answer": 1,
+      "explain": "Le champ Source peut contenir : des objets adresse IP/réseau, des utilisateurs ou groupes authentifiés, et/ou des objets Internet Service (ISDB) — mais pas adresse IP et ISDB simultanément."
+    },
+    {
+      "q": "Quelles options peut-on inclure dans le champ Destination d'une politique firewall FortiGate ?",
+      "choices": [
+        "Adresse IP/réseau ou objet Internet Service (ISDB)",
+        "Uniquement des VIPs (Virtual IPs)",
+        "Adresse IP/réseau, utilisateur/groupe, et ISDB simultanément",
+        "Uniquement des FQDN"
+      ],
+      "answer": 0,
+      "explain": "En destination, on peut utiliser des objets adresse IP/réseau (dont FQDN et VIPs) ou des objets Internet Service (ISDB), mais ces deux types sont mutuellement exclusifs."
+    },
+    {
+      "q": "Quel est le rôle du critère Incoming Interface dans une politique ?",
+      "choices": [
+        "Définir l'IP source du paquet",
+        "Identifier l'interface par laquelle le paquet arrive sur le FortiGate",
+        "Spécifier la route à utiliser pour le trafic",
+        "Définir le VLAN de sortie du paquet"
+      ],
+      "answer": 1,
+      "explain": "L'incoming interface est l'interface physique ou logique par laquelle le paquet entre dans le FortiGate. C'est le premier critère évalué."
+    },
+    {
+      "q": "Qu'est-ce que le critère Service représente dans une politique firewall ?",
+      "choices": [
+        "Le nom du service Fortinet utilisé (ex. : FortiGuard)",
+        "La combinaison protocole IP et numéro de port (ex. : TCP/443 pour HTTPS)",
+        "Le niveau de priorité QoS du trafic",
+        "Le type d'authentification requis"
+      ],
+      "answer": 1,
+      "explain": "Le critère Service identifie le protocole IP et le port associé. Ex. : HTTP = TCP/80, HTTPS = TCP/443, DNS = UDP/53. Il peut aussi être ANY pour tous les protocoles et ports."
+    },
+    {
+      "q": "Une politique firewall avec source = groupe 'Admins' en source : à quel endroit le FortiGate vérifie-t-il l'appartenance au groupe ?",
+      "choices": [
+        "Au niveau du serveur RADIUS, après transmission du paquet",
+        "À l'ingress du FortiGate, avant que le paquet soit forwardé",
+        "À l'egress, juste avant que le paquet quitte le FortiGate",
+        "Uniquement lors d'une inspection proxy-based"
+      ],
+      "answer": 1,
+      "explain": "L'identification de groupe est effectuée à l'ingress avant le forwarding. Le FortiGate vérifie si l'IP source correspond à un utilisateur authentifié appartenant au groupe 'Admins'."
+    },
+    {
+      "q": "Une politique firewall correspond-elle si le trafic matche la source et la destination, mais pas le schedule (heure hors plage) ?",
+      "choices": [
+        "Oui, le schedule est optionnel et ignoré si hors plage",
+        "Non, car tous les critères sont en AND logique — le schedule doit aussi correspondre",
+        "Oui, le trafic passe mais est journalisé différemment",
+        "Non, mais il est mis en file d'attente jusqu'à la prochaine plage horaire"
+      ],
+      "answer": 1,
+      "explain": "Tous les critères sont en AND logique. Si le schedule ne correspond pas (heure hors de la plage définie), la politique ne matche pas — le trafic continuera vers la prochaine politique."
+    }
+  ]
+}

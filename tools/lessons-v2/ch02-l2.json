@@ -1,0 +1,181 @@
+{
+  "id": "ch02-l2",
+  "module": "Logging and Monitoring",
+  "title": "Options de stockage des logs",
+  "durationMin": 7,
+  "content": "## Options de stockage des logs FortiGate\n\nFortiGate propose plusieurs destinations pour stocker les logs. Chacune a ses avantages, contraintes et cas d'usage.\n\n---\n\n### 1. Disk (disque local)\n- Disponible sur les modèles **mid-range et haut de gamme** uniquement.\n- Supporte **tous les types de logs** (traffic, event, security UTM).\n- Rétention par défaut : **7 jours**.\n- Inconvénient : dégradation des performances si usage intensif du logging.\n- **Conflit WAN Optimization** : si la fonctionnalité WAN optimization utilise le disque, le logging parallèle n'est pas possible (sauf si le FortiGate dispose de **2 disques** séparés).\n\n---\n\n### 2. FortiAnalyzer (FAZ)\n- Plateforme dédiée au **stockage et à l'analyse** des logs.\n- Avantages principaux :\n  - **Protéger les logs** en cas de compromission du FortiGate\n  - **Alléger le disque** local\n  - **Centraliser** les logs de plusieurs FortiGates\n- Protocole par défaut : **UDP 514**.\n- Pour une livraison fiable : basculer en **reliable logging** (TCP).\n- Moteur de recherche SQL, rapports avancés, FortiView intégré.\n\n---\n\n### 3. FortiCloud\n- Solution cloud hébergée par Fortinet.\n- Rétention gratuite : **7 jours** (plans payants pour plus).\n- **Chiffrement natif** des logs en transit et au repos.\n- Transport par défaut : TCP avec chiffrement **high**.\n- Idéal pour **petits sites** sans infrastructure dédiée.\n- Déploiement simple : aucun serveur à gérer.\n\n---\n\n### 4. Syslog (serveur tiers)\n- Standard ouvert, compatible avec les **SIEM** du marché.\n- Protocole par défaut : **UDP 514**, configurable en TCP ou TLS.\n- Pas de stockage intégré côté FortiGate : les logs sont envoyés et oubliés.\n\n---\n\n### 5. Memory (RAM)\n- Logs stockés en RAM du FortiGate.\n- **Volatils** : perdus au redémarrage.\n- Usage : **debug rapide** uniquement, pas pour la production.\n\n---\n\n## Comparaison rapide\n\n| Destination | Rétention | Analyse | Chiffrement | Usage |\n|---|---|---|---|---|\n| Disk | 7 jours (défaut) | Basique | Non | Mid/haut de gamme |\n| **FortiAnalyzer** | Configurable | **SQL + rapports** | Oui | Enterprise |\n| **FortiCloud** | **7 jours** (gratuit) | Limitée | **Natif** | Petits sites |\n| Syslog | Côté SIEM | Via SIEM | TLS option | SIEM tiers |\n| Memory | Reboot | Aucune | Non | Debug |\n\nFortiAnalyzer est le plus puissant (requêtes SQL, rapports). FortiCloud est le plus simple à déployer.\n\n> **FortiAnalyzer** est un équipement dédié (physique ou **VM**) spécialisé dans le stockage et l'analyse des logs.",
+  "diagrams": [
+    {
+      "caption": "Comparaison des options de stockage des logs FortiGate",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 180'><rect width='600' height='180' fill='#f8f9fa' rx='8'/><rect x='10' y='10' width='110' height='30' rx='5' fill='#1a73e8'/><text x='65' y='30' font-family='Arial' font-size='12' font-weight='bold' fill='white' text-anchor='middle'>FortiGate</text><line x1='120' y1='25' x2='155' y2='55' stroke='#555' stroke-width='1.5'/><line x1='120' y1='25' x2='155' y2='95' stroke='#555' stroke-width='1.5'/><line x1='120' y1='25' x2='155' y2='135' stroke='#555' stroke-width='1.5'/><line x1='120' y1='25' x2='370' y2='55' stroke='#aaa' stroke-width='1' stroke-dasharray='4,3'/><line x1='120' y1='25' x2='370' y2='135' stroke='#aaa' stroke-width='1' stroke-dasharray='4,3'/><rect x='155' y='40' width='100' height='28' rx='5' fill='#34a853'/><text x='205' y='58' font-family='Arial' font-size='11' fill='white' text-anchor='middle'>Disk local</text><text x='265' y='58' font-family='Arial' font-size='10' fill='#555'>7j défaut | mid-range</text><rect x='155' y='80' width='100' height='28' rx='5' fill='#1a73e8'/><text x='205' y='98' font-family='Arial' font-size='11' fill='white' text-anchor='middle'>FortiAnalyzer</text><text x='265' y='98' font-family='Arial' font-size='10' fill='#555'>SQL | centralisé | UDP 514</text><rect x='155' y='120' width='100' height='28' rx='5' fill='#fbbc04'/><text x='205' y='138' font-family='Arial' font-size='11' fill='#333' text-anchor='middle'>Memory</text><text x='265' y='138' font-family='Arial' font-size='10' fill='#555'>Volatile | debug only</text><rect x='370' y='40' width='105' height='28' rx='5' fill='#4285f4'/><text x='422' y='58' font-family='Arial' font-size='11' fill='white' text-anchor='middle'>FortiCloud</text><text x='485' y='58' font-family='Arial' font-size='10' fill='#555'>7j gratuit | chiffré</text><rect x='370' y='120' width='105' height='28' rx='5' fill='#ea4335'/><text x='422' y='138' font-family='Arial' font-size='11' fill='white' text-anchor='middle'>Syslog/SIEM</text><text x='485' y='138' font-family='Arial' font-size='10' fill='#555'>UDP 514 | standard</text><text x='300' y='172' font-family='Arial' font-size='10' fill='#888' text-anchor='middle'>FAZ : le plus puissant (SQL, rapports) | FortiCloud : le plus simple à déployer</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quelle est la rétention par défaut des logs sur le disque local FortiGate ?",
+      "choices": [
+        "30 jours",
+        "14 jours",
+        "7 jours",
+        "90 jours"
+      ],
+      "answer": 2,
+      "explain": "La rétention par défaut sur le disque local est de 7 jours. Cette valeur est configurable mais c'est la valeur par défaut."
+    },
+    {
+      "q": "Quelle est la rétention gratuite des logs sur FortiCloud ?",
+      "choices": [
+        "30 jours",
+        "7 jours",
+        "14 jours",
+        "Illimitée"
+      ],
+      "answer": 1,
+      "explain": "FortiCloud offre une rétention gratuite de 7 jours. Des plans payants permettent une rétention plus longue."
+    },
+    {
+      "q": "Quel est l'objectif principal de FortiAnalyzer pour le stockage des logs ?",
+      "choices": [
+        "Remplacer le pare-feu FortiGate",
+        "Stocker, analyser et centraliser les logs avec requêtes SQL et rapports",
+        "Chiffrer le trafic réseau",
+        "Filtrer les URL malveillantes"
+      ],
+      "answer": 1,
+      "explain": "FortiAnalyzer est une plateforme dédiée au stockage et à l'analyse des logs. Elle offre des requêtes SQL, des rapports avancés et permet la centralisation."
+    },
+    {
+      "q": "Quel conflit peut empêcher le logging sur disque local du FortiGate ?",
+      "choices": [
+        "L'activation du mode HA",
+        "L'utilisation du disque par la fonctionnalité WAN optimization",
+        "La connexion simultanée à FortiAnalyzer",
+        "L'activation du mode VDOM"
+      ],
+      "answer": 1,
+      "explain": "Si WAN optimization utilise le disque, le logging parallèle n'est pas possible sur ce même disque. Il faut 2 disques séparés pour les deux fonctions simultanément."
+    },
+    {
+      "q": "FortiCloud utilise quel type de chiffrement pour les logs ?",
+      "choices": [
+        "Aucun chiffrement",
+        "Chiffrement optionnel via TLS",
+        "Chiffrement natif activé par défaut",
+        "Chiffrement uniquement des logs UTM"
+      ],
+      "answer": 2,
+      "explain": "FortiCloud intègre un chiffrement natif des logs en transit et au repos, activé par défaut sans configuration supplémentaire."
+    },
+    {
+      "q": "Pourquoi les Memory logs ne sont-ils pas recommandés pour la production ?",
+      "choices": [
+        "Ils sont trop volumineux",
+        "Ils sont volatils et perdus au redémarrage",
+        "Ils ne supportent que les traffic logs",
+        "Ils nécessitent une licence supplémentaire"
+      ],
+      "answer": 1,
+      "explain": "Les Memory logs sont stockés en RAM et donc volatils : ils sont perdus à chaque redémarrage du FortiGate. Ils conviennent uniquement au debug rapide."
+    },
+    {
+      "q": "Quel protocole est utilisé par défaut pour l'envoi des logs vers un serveur Syslog ou FortiAnalyzer ?",
+      "choices": [
+        "TCP 514",
+        "TLS 6514",
+        "UDP 514",
+        "HTTPS 443"
+      ],
+      "answer": 2,
+      "explain": "Le protocole par défaut pour l'envoi des logs (Syslog et FAZ) est UDP port 514. C'est rapide mais sans garantie de livraison."
+    },
+    {
+      "q": "Quelle option de stockage est la plus adaptée à un petit site sans infrastructure dédiée ?",
+      "choices": [
+        "FortiAnalyzer local",
+        "Disk local haute capacité",
+        "FortiCloud",
+        "Syslog vers SIEM"
+      ],
+      "answer": 2,
+      "explain": "FortiCloud est idéal pour les petits sites sans infrastructure dédiée : déploiement simple, aucun serveur à gérer, chiffrement natif, 7 jours de rétention gratuite."
+    },
+    {
+      "q": "Le stockage sur disque local est disponible sur quels types de FortiGate ?",
+      "choices": [
+        "Tous les modèles FortiGate",
+        "Uniquement les modèles entry-level",
+        "Les modèles mid-range et haut de gamme",
+        "Uniquement les appliances virtuelles"
+      ],
+      "answer": 2,
+      "explain": "Le stockage sur disque local n'est disponible que sur les modèles mid-range et haut de gamme. Les modèles entry-level n'ont pas de disque interne."
+    },
+    {
+      "q": "Comment activer la livraison fiable des logs vers FortiAnalyzer ?",
+      "choices": [
+        "Passer en UDP chiffré",
+        "Activer le reliable logging pour basculer en TCP",
+        "Configurer un VPN dédié",
+        "Augmenter la taille des buffers UDP"
+      ],
+      "answer": 1,
+      "explain": "Le reliable logging bascule le transport de UDP vers TCP, garantissant la livraison, l'ordre et la retransmission des logs."
+    },
+    {
+      "q": "Pour quelles raisons principales externalise-t-on les logs vers FortiAnalyzer ? (sélectionnez la réponse la plus complète)",
+      "choices": [
+        "Pour réduire la latence réseau",
+        "Pour protéger les logs en cas de compromission, alléger le disque local et centraliser les logs",
+        "Pour activer les security logs UTM",
+        "Pour augmenter la bande passante disponible"
+      ],
+      "answer": 1,
+      "explain": "Les trois raisons principales d'utiliser FAZ sont : protéger les logs en cas de compromission du FortiGate, alléger son disque local, et centraliser les logs de plusieurs équipements."
+    },
+    {
+      "q": "Quelle option de stockage offre les requêtes SQL et les rapports avancés ?",
+      "choices": [
+        "Disk local",
+        "Memory",
+        "Syslog",
+        "FortiAnalyzer"
+      ],
+      "answer": 3,
+      "explain": "FortiAnalyzer est la solution la plus puissante avec son moteur de requêtes SQL, ses rapports avancés et son interface FortiView intégrée."
+    },
+    {
+      "q": "Le disque local FortiGate supporte-t-il tous les types de logs ?",
+      "choices": [
+        "Non, uniquement les Traffic logs",
+        "Non, uniquement les Event logs et UTM",
+        "Oui, tous les types de logs",
+        "Non, uniquement les Security logs UTM"
+      ],
+      "answer": 2,
+      "explain": "Le disque local supporte tous les types de logs : Traffic logs (forward, local, sniffer), Event logs et Security logs (UTM)."
+    },
+    {
+      "q": "Syslog est qualifié de standard ouvert. Quelle est sa principale limitation pour le stockage ?",
+      "choices": [
+        "Il ne supporte que UDP",
+        "Les logs sont envoyés sans stockage côté FortiGate : une fois envoyés, FortiGate n'en garde pas de copie",
+        "Il ne supporte pas les security logs",
+        "Il nécessite une licence Fortinet spécifique"
+      ],
+      "answer": 1,
+      "explain": "Syslog envoie les logs vers un serveur tiers (SIEM) sans conservation locale. FortiGate ne stocke pas les logs envoyés via Syslog."
+    },
+    {
+      "q": "FortiAnalyzer est décrit comme une plateforme dédiée. Qu'est-ce que cela implique ?",
+      "choices": [
+        "Il remplace le FortiGate dans l'architecture",
+        "C'est un équipement ou une VM distinct(e) spécialisé(e) uniquement dans le stockage et l'analyse des logs",
+        "Il fonctionne uniquement en mode cloud",
+        "Il est intégré directement dans le FortiGate"
+      ],
+      "answer": 1,
+      "explain": "FortiAnalyzer est un équipement ou une VM distinct(e), séparé(e) du FortiGate, entièrement dédié(e) au stockage et à l'analyse des logs. C'est sa nature de plateforme dédiée."
+    }
+  ]
+}
