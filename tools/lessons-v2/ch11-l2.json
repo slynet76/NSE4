@@ -1,0 +1,181 @@
+{
+  "id": "ch11-l2",
+  "module": "IPsec VPN",
+  "title": "IKE phases et IKEv1 vs IKEv2",
+  "durationMin": 7,
+  "content": "## IKE : négociation des Security Associations (SA)\n\n**IKE (Internet Key Exchange)** négocie les **Security Associations (SA)**. Une SA est un ensemble d'**algorithmes et paramètres** convenus entre les deux pairs pour chiffrer et authentifier le trafic.\n\n### Nombre de SAs\nIl faut **2 SAs** pour le trafic bidirectionnel : une SA par direction (une pour chaque sens). Les SAs **expirent** et doivent être **renégociées** périodiquement pour maintenir la sécurité.\n\n## Phase 1 et Phase 2\n\n### Phase 1\n- **But** : authentifie les pairs et établit un canal sécurisé\n- **Résultat** : établit l'**IKE SA** (bidirectionnelle — une seule SA pour les deux sens)\n- La Phase 1 crée le tunnel sécurisé dans lequel se déroule la Phase 2\n\n### Phase 2\n- S'exécute **sur le canal sécurisé de la Phase 1**\n- **But** : négocie les **IPsec SAs** (deux SA, une par direction)\n- Les IPsec SAs protègent le trafic utilisateur réel\n\n## Diffie-Hellman (DH)\n\n**Diffie-Hellman** est un algorithme qui permet à deux pairs de générer une **clé privée partagée** (shared private key) **sans jamais se la transmettre** (without transmitting it). C'est le fondement de la sécurité de la négociation IKE.\n\n## IKEv1 vs IKEv2\n\n| Fonctionnalité | IKEv1 | IKEv2 |\n|---|---|---|  \n| Accusé de réception | Non | **Message acknowledgement** |\n| NAT-T | Optionnel (extension) | **Native NAT-T** |\n| Auth utilisateur étendue | XAuth | **EAP** (équivalent de XAuth) |\n| Efficacité | Moins efficace | **Plus efficace** (moins de messages) |\n\nIKEv2 est plus robuste, plus efficace et intègre nativement le **NAT-T** et l'**EAP** (Extended Authentication Protocol, équivalent de XAuth dans IKEv1).\n\n> **IKEv2** est plus efficace : il **requiert** moins de messages pour **établir** les SAs (4 messages vs 9 pour IKEv1 en mode main).",
+  "diagrams": [
+    {
+      "caption": "IKE Phase 1 et Phase 2 — flux de négociation",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8f9fa'/><text x='300' y='18' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='bold' fill='#333'>IKE Phase 1 et Phase 2</text><rect x='20' y='28' width='100' height='36' rx='6' fill='#1565c0'/><text x='70' y='50' text-anchor='middle' font-family='sans-serif' font-size='11' fill='white' font-weight='bold'>FortiGate A</text><rect x='480' y='28' width='100' height='36' rx='6' fill='#1565c0'/><text x='530' y='50' text-anchor='middle' font-family='sans-serif' font-size='11' fill='white' font-weight='bold'>FortiGate B</text><rect x='155' y='28' width='290' height='36' rx='6' fill='#e3f2fd' stroke='#1565c0' stroke-width='1.5'/><text x='300' y='44' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='bold' fill='#1565c0'>PHASE 1 — Authentification des pairs</text><text x='300' y='57' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#555'>IKE SA établie (bidirectionnelle) — Diffie-Hellman</text><line x1='120' y1='46' x2='155' y2='46' stroke='#1565c0' stroke-width='1.5' marker-end='url(#arr)'/><line x1='445' y1='46' x2='480' y2='46' stroke='#1565c0' stroke-width='1.5'/><rect x='155' y='78' width='290' height='36' rx='6' fill='#fce4ec' stroke='#c62828' stroke-width='1.5'/><text x='300' y='94' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='bold' fill='#c62828'>PHASE 2 — Négociation IPsec SAs</text><text x='300' y='107' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#555'>2 IPsec SAs (une par direction) — sur canal Phase 1</text><line x1='300' y1='64' x2='300' y2='78' stroke='#555' stroke-width='1.5' stroke-dasharray='4,2'/><rect x='130' y='125' width='150' height='26' rx='4' fill='#fff9c4' stroke='#f9a825' stroke-width='1'/><text x='205' y='141' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#5d4037'>IKEv2 : acknowledgement + EAP + NAT-T natif</text><rect x='320' y='125' width='150' height='26' rx='4' fill='#e8f5e9' stroke='#2e7d32' stroke-width='1'/><text x='395' y='138' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#1b5e20'>DH : clé partagée sans</text><text x='395' y='149' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#1b5e20'>la transmettre</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Que négocie la Phase 2 d'IKE ?",
+      "choices": [
+        "L'IKE SA bidirectionnelle",
+        "Les IPsec SAs (une par direction)",
+        "Le certificat numérique des pairs",
+        "L'adresse IP du client distant"
+      ],
+      "answer": 1,
+      "explain": "La Phase 2 négocie les IPsec SAs (2 SAs pour le trafic bidirectionnel, une par direction) sur le canal sécurisé établi par la Phase 1."
+    },
+    {
+      "q": "Quel est le rôle de Diffie-Hellman dans IKE ?",
+      "choices": [
+        "Chiffrer les paquets ESP",
+        "Authentifier les certificats numériques",
+        "Générer une clé privée partagée sans la transmettre (without transmitting it)",
+        "Définir les sélecteurs de trafic Phase 2"
+      ],
+      "answer": 2,
+      "explain": "Diffie-Hellman (DH) génère une clé privée partagée (shared private key) sans jamais la transmettre sur le réseau — c'est le fondement de la sécurité IKE."
+    },
+    {
+      "q": "Quel avantage IKEv2 apporte-t-il par rapport à IKEv1 concernant les messages ?",
+      "choices": [
+        "Moins de types de messages supportés",
+        "Message acknowledgement (accusé de réception)",
+        "Messages plus longs et plus sécurisés",
+        "Messages en clair pour le débogage"
+      ],
+      "answer": 1,
+      "explain": "IKEv2 introduit le message acknowledgement (accusé de réception des messages), ce qui le rend plus fiable et plus efficace qu'IKEv1."
+    },
+    {
+      "q": "Dans IKEv2, quel mécanisme remplace XAuth d'IKEv1 ?",
+      "choices": [
+        "RADIUS directement",
+        "LDAP natif",
+        "EAP (Extended Authentication Protocol)",
+        "SAML 2.0"
+      ],
+      "answer": 2,
+      "explain": "EAP (Extended Authentication Protocol) est l'équivalent de XAuth dans IKEv2 — il permet une authentification utilisateur étendue dans le processus IKE."
+    },
+    {
+      "q": "Combien de SAs IPsec sont nécessaires pour un trafic bidirectionnel ?",
+      "choices": [
+        "1 SA partagée",
+        "2 SAs (une par direction)",
+        "3 SAs (une par pair + une commune)",
+        "4 SAs (deux par direction)"
+      ],
+      "answer": 1,
+      "explain": "Il faut 2 SAs pour le trafic bidirectionnel — une SA par direction (une pour chaque sens du trafic)."
+    },
+    {
+      "q": "Que résulte la Phase 1 d'IKE ?",
+      "choices": [
+        "2 IPsec SAs directionnelles",
+        "L'IKE SA bidirectionnelle",
+        "La clé PSK partagée",
+        "Le certificat racine CA"
+      ],
+      "answer": 1,
+      "explain": "La Phase 1 établit l'IKE SA bidirectionnelle — une seule SA pour les deux sens, qui sert de canal sécurisé pour la Phase 2."
+    },
+    {
+      "q": "Que négocie la Phase 1 d'IKE ?",
+      "choices": [
+        "Les sélecteurs de trafic IPsec",
+        "L'authentification des pairs et l'IKE SA",
+        "Les algorithmes de chiffrement ESP uniquement",
+        "La durée de vie des IPsec SAs uniquement"
+      ],
+      "answer": 1,
+      "explain": "La Phase 1 authentifie les pairs et établit l'IKE SA bidirectionnelle — le canal sécurisé dans lequel se déroule la Phase 2."
+    },
+    {
+      "q": "Que se passe-t-il quand une SA expire ?",
+      "choices": [
+        "Le tunnel est définitivement supprimé",
+        "Elle doit être renégociée pour maintenir la sécurité",
+        "Elle est automatiquement prolongée sans renegociation",
+        "Le trafic passe en clair"
+      ],
+      "answer": 1,
+      "explain": "Les SAs expirent et doivent être renégociées périodiquement pour maintenir la sécurité du tunnel."
+    },
+    {
+      "q": "Comment Diffie-Hellman assure-t-il la sécurité de l'échange de clés ?",
+      "choices": [
+        "En chiffrant la clé avec RSA avant de l'envoyer",
+        "En générant la clé partagée sans jamais la transmettre sur le réseau",
+        "En utilisant un certificat tiers pour signer la clé",
+        "En fractionnant la clé en plusieurs paquets chiffrés"
+      ],
+      "answer": 1,
+      "explain": "DH génère une clé privée partagée (shared private key) sans jamais la transmettre (without transmitting it) — chaque pair calcule indépendamment la même clé."
+    },
+    {
+      "q": "Quel est le but d'EAP dans IKEv2 ?",
+      "choices": [
+        "Chiffrer le canal IKE Phase 1",
+        "Authentification utilisateur étendue (équivalent de XAuth dans IKEv1)",
+        "Gérer la MTU des paquets ESP",
+        "Distribuer des adresses IP aux clients"
+      ],
+      "answer": 1,
+      "explain": "EAP dans IKEv2 permet l'authentification utilisateur étendue — c'est l'équivalent de XAuth dans IKEv1."
+    },
+    {
+      "q": "Quelle est la direction de l'IKE SA établie en Phase 1 ?",
+      "choices": [
+        "Unidirectionnelle (initiateur → répondeur)",
+        "Unidirectionnelle (répondeur → initiateur)",
+        "Bidirectionnelle (une seule SA pour les deux sens)",
+        "Deux SA séparées comme les IPsec SAs"
+      ],
+      "answer": 2,
+      "explain": "L'IKE SA (Phase 1) est bidirectionnelle — une seule SA pour les deux sens, contrairement aux IPsec SAs de Phase 2 (une par direction)."
+    },
+    {
+      "q": "Comment IKEv2 gère-t-il le NAT Traversal par rapport à IKEv1 ?",
+      "choices": [
+        "IKEv2 ne supporte pas NAT-T",
+        "IKEv2 a NAT-T en option via une extension comme IKEv1",
+        "IKEv2 intègre NAT-T nativement (native NAT-T)",
+        "IKEv2 utilise un port différent pour NAT-T"
+      ],
+      "answer": 2,
+      "explain": "IKEv2 intègre NAT-T nativement (native NAT-T), alors que dans IKEv1 c'était une extension optionnelle."
+    },
+    {
+      "q": "Qu'est-ce qu'une Security Association (SA) ?",
+      "choices": [
+        "Un certificat numérique IPsec",
+        "Un ensemble d'algorithmes et paramètres convenus entre les pairs",
+        "Une route statique pour le trafic VPN",
+        "Un firewall policy spécifique au VPN"
+      ],
+      "answer": 1,
+      "explain": "Une SA est un ensemble d'algorithmes et de paramètres convenus entre les deux pairs pour chiffrer et authentifier le trafic IPsec."
+    },
+    {
+      "q": "Où se déroule la Phase 2 d'IKE ?",
+      "choices": [
+        "En clair sur Internet",
+        "Sur le canal sécurisé établi par la Phase 1",
+        "Directement dans les paquets ESP",
+        "Via un serveur RADIUS externe"
+      ],
+      "answer": 1,
+      "explain": "La Phase 2 négocie les IPsec SAs sur le canal sécurisé (IKE SA) établi par la Phase 1."
+    },
+    {
+      "q": "Pourquoi IKEv2 est-il plus efficace qu'IKEv1 ?",
+      "choices": [
+        "Il utilise un chiffrement plus faible mais plus rapide",
+        "Il requiert moins de messages pour établir les SAs",
+        "Il supprime la Phase 2",
+        "Il ne supporte qu'un seul algorithme DH"
+      ],
+      "answer": 1,
+      "explain": "IKEv2 est plus efficace car il nécessite moins de messages pour établir les SAs, en plus d'intégrer nativement NAT-T, EAP et le message acknowledgement."
+    }
+  ]
+}

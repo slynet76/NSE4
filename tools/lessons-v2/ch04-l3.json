@@ -1,0 +1,181 @@
+{
+  "id": "ch04-l3",
+  "module": "Routing",
+  "title": "Distance, metric et priority",
+  "durationMin": 7,
+  "content": "## Sélection de route : l'algorithme de tiebreaking\n\nQuand plusieurs routes existent vers la même destination, FortiGate applique des **tiebreakers** dans cet ordre :\n\n### 1. Distance (administrative distance)\n- Un **lower = preferred** (plus faible = préféré)\n- Si deux routes ont des distances différentes, **une seule** est installée dans la FIB (la moins distante)\n- Règle absolue : routes de distances différentes ne coexistent pas dans la FIB\n\n### 2. Metric\n- Utilisé si plusieurs routes ont la **même distance**\n- **Lower = preferred**\n- Représente le coût du chemin (sauts, bande passante, délai selon le protocole)\n\n### 3. Priority\n- Tiebreaker final pour les **routes statiques dupliquées** ayant la même distance\n- Permet de différencier deux routes statiques identiques en distance et metric\n- **Lower = preferred**\n\n## Distances administratives par défaut\n\n| Protocole | Distance |\n|---|---|\n| Connected | hardcoded (0) |\n| IS-IS | hardcoded |\n| Static | **10** |\n| OSPF | 110 |\n| BGP | 200 |\n\nLes routes **connected** et **IS-IS** ont une distance **hardcoded** (non modifiable).\nLa distance par défaut des routes **statiques** est **10**.\n\n## Commande de vérification\n\nPour afficher toutes les routes actives dans la FIB :\n```\nget router info routing-table all\n```\n\nCette commande montre les routes actuellement installées et utilisées pour le forwarding.\n\n> **ECMP** (Equal-Cost Multi-Path) : quand plusieurs routes ont la même distance et la même metric, elles sont toutes installées dans la FIB. Le paramètre **priority** les différencie pour l'ECMP.\n\n> Règle générale : la **valeur la plus basse** l'emporte (distance, metric, priority) — chaque tiebreaker est comparé dans cet ordre.",
+  "diagrams": [
+    {
+      "caption": "Hiérarchie de sélection : Distance → Metric → Priority",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8fafc'/><rect x='20' y='20' width='160' height='120' rx='8' fill='#ef4444' stroke='#b91c1c' stroke-width='2'/><text x='100' y='45' text-anchor='middle' font-family='sans-serif' font-size='14' font-weight='bold' fill='white'>1. Distance</text><text x='100' y='65' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#fecaca'>Admin distance</text><text x='100' y='82' text-anchor='middle' font-family='sans-serif' font-size='11' fill='white'>Lower = Preferred</text><text x='100' y='100' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#fecaca'>Static=10, OSPF=110</text><text x='100' y='116' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#fecaca'>BGP=200</text><rect x='220' y='20' width='160' height='120' rx='8' fill='#f59e0b' stroke='#b45309' stroke-width='2'/><text x='300' y='45' text-anchor='middle' font-family='sans-serif' font-size='14' font-weight='bold' fill='white'>2. Metric</text><text x='300' y='65' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#fef3c7'>Coût du chemin</text><text x='300' y='82' text-anchor='middle' font-family='sans-serif' font-size='11' fill='white'>Lower = Preferred</text><text x='300' y='100' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#fef3c7'>Même distance</text><text x='300' y='116' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#fef3c7'>requise</text><rect x='420' y='20' width='160' height='120' rx='8' fill='#10b981' stroke='#047857' stroke-width='2'/><text x='500' y='45' text-anchor='middle' font-family='sans-serif' font-size='14' font-weight='bold' fill='white'>3. Priority</text><text x='500' y='65' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#a7f3d0'>Routes statiques</text><text x='500' y='82' text-anchor='middle' font-family='sans-serif' font-size='11' fill='white'>Lower = Preferred</text><text x='500' y='100' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#a7f3d0'>Même dist + metric</text><text x='500' y='116' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#a7f3d0'>requis</text><line x1='180' y1='80' x2='218' y2='80' stroke='#6b7280' stroke-width='2' marker-end='url(#arr)'/><line x1='380' y1='80' x2='418' y2='80' stroke='#6b7280' stroke-width='2' marker-end='url(#arr)'/><defs><marker id='arr' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L6,3 L0,6 Z' fill='#6b7280'/></marker></defs></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Dans quel ordre FortiGate applique-t-il les tiebreakers pour sélectionner une route ?",
+      "choices": [
+        "Metric → Distance → Priority",
+        "Distance → Metric → Priority",
+        "Priority → Distance → Metric",
+        "Distance → Priority → Metric"
+      ],
+      "answer": 1,
+      "explain": "FortiGate applique les tiebreakers dans l'ordre suivant : **1. Distance** (administrative distance), **2. Metric**, **3. Priority**. La distance est le critère le plus important."
+    },
+    {
+      "q": "Quelle est la distance administrative par défaut d'une route statique sur FortiGate ?",
+      "choices": [
+        "1",
+        "5",
+        "10",
+        "110"
+      ],
+      "answer": 2,
+      "explain": "La distance administrative par défaut des routes **statiques** sur FortiGate est **10**. Cette valeur est modifiable lors de la configuration de la route statique."
+    },
+    {
+      "q": "Quels protocoles ont une distance administrative hardcoded (non modifiable) sur FortiGate ?",
+      "choices": [
+        "OSPF et BGP",
+        "Static et RIP",
+        "Connected et IS-IS",
+        "Connected et OSPF"
+      ],
+      "answer": 2,
+      "explain": "Les routes **connected** et **IS-IS** ont une distance administrative **hardcoded** sur FortiGate. Cette valeur ne peut pas être modifiée par l'administrateur."
+    },
+    {
+      "q": "À quoi sert le paramètre priority dans les routes statiques ?",
+      "choices": [
+        "À définir la bande passante allouée à la route",
+        "À différencier deux routes statiques ayant la même distance, pour l'ECMP",
+        "À augmenter la vitesse de convergence",
+        "À définir le nombre de sauts maximum"
+      ],
+      "answer": 1,
+      "explain": "Le paramètre **priority** sert de tiebreaker final entre des **routes statiques dupliquées** ayant la même distance et la même metric. Plus la priorité est basse, plus la route est préférée."
+    },
+    {
+      "q": "Quelle commande FortiOS permet d'afficher toutes les routes actives dans la FIB ?",
+      "choices": [
+        "show router static",
+        "get router info routing-table all",
+        "diagnose ip route list",
+        "show ip route"
+      ],
+      "answer": 1,
+      "explain": "La commande **`get router info routing-table all`** affiche toutes les routes actives installées dans la FIB et utilisées pour le forwarding des paquets."
+    },
+    {
+      "q": "Si deux routes vers la même destination ont des distances différentes, combien de routes seront installées dans la FIB ?",
+      "choices": [
+        "Les deux routes seront installées (ECMP)",
+        "Une seule route (celle avec la distance la plus basse)",
+        "Aucune, FortiGate demande confirmation",
+        "Celle avec la metric la plus basse"
+      ],
+      "answer": 1,
+      "explain": "Si deux routes ont des **distances différentes**, **une seule** est installée dans la FIB : celle avec la **distance la plus basse**. La distance est le premier et le plus important tiebreaker."
+    },
+    {
+      "q": "Quelle est la distance administrative d'OSPF sur FortiGate ?",
+      "choices": [
+        "10",
+        "100",
+        "110",
+        "200"
+      ],
+      "answer": 2,
+      "explain": "La distance administrative d'**OSPF** sur FortiGate est **110**. Cela signifie qu'une route statique (distance 10) sera toujours préférée à une route OSPF vers la même destination."
+    },
+    {
+      "q": "Quelle est la distance administrative de BGP sur FortiGate ?",
+      "choices": [
+        "10",
+        "110",
+        "150",
+        "200"
+      ],
+      "answer": 3,
+      "explain": "La distance administrative de **BGP** sur FortiGate est **200**. C'est la valeur la plus élevée parmi les protocoles courants, donc BGP est le moins préféré en cas de conflit."
+    },
+    {
+      "q": "Quel est le rôle de la metric dans la sélection de routes ?",
+      "choices": [
+        "Deuxième tiebreaker, utilisé quand plusieurs routes ont la même distance",
+        "Premier tiebreaker, avant la distance administrative",
+        "Utilisé uniquement pour les routes BGP",
+        "Remplace la distance pour les routes statiques"
+      ],
+      "answer": 0,
+      "explain": "La **metric** est le **deuxième tiebreaker** : elle est utilisée pour départager des routes ayant la **même distance administrative**. La metric représente le coût du chemin (sauts, bande passante selon le protocole)."
+    },
+    {
+      "q": "Quand plusieurs routes vers la même destination ont-elles une chance d'être toutes installées dans la FIB (ECMP) ?",
+      "choices": [
+        "Quand elles ont des distances différentes",
+        "Quand elles ont la même distance et la même metric",
+        "Quand une seule a une gateway configurée",
+        "Quand la priority est à 0"
+      ],
+      "answer": 1,
+      "explain": "Pour qu'ECMP s'applique et que plusieurs routes soient installées dans la FIB, elles doivent avoir la **même distance ET la même metric** (et pour les statiques, la même priority aussi)."
+    },
+    {
+      "q": "Si une route statique (distance 10) et une route OSPF (distance 110) existent vers 192.168.5.0/24, laquelle est préférée ?",
+      "choices": [
+        "La route OSPF car dynamique",
+        "La route statique car distance 10 < 110",
+        "OSPF car metric plus précise",
+        "Elles sont équivalentes et ECMP s'applique"
+      ],
+      "answer": 1,
+      "explain": "La route **statique** est préférée car sa distance administrative (**10**) est **inférieure** à celle d'OSPF (**110**). Distance lower = preferred. La route statique sera seule installée dans la FIB."
+    },
+    {
+      "q": "À quoi sert le paramètre \"priority\" dans les routes statiques FortiGate ?",
+      "choices": [
+        "À la même chose que la distance administrative",
+        "À être le tiebreaker final entre routes statiques de même distance",
+        "À définir le protocole de routage à utiliser",
+        "À contrôler le QoS sur la route"
+      ],
+      "answer": 1,
+      "explain": "La **priority** est le tiebreaker **final** spécifique aux routes statiques. Elle s'applique quand deux routes statiques ont exactement la même distance (et metric), permettant de désigner laquelle est préférée."
+    },
+    {
+      "q": "Pourquoi la distance administrative des routes connected est-elle hardcoded ?",
+      "choices": [
+        "Pour des raisons de performance",
+        "Car la distance des routes connected est hardcoded à 0 et ne peut pas être modifiée",
+        "Car FortiGate ne supporte pas la modification des routes connected",
+        "Pour limiter les erreurs de configuration"
+      ],
+      "answer": 1,
+      "explain": "Les routes **connected** ont une distance hardcoded (0) car les réseaux **directement connectés** doivent toujours être préférés à toute autre route vers le même réseau. Cette valeur ne doit pas être modifiable."
+    },
+    {
+      "q": "Quelle valeur de distance est la plus préférable sur FortiGate ?",
+      "choices": [
+        "La valeur la plus haute",
+        "La valeur 100",
+        "La valeur la plus basse",
+        "La valeur 0 uniquement"
+      ],
+      "answer": 2,
+      "explain": "Sur FortiGate, la règle est **lower distance = preferred**. Plus la distance administrative est faible, plus la route est préférée. La route connected (distance 0) est toujours la plus préférée."
+    },
+    {
+      "q": "En résumé, dans quel ordre FortiGate compare-t-il les routes pour choisir la meilleure ?",
+      "choices": [
+        "Metric → Priority → Distance",
+        "Distance → Priority → Metric",
+        "Distance → Metric → Priority",
+        "Priority → Metric → Distance"
+      ],
+      "answer": 2,
+      "explain": "L'algorithme de sélection de route FortiGate suit l'ordre : **1. Distance** (administrative distance), **2. Metric**, **3. Priority**. Chaque critère n'est consulté que si le précédent est identique."
+    }
+  ]
+}

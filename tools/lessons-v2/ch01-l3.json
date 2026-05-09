@@ -1,0 +1,106 @@
+{
+  "id": "ch01-l3",
+  "module": "System and Network Settings",
+  "title": "Profils administrateurs et accès",
+  "durationMin": 7,
+  "content": "## Profils d'administration\nLes **profils administrateurs** définissent les permissions accordées à chaque administrateur, organisées par catégories fonctionnelles. Chaque catégorie peut avoir un accès :\n- **Read-Write** : lecture et modification\n- **Read-Only** : lecture seule\n- **None** : aucun accès\n\n## Profil super_admin\nLe profil **super_admin** accorde un **accès complet** à toutes les fonctionnalités du FortiGate, sans restriction. Ce profil est assigné par défaut au compte `admin` créé en usine. Il ne peut pas être restreint comme un profil ordinaire.\n\n## Trusted Hosts (hôtes de confiance)\nLes **Trusted Hosts** constituent une **liste blanche d'adresses IP sources** autorisées à se connecter à l'interface d'administration. Paramètre par défaut : **0.0.0.0/0** (toutes les adresses IP autorisées).\n\nBonne pratique de sécurité : **restreindre les Trusted Hosts au sous-réseau de management** (ex : 192.168.100.0/24) pour n'autoriser que les postes d'administration légitimes.\n\n## PING sur l'interface WAN\nIl est recommandé de **désactiver le service PING sur l'interface WAN** afin de **réduire le risque d'attaque DoS ICMP** (flood ICMP, Smurf attack, etc.). Un FortiGate qui répond aux PING depuis Internet est plus exposé.\n\n## Protocoles d'accès administratif\n| Protocole | Usage |\n|-----------|-------|\n| **HTTPS** | Interface graphique GUI (sécurisé) |\n| **SSH** | Ligne de commande CLI (sécurisé) |\n| **Telnet** | CLI non chiffré — **non recommandé** |\n| **CAPWAP** | Protocole de gestion des **points d'accès WiFi** (wireless management) |\n\n## Idle Timeout\nLe **délai d'inactivité (idle timeout)** par défaut est de **5 minutes**. Après cette durée sans activité, la session d'administration est automatiquement déconnectée.\n\n## Authentification à deux facteurs (2FA)\nLe FortiGate supporte l'**authentification à deux facteurs** pour les comptes administrateurs, renforçant la sécurité de l'accès à la console d'administration.\n\n## Authentification centralisée\n- **RADIUS** : serveur d'authentification centralisé (ex : FreeRADIUS, Cisco ISE)\n- **LDAP** : annuaire d'entreprise (Active Directory) pour authentifier les admins via leurs comptes de domaine\n\nCes méthodes permettent de gérer les comptes administrateurs de façon centralisée sans créer de comptes locaux sur chaque FortiGate.",
+  "diagrams": [
+    {
+      "caption": "Flux d'accès administratif : Trusted Hosts → Authentification → Profil de permissions",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8fafc'/><rect x='10' y='60' width='100' height='40' rx='6' fill='#3b82f6'/><text x='60' y='78' text-anchor='middle' fill='white' font-size='10' font-family='sans-serif'>Admin</text><text x='60' y='92' text-anchor='middle' fill='white' font-size='9' font-family='sans-serif'>192.168.100.5</text><rect x='155' y='45' width='120' height='70' rx='6' fill='#f97316'/><text x='215' y='68' text-anchor='middle' fill='white' font-size='10' font-family='sans-serif' font-weight='bold'>Trusted Hosts</text><text x='215' y='84' text-anchor='middle' fill='white' font-size='9' font-family='sans-serif'>Filtre IP source</text><text x='215' y='100' text-anchor='middle' fill='white' font-size='9' font-family='sans-serif'>Défaut: 0.0.0.0/0</text><text x='215' y='112' text-anchor='middle' fill='#fef3c7' font-size='9' font-family='sans-serif'>Best: subnet mgmt</text><rect x='325' y='45' width='120' height='70' rx='6' fill='#8b5cf6'/><text x='385' y='68' text-anchor='middle' fill='white' font-size='10' font-family='sans-serif' font-weight='bold'>Authentification</text><text x='385' y='84' text-anchor='middle' fill='white' font-size='9' font-family='sans-serif'>Local / RADIUS</text><text x='385' y='98' text-anchor='middle' fill='white' font-size='9' font-family='sans-serif'>LDAP / 2FA</text><rect x='490' y='30' width='100' height='100' rx='6' fill='#22c55e'/><text x='540' y='55' text-anchor='middle' fill='white' font-size='10' font-family='sans-serif' font-weight='bold'>Profil</text><text x='540' y='72' text-anchor='middle' fill='white' font-size='9' font-family='sans-serif'>super_admin</text><text x='540' y='87' text-anchor='middle' fill='white' font-size='9' font-family='sans-serif'>Read-Write</text><text x='540' y='102' text-anchor='middle' fill='white' font-size='9' font-family='sans-serif'>Read-Only</text><text x='540' y='117' text-anchor='middle' fill='white' font-size='9' font-family='sans-serif'>None</text><line x1='110' y1='80' x2='155' y2='80' stroke='#64748b' stroke-width='2' marker-end='url(#a)'/><line x1='275' y1='80' x2='325' y2='80' stroke='#64748b' stroke-width='2' marker-end='url(#a)'/><line x1='445' y1='80' x2='490' y2='80' stroke='#64748b' stroke-width='2' marker-end='url(#a)'/><text x='300' y='145' text-anchor='middle' fill='#64748b' font-size='9' font-family='sans-serif'>Idle timeout: 5 min | HTTPS/SSH sécurisés | Telnet non recommandé | CAPWAP = WiFi mgmt</text><defs><marker id='a' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#64748b'/></marker></defs></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel profil d'administration accorde un accès complet à toutes les fonctionnalités du FortiGate ?",
+      "choices": ["read-write", "admin_full", "super_admin", "root_admin"],
+      "answer": 2,
+      "explain": "Le profil super_admin accorde un accès complet sans restriction. Il est assigné par défaut au compte admin créé en usine."
+    },
+    {
+      "q": "Quelle est la valeur par défaut des Trusted Hosts sur un compte administrateur FortiGate ?",
+      "choices": ["192.168.1.0/24", "10.0.0.0/8", "0.0.0.0/0", "127.0.0.1/32"],
+      "answer": 2,
+      "explain": "Par défaut, les Trusted Hosts sont définis sur 0.0.0.0/0, ce qui signifie que toutes les adresses IP sources sont autorisées à tenter une connexion admin."
+    },
+    {
+      "q": "Pourquoi est-il recommandé de désactiver le PING sur l'interface WAN du FortiGate ?",
+      "choices": ["Pour économiser la bande passante", "Pour réduire le risque d'attaque DoS ICMP", "Pour activer le mode PPPoE", "Pour masquer le serveur DHCP"],
+      "answer": 1,
+      "explain": "Désactiver le PING sur l'interface WAN permet de réduire le risque d'attaque DoS ICMP (flood ICMP, Smurf attack). Un FortiGate visible depuis Internet est plus exposé."
+    },
+    {
+      "q": "À quoi sert le protocole CAPWAP dans le contexte de l'administration FortiGate ?",
+      "choices": ["Chiffrement des connexions GUI", "Gestion des points d'accès WiFi (wireless management)", "Authentification RADIUS", "Accès CLI sécurisé"],
+      "answer": 1,
+      "explain": "CAPWAP est le protocole utilisé pour la gestion des points d'accès WiFi (contrôleur sans fil). Il n'est pas utilisé pour l'administration CLI ou GUI."
+    },
+    {
+      "q": "Quelle est la durée du délai d'inactivité (idle timeout) par défaut sur le FortiGate ?",
+      "choices": ["1 minute", "5 minutes", "15 minutes", "30 minutes"],
+      "answer": 1,
+      "explain": "L'idle timeout par défaut est de 5 minutes. Après 5 minutes d'inactivité, la session d'administration est automatiquement déconnectée."
+    },
+    {
+      "q": "Quelle est la bonne pratique concernant les Trusted Hosts pour sécuriser l'accès admin ?",
+      "choices": ["Laisser 0.0.0.0/0 pour plus de flexibilité", "Restreindre les Trusted Hosts au sous-réseau de management", "Supprimer tous les Trusted Hosts", "Définir uniquement l'adresse 127.0.0.1"],
+      "answer": 1,
+      "explain": "La bonne pratique est de restreindre les Trusted Hosts au sous-réseau de management (ex: 192.168.100.0/24) afin de n'autoriser que les postes légitimes."
+    },
+    {
+      "q": "Quels niveaux d'accès peut-on configurer dans un profil administrateur FortiGate ?",
+      "choices": ["Admin, Operator, Viewer", "Read-Write, Read-Only, None", "Full, Partial, Restricted", "Level1, Level2, Level3"],
+      "answer": 1,
+      "explain": "Un profil administrateur définit pour chaque catégorie fonctionnelle un accès Read-Write (lecture+modification), Read-Only (lecture seule) ou None (aucun accès)."
+    },
+    {
+      "q": "Parmi les protocoles d'accès suivants, lequel est considéré comme non sécurisé et non recommandé ?",
+      "choices": ["HTTPS", "SSH", "Telnet", "CAPWAP"],
+      "answer": 2,
+      "explain": "Telnet transmet les données en clair (non chiffré), y compris les mots de passe. Il est fortement déconseillé au profit de SSH ou HTTPS."
+    },
+    {
+      "q": "Le FortiGate supporte quelle méthode pour renforcer la sécurité des connexions administrateur ?",
+      "choices": ["Authentification à un facteur uniquement", "Authentification à deux facteurs (2FA)", "Biométrie uniquement", "Certificats client obligatoires"],
+      "answer": 1,
+      "explain": "Le FortiGate supporte l'authentification à deux facteurs (2FA) pour les comptes administrateurs, ajoutant une couche de sécurité supplémentaire."
+    },
+    {
+      "q": "Quel protocole d'annuaire peut être utilisé pour authentifier les administrateurs FortiGate via leurs comptes de domaine ?",
+      "choices": ["SNMP", "LDAP", "CAPWAP", "OSPF"],
+      "answer": 1,
+      "explain": "LDAP (ex: Active Directory) permet d'authentifier les administrateurs FortiGate via leurs comptes de domaine, centralisant la gestion des accès."
+    },
+    {
+      "q": "Que signifie une valeur de Trusted Hosts à 0.0.0.0/0 ?",
+      "choices": ["L'accès admin est désactivé", "Toutes les adresses IP sources sont autorisées", "Seul localhost peut se connecter", "Le compte est verrouillé"],
+      "answer": 1,
+      "explain": "0.0.0.0/0 signifie que toutes les adresses IP sources peuvent tenter de se connecter à l'interface d'administration. C'est la valeur par défaut, non restrictive."
+    },
+    {
+      "q": "Sur quel compte est assigné le profil super_admin par défaut sur un FortiGate ?",
+      "choices": ["root", "fortinet", "admin", "superuser"],
+      "answer": 2,
+      "explain": "Le profil super_admin est assigné par défaut au compte admin créé en usine. Ce compte a un accès complet à toutes les fonctionnalités."
+    },
+    {
+      "q": "Comment les profils administrateurs organisent-ils les permissions sur le FortiGate ?",
+      "choices": ["Par interface réseau", "Par catégorie fonctionnelle (avec accès read-write, read-only ou none)", "Par adresse IP source", "Par plage horaire"],
+      "answer": 1,
+      "explain": "Les profils définissent les permissions par catégorie fonctionnelle. Chaque catégorie peut être en read-write, read-only ou none selon le rôle de l'administrateur."
+    },
+    {
+      "q": "Quels protocoles permettent un accès sécurisé à l'administration du FortiGate ?",
+      "choices": ["Telnet et HTTP", "HTTPS et SSH", "FTP et TFTP", "SNMP et Telnet"],
+      "answer": 1,
+      "explain": "HTTPS (pour la GUI) et SSH (pour la CLI) sont les protocoles d'accès sécurisés recommandés. Telnet et HTTP transmettent les données en clair."
+    },
+    {
+      "q": "Que se passe-t-il lorsque le délai d'inactivité (idle timeout) expire sur une session d'administration FortiGate ?",
+      "choices": ["Le FortiGate redémarre", "La session d'administration est automatiquement déconnectée", "L'accès est bloqué définitivement", "Un e-mail d'alerte est envoyé"],
+      "answer": 1,
+      "explain": "Après expiration de l'idle timeout (5 minutes par défaut), la session d'administration est automatiquement déconnectée pour des raisons de sécurité."
+    }
+  ]
+}

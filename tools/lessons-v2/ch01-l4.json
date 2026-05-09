@@ -1,0 +1,106 @@
+{
+  "id": "ch01-l4",
+  "module": "System and Network Settings",
+  "title": "Service FortiGuard et licences",
+  "durationMin": 7,
+  "content": "## FortiGuard : l'écosystème de renseignement sur les menaces\n**FortiGuard** est l'écosystème de **threat intelligence** de Fortinet. Il fournit au FortiGate les données nécessaires pour identifier et bloquer les menaces : signatures de virus, signatures IPS, données d'application, catégories web, informations DNS malveillantes, etc.\n\n## Deux mécanismes de mise à jour\n\n### 1. Package Download (téléchargement de paquets)\n- Mécanisme de **push/pull périodique** : Fortinet pousse les mises à jour, ou le FortiGate les récupère\n- S'applique aux : **signatures AV, signatures IPS, App Control**\n- Protocole de transport : **TCP** (pour la fiabilité de la livraison)\n- Fréquence typique : **une fois par jour** (quotidiennement)\n- Les paquets sont téléchargés puis stockés localement sur le FortiGate\n\n### 2. Requête en temps réel vers le FDN\n- Mécanisme de **requête en temps réel** pour chaque connexion\n- S'applique au : **Web Filtering** et **DNS Filtering**\n- Destination : **FDN (Fortinet Distribution Network)** — réseau mondial de serveurs Fortinet\n- Protocole : **UDP** (requêtes légères et rapides)\n- Chaque URL ou requête DNS est soumise en temps réel à Fortinet pour catégorisation\n\n## DNS over TLS (DoT)\n**DNS over TLS (DoT)** permet de **chiffrer les requêtes DNS FortiGuard** pour éviter leur interception ou manipulation. Quand DoT est activé, les requêtes de filtrage DNS vers le FDN sont encryptées dans une session TLS.\n\n## Commande de diagnostic\nPour vérifier les **versions des packages FortiGuard** installés sur le FortiGate :\n```\ndiagnose autoupdate versions\n```\nCette commande CLI affiche la version courante de chaque base de signatures (AV, IPS, App Control, etc.) et la date de dernière mise à jour.\n\n## Impact de l'expiration de licence FortiGuard\nSi la **licence FortiGuard expire** :\n- Les **mises à jour de signatures cessent** immédiatement\n- Les **protections deviennent progressivement obsolètes** : les nouvelles menaces ne sont plus détectées\n- Le FortiGate continue de fonctionner avec les dernières signatures téléchargées, mais leur efficacité diminue avec le temps\n\n## FDN — Fortinet Distribution Network\nLe **FDN (Fortinet Distribution Network)** est le réseau mondial de serveurs Fortinet qui répond aux requêtes en temps réel de filtrage web et DNS. Il garantit la disponibilité et la rapidité des requêtes de catégorisation d'URL.",
+  "diagrams": [
+    {
+      "caption": "FortiGuard : double mécanisme — téléchargement de paquets (TCP) vs requête temps réel FDN (UDP)",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8fafc'/><rect x='10' y='55' width='110' height='50' rx='6' fill='#1e40af'/><text x='65' y='76' text-anchor='middle' fill='white' font-size='10' font-family='sans-serif' font-weight='bold'>FortiGate</text><text x='65' y='93' text-anchor='middle' fill='white' font-size='9' font-family='sans-serif'>AV/IPS/AppCtrl</text><rect x='230' y='10' width='140' height='60' rx='6' fill='#f97316'/><text x='300' y='32' text-anchor='middle' fill='white' font-size='10' font-family='sans-serif' font-weight='bold'>Fortinet Cloud</text><text x='300' y='48' text-anchor='middle' fill='white' font-size='9' font-family='sans-serif'>Package download</text><text x='300' y='62' text-anchor='middle' fill='#fef3c7' font-size='9' font-family='sans-serif'>TCP — 1×/jour</text><rect x='230' y='90' width='140' height='60' rx='6' fill='#8b5cf6'/><text x='300' y='112' text-anchor='middle' fill='white' font-size='10' font-family='sans-serif' font-weight='bold'>FDN</text><text x='300' y='128' text-anchor='middle' fill='white' font-size='9' font-family='sans-serif'>Requête temps réel</text><text x='300' y='142' text-anchor='middle' fill='#e9d5ff' font-size='9' font-family='sans-serif'>UDP — Web/DNS filter</text><rect x='455' y='55' width='130' height='50' rx='6' fill='#22c55e'/><text x='520' y='75' text-anchor='middle' fill='white' font-size='10' font-family='sans-serif' font-weight='bold'>Signatures</text><text x='520' y='90' text-anchor='middle' fill='white' font-size='9' font-family='sans-serif'>AV / IPS / AppCtrl</text><path d='M120 65 C175 65 175 40 230 40' fill='none' stroke='#f97316' stroke-width='2' marker-end='url(#ao)'/><text x='175' y='35' text-anchor='middle' fill='#f97316' font-size='9' font-family='sans-serif'>TCP push/pull</text><path d='M120 95 C175 95 175 120 230 120' fill='none' stroke='#8b5cf6' stroke-width='2' marker-end='url(#ao)'/><text x='175' y='138' text-anchor='middle' fill='#8b5cf6' font-size='9' font-family='sans-serif'>UDP temps réel</text><line x1='370' y1='40' x2='455' y2='78' stroke='#64748b' stroke-width='1.5' stroke-dasharray='3,2' marker-end='url(#ao)'/><text x='420' y='50' fill='#475569' font-size='9' font-family='sans-serif'>stockées</text><defs><marker id='ao' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#475569'/></marker></defs></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel protocole de transport est utilisé pour les téléchargements de paquets FortiGuard (signatures AV/IPS) ?",
+      "choices": ["UDP", "TCP", "ICMP", "HTTP"],
+      "answer": 1,
+      "explain": "Le téléchargement de paquets FortiGuard (signatures AV, IPS, App Control) utilise TCP pour la fiabilité de la livraison des données volumineuses."
+    },
+    {
+      "q": "Quel type de requête FortiGuard utilise le FDN pour le filtrage web ?",
+      "choices": ["Téléchargement de paquets périodique via TCP", "Requête en temps réel via UDP vers le FDN", "Synchronisation via HTTPS", "Push via email"],
+      "answer": 1,
+      "explain": "Le filtrage web utilise des requêtes en temps réel vers le FDN (Fortinet Distribution Network) via UDP, pour catégoriser chaque URL à la volée."
+    },
+    {
+      "q": "Que signifie DoT dans le contexte de FortiGuard ?",
+      "choices": ["Download over TCP", "DNS over TLS", "Dynamic on-the-fly Threat", "Domain over Tunnel"],
+      "answer": 1,
+      "explain": "DoT signifie DNS over TLS. Il permet de chiffrer les requêtes DNS FortiGuard pour éviter leur interception ou manipulation en transit."
+    },
+    {
+      "q": "Quelle commande CLI permet de vérifier les versions des packages FortiGuard installés ?",
+      "choices": ["get system status", "diagnose autoupdate versions", "show system fortiguard", "diagnose debug application update"],
+      "answer": 1,
+      "explain": "La commande 'diagnose autoupdate versions' affiche la version courante de chaque base de signatures FortiGuard (AV, IPS, App Control, etc.) et la date de MAJ."
+    },
+    {
+      "q": "Que se passe-t-il si la licence FortiGuard expire ?",
+      "choices": ["Le FortiGate s'éteint automatiquement", "Les mises à jour de signatures cessent et les protections deviennent progressivement obsolètes", "Toutes les politiques de sécurité sont désactivées", "L'accès GUI est bloqué"],
+      "answer": 1,
+      "explain": "À l'expiration, les mises à jour de signatures cessent immédiatement. Le FortiGate continue avec les dernières signatures, mais les protections deviennent progressivement obsolètes."
+    },
+    {
+      "q": "Quelle est la fréquence typique de mise à jour des packages de signatures FortiGuard ?",
+      "choices": ["Toutes les heures", "Une fois par jour (quotidiennement)", "Une fois par semaine", "En continu, en streaming"],
+      "answer": 1,
+      "explain": "Les packages de signatures (AV, IPS, App Control) sont typiquement mis à jour une fois par jour. Les requêtes web filter sont elles en temps réel."
+    },
+    {
+      "q": "Que signifie FDN dans le contexte de FortiGuard ?",
+      "choices": ["Firewall Detection Network", "Fortinet Distribution Network", "FortiGuard DNS Node", "Fortinet Data Network"],
+      "answer": 1,
+      "explain": "FDN signifie Fortinet Distribution Network. C'est le réseau mondial de serveurs Fortinet qui répond aux requêtes de filtrage web et DNS en temps réel."
+    },
+    {
+      "q": "Quelle est la différence entre le mécanisme push et pull dans les mises à jour FortiGuard ?",
+      "choices": ["Push = FortiGate télécharge, Pull = Fortinet envoie", "Push = Fortinet envoie les mises à jour, Pull = FortiGate les récupère", "Ils sont identiques", "Push = TCP, Pull = UDP"],
+      "answer": 1,
+      "explain": "En mode push, Fortinet envoie automatiquement les mises à jour au FortiGate. En mode pull, le FortiGate interroge périodiquement les serveurs pour récupérer les packages."
+    },
+    {
+      "q": "Quel type de données est mis à jour via le mécanisme de téléchargement de paquets FortiGuard ?",
+      "choices": ["Catégories URL en temps réel", "Signatures AV, signatures IPS, App Control", "Politiques de pare-feu", "Certificats SSL"],
+      "answer": 1,
+      "explain": "Le mécanisme de téléchargement de paquets concerne les signatures AV (antivirus), les signatures IPS (intrusion) et les données App Control."
+    },
+    {
+      "q": "Pour le filtrage web FortiGuard, quelle est la méthode de requête utilisée ?",
+      "choices": ["Téléchargement de base de données locale uniquement", "Requête en temps réel vers le FDN", "Synchronisation nocturne", "Cache statique sans requête réseau"],
+      "answer": 1,
+      "explain": "Le filtrage web soumet chaque URL en temps réel au FDN (Fortinet Distribution Network) pour obtenir sa catégorie, permettant une classification toujours à jour."
+    },
+    {
+      "q": "Quel protocole de transport est utilisé pour les requêtes en temps réel vers le FDN ?",
+      "choices": ["TCP", "UDP", "ICMP", "TLS"],
+      "answer": 1,
+      "explain": "Les requêtes en temps réel vers le FDN (web filter, DNS filter) utilisent UDP pour leur légèreté et rapidité, contrairement aux packages qui utilisent TCP."
+    },
+    {
+      "q": "Quel est l'intérêt d'activer DNS over TLS (DoT) pour les requêtes FortiGuard ?",
+      "choices": ["Accélérer les requêtes DNS", "Chiffrer les requêtes DNS FortiGuard pour éviter leur interception", "Réduire la bande passante", "Contourner les restrictions de pare-feu"],
+      "answer": 1,
+      "explain": "DNS over TLS (DoT) chiffre les requêtes DNS envoyées au FDN dans une session TLS, empêchant leur interception ou manipulation par un tiers."
+    },
+    {
+      "q": "Combien de mécanismes principaux FortiGuard utilise-t-il pour maintenir les protections à jour ?",
+      "choices": ["1 (téléchargement uniquement)", "2 (téléchargement de paquets + requête temps réel)", "3 (push, pull, streaming)", "4 (AV, IPS, web, DNS)"],
+      "answer": 1,
+      "explain": "FortiGuard utilise deux mécanismes : le téléchargement périodique de paquets (TCP, pour AV/IPS/AppCtrl) et la requête en temps réel vers le FDN (UDP, pour web/DNS filter)."
+    },
+    {
+      "q": "Quel est le rôle principal de FortiGuard pour le FortiGate ?",
+      "choices": ["Gérer les VDOMs", "Fournir l'écosystème de threat intelligence (signatures, catégories web, etc.)", "Configurer les interfaces réseau", "Gérer les licences matérielles"],
+      "answer": 1,
+      "explain": "FortiGuard est l'écosystème de threat intelligence de Fortinet. Il fournit signatures AV, IPS, App Control, catégories web et informations DNS pour protéger le FortiGate."
+    },
+    {
+      "q": "Quelle est la différence de protocole entre les packages FortiGuard (AV/IPS) et les requêtes web filter ?",
+      "choices": ["Les deux utilisent TCP", "Les packages utilisent TCP, les requêtes web filter utilisent UDP", "Les packages utilisent UDP, les requêtes web filter utilisent TCP", "Les deux utilisent UDP"],
+      "answer": 1,
+      "explain": "Les packages (AV/IPS/AppCtrl) utilisent TCP pour la fiabilité du téléchargement. Les requêtes web filter en temps réel vers le FDN utilisent UDP pour la rapidité."
+    }
+  ]
+}

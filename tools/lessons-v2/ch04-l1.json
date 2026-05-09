@@ -1,0 +1,181 @@
+{
+  "id": "ch04-l1",
+  "module": "Routing",
+  "title": "Routage et tables RIB/FIB",
+  "durationMin": 7,
+  "content": "## FortiGate en mode NAT\n\nEn mode **NAT**, le FortiGate agit comme un **routeur IP** à part entière. Il gère deux types de trafic :\n\n- **Firewall traffic** : trafic en transit, qui traverse le FortiGate de l'interface source vers l'interface destination.\n- **Local-out traffic** : trafic **généré par le FortiGate lui-même** (ex : ping de diagnostic, requêtes **FortiGuard**, résolution **DNS**, NTP, SNMP traps).\n\n## Ordre d'évaluation\n\nLe **routage est évalué AVANT les politiques de sécurité**. Si aucune route n'existe vers la destination, le paquet est droppé immédiatement — aucune politique n'est consultée.\n\n## RIB et FIB\n\n- **RIB** (Routing Information Base) : base de données contenant **toutes les routes connues** par le FortiGate, qu'elles soient actives ou non (connected, static, dynamic, standby).\n- **FIB** (Forwarding Information Base) : sous-ensemble de la RIB contenant uniquement les **routes actives utilisées pour le forwarding**. C'est la **FIB** que le FortiGate consulte réellement lors du routage des paquets.\n\n## Mécanisme de lookup pour un nouveau flow\n\nPour tout nouveau flux, le FortiGate effectue **2 lookups de routage** :\n1. Route pour l'**initiateur** (source → destination)\n2. Route pour le **répondeur** (destination → source, pour le trafic retour)\n\nAprès ce double lookup, le flux est enregistré dans la **session table** pour accélérer le traitement des paquets suivants appartenant à la même session.\n\n## Absence de route\n\nSi **aucune route** n'est trouvée dans la FIB vers la destination :\n- Le paquet est **droppé**\n- Le FortiGate renvoie un message **ICMP Destination Network Unreachable** à la source\n\n> **Local-out traffic** : trafic initié par le FortiGate lui-même — requêtes DNS, mises à jour de signatures FortiGuard, NTP, SNMP, logs vers FortiAnalyzer.",
+  "diagrams": [
+    {
+      "caption": "Flux RIB → FIB → Forwarding",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8fafc'/><rect x='20' y='55' width='120' height='50' rx='8' fill='#3b82f6' stroke='#1d4ed8' stroke-width='2'/><text x='80' y='76' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='bold' fill='white'>RIB</text><text x='80' y='93' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#bfdbfe'>Toutes routes</text><rect x='200' y='55' width='120' height='50' rx='8' fill='#10b981' stroke='#047857' stroke-width='2'/><text x='260' y='76' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='bold' fill='white'>FIB</text><text x='260' y='93' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#a7f3d0'>Routes actives</text><rect x='380' y='55' width='120' height='50' rx='8' fill='#f59e0b' stroke='#b45309' stroke-width='2'/><text x='440' y='76' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='bold' fill='white'>Forwarding</text><text x='440' y='93' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#fef3c7'>Acheminement</text><rect x='530' y='55' width='50' height='50' rx='8' fill='#ef4444' stroke='#b91c1c' stroke-width='2'/><text x='555' y='83' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='bold' fill='white'>DROP</text><line x1='140' y1='80' x2='198' y2='80' stroke='#6b7280' stroke-width='2' marker-end='url(#arr)'/><line x1='320' y1='80' x2='378' y2='80' stroke='#6b7280' stroke-width='2' marker-end='url(#arr)'/><line x1='500' y1='80' x2='528' y2='80' stroke='#ef4444' stroke-width='1.5' stroke-dasharray='4' marker-end='url(#arrd)'/><text x='510' y='72' font-family='sans-serif' font-size='9' fill='#ef4444'>No route</text><defs><marker id='arr' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L6,3 L0,6 Z' fill='#6b7280'/></marker><marker id='arrd' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L6,3 L0,6 Z' fill='#ef4444'/></marker></defs><text x='300' y='140' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#6b7280'>Session table créée après 2 lookups (initiateur + répondeur)</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quelle base de données le FortiGate consulte-t-il réellement pour acheminer les paquets ?",
+      "choices": [
+        "La RIB (Routing Information Base)",
+        "La FIB (Forwarding Information Base)",
+        "La session table",
+        "La politique de sécurité"
+      ],
+      "answer": 1,
+      "explain": "Le FortiGate utilise la **FIB** pour le forwarding réel. La RIB contient toutes les routes connues, mais la FIB ne contient que les routes actives utilisées pour l'acheminement."
+    },
+    {
+      "q": "Qu'est-ce que la RIB (Routing Information Base) ?",
+      "choices": [
+        "Uniquement les routes statiques configurées manuellement",
+        "La base contenant toutes les routes connues, actives ou non",
+        "Les routes actives utilisées pour le forwarding uniquement",
+        "Les routes apprises par OSPF et BGP uniquement"
+      ],
+      "answer": 1,
+      "explain": "La **RIB** contient **toutes les routes connues** : connected, static, dynamic, standby — qu'elles soient actives ou non. La FIB en est le sous-ensemble actif."
+    },
+    {
+      "q": "Dans quel ordre le FortiGate évalue-t-il le routage par rapport aux politiques ?",
+      "choices": [
+        "Les politiques sont évaluées avant le routage",
+        "Le routage et les politiques sont évalués simultanément",
+        "Le routage est évalué AVANT les politiques",
+        "L'ordre dépend du mode NAT ou Transparent"
+      ],
+      "answer": 2,
+      "explain": "Le **routage est évalué AVANT les politiques**. Si aucune route n'existe, le paquet est droppé sans consulter les politiques de sécurité."
+    },
+    {
+      "q": "Lequel des éléments suivants est un exemple de local-out traffic ?",
+      "choices": [
+        "Un utilisateur LAN accédant à Internet via le FortiGate",
+        "Une requête FortiGuard générée par le FortiGate",
+        "Un flux vidéo traversant le FortiGate",
+        "Du trafic entre deux VLANs via le FortiGate"
+      ],
+      "answer": 1,
+      "explain": "Le **local-out traffic** est le trafic **généré par le FortiGate lui-même**. Les requêtes **FortiGuard**, DNS, NTP, et les pings de diagnostic sont des exemples de local-out traffic."
+    },
+    {
+      "q": "Combien de lookups de routage le FortiGate effectue-t-il pour un nouveau flux ?",
+      "choices": [
+        "Un seul lookup (source vers destination)",
+        "Deux lookups (initiateur + répondeur)",
+        "Trois lookups (source, destination, retour)",
+        "Aucun lookup si une session existe déjà"
+      ],
+      "answer": 1,
+      "explain": "Pour tout nouveau flux, le FortiGate effectue **2 lookups** : un pour l'initiateur (source→destination) et un pour le répondeur (route de retour). Ensuite, le flux est enregistré dans la session table."
+    },
+    {
+      "q": "Que se passe-t-il lorsqu'un paquet arrive et qu'aucune route n'est trouvée dans la FIB ?",
+      "choices": [
+        "Le paquet est transféré vers la route par défaut",
+        "Le paquet est droppé et un ICMP Destination Network Unreachable est envoyé",
+        "Le paquet est mis en file d'attente jusqu'à ce qu'une route existe",
+        "Le FortiGate consulte les politiques de sécurité avant de dropper"
+      ],
+      "answer": 1,
+      "explain": "En l'absence de route : le paquet est **droppé** et le FortiGate envoie un message **ICMP Destination Network Unreachable** à la source. Les politiques ne sont pas consultées."
+    },
+    {
+      "q": "À quoi sert la session table dans le processus de routage ?",
+      "choices": [
+        "À stocker toutes les routes connues du FortiGate",
+        "À accélérer le traitement des paquets appartenant à une session déjà établie",
+        "À remplacer la FIB pour le forwarding",
+        "À journaliser les connexions refusées par les politiques"
+      ],
+      "answer": 1,
+      "explain": "Après les 2 lookups initiaux, le flux est enregistré dans la **session table**. Les paquets suivants de la même session utilisent cette entrée pour un traitement accéléré sans nouveau lookup."
+    },
+    {
+      "q": "Qu'est-ce que le firewall traffic sur un FortiGate en mode NAT ?",
+      "choices": [
+        "Le trafic généré par le FortiGate lui-même",
+        "Le trafic en transit qui traverse le FortiGate d'une interface à une autre",
+        "Le trafic chiffré dans un tunnel VPN",
+        "Le trafic de gestion vers l'interface de management"
+      ],
+      "answer": 1,
+      "explain": "Le **firewall traffic** (ou transit traffic) est le trafic qui **traverse le FortiGate** d'une interface source vers une interface destination. Il s'oppose au local-out traffic généré par le FortiGate."
+    },
+    {
+      "q": "Un FortiGate en mode NAT se comporte principalement comme :",
+      "choices": [
+        "Un simple switch de couche 2",
+        "Un routeur IP effectuant des décisions de routage",
+        "Un proxy applicatif uniquement",
+        "Un pare-feu stateless sans table de routage"
+      ],
+      "answer": 1,
+      "explain": "En mode **NAT**, le FortiGate agit comme un **routeur IP** à part entière, avec une RIB, une FIB, et des décisions de routage avant l'application des politiques."
+    },
+    {
+      "q": "Lequel des éléments suivants est un exemple de local-out traffic généré par le FortiGate ?",
+      "choices": [
+        "Trafic HTTP d'un client vers un serveur Web",
+        "Requête DNS envoyée par le FortiGate pour résoudre un nom de domaine",
+        "Flux FTP entre deux postes clients",
+        "Trafic ICMP entre deux hôtes LAN"
+      ],
+      "answer": 1,
+      "explain": "Une **requête DNS** envoyée par le FortiGate pour résoudre des noms est du **local-out traffic** : c'est le FortiGate lui-même qui génère ce trafic, pas un hôte en transit."
+    },
+    {
+      "q": "Quelle est la différence principale entre RIB et FIB ?",
+      "choices": [
+        "La RIB est pour IPv4, la FIB est pour IPv6",
+        "La RIB contient toutes les routes connues ; la FIB ne contient que les routes actives pour le forwarding",
+        "La FIB contient toutes les routes ; la RIB ne contient que les routes statiques",
+        "Il n'y a pas de différence, ce sont des synonymes"
+      ],
+      "answer": 1,
+      "explain": "La **RIB** contient **toutes les routes connues** (actives et inactives). La **FIB** est le sous-ensemble des **routes actives** réellement utilisées pour le forwarding des paquets."
+    },
+    {
+      "q": "Quel message ICMP le FortiGate envoie-t-il quand aucune route n'existe vers la destination ?",
+      "choices": [
+        "ICMP Time Exceeded",
+        "ICMP Destination Host Unreachable",
+        "ICMP Destination Network Unreachable",
+        "ICMP Redirect"
+      ],
+      "answer": 2,
+      "explain": "En l'absence de route vers le réseau de destination, le FortiGate envoie **ICMP Destination Network Unreachable** (type 3, code 0) à la source."
+    },
+    {
+      "q": "Lequel des services suivants génère du local-out traffic sur un FortiGate ?",
+      "choices": [
+        "Un utilisateur regardant Netflix via le FortiGate",
+        "Le FortiGate téléchargeant des mises à jour de signatures depuis FortiGuard",
+        "Un serveur interne communiquant avec un client externe",
+        "Du trafic entre zones de sécurité"
+      ],
+      "answer": 1,
+      "explain": "**FortiGuard** est un service cloud d'Fortinet. Les requêtes vers FortiGuard (mises à jour IPS, antivirus, URL filtering) sont générées par le FortiGate lui-même = **local-out traffic**."
+    },
+    {
+      "q": "Après les 2 lookups initiaux pour un nouveau flux, où le FortiGate stocke-t-il les informations de session ?",
+      "choices": [
+        "Dans la RIB",
+        "Dans la FIB",
+        "Dans la session table",
+        "Dans la politique de sécurité"
+      ],
+      "answer": 2,
+      "explain": "Après les 2 lookups de routage (initiateur + répondeur), le flux est enregistré dans la **session table**. Les paquets suivants de la même session sont traités via cette entrée sans nouveau lookup."
+    },
+    {
+      "q": "Pourquoi le FortiGate effectue-t-il deux lookups de routage pour un nouveau flux ?",
+      "choices": [
+        "Pour vérifier la politique aller et la politique retour",
+        "Pour trouver la route de l'initiateur et la route de retour du répondeur",
+        "Pour comparer la RIB et la FIB",
+        "Pour effectuer le NAT source et le NAT destination"
+      ],
+      "answer": 1,
+      "explain": "Les **2 lookups** permettent de vérifier qu'une route existe pour l'initiateur (aller) ET pour le répondeur (route de retour). Cela garantit que la communication bidirectionnelle est possible avant d'établir la session."
+    }
+  ]
+}

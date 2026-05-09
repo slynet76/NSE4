@@ -1,0 +1,181 @@
+{
+  "id": "ch05-l2",
+  "module": "Firewall Authentication",
+  "title": "LDAP : structure et configuration",
+  "durationMin": 7,
+  "content": "## Qu'est-ce que LDAP ?\n\n**LDAP** (Lightweight Directory Access Protocol) est un protocole permettant d'accéder à un annuaire réseau. Un serveur LDAP stocke des informations sur les **utilisateurs**, **groupes**, **adresses e-mail**, **imprimantes** et **mots de passe**.\n\n## Ports LDAP\n\n- **LDAP standard** : port **389** — les mots de passe transitent **en clair** sur le réseau.\n- **LDAPS** (LDAP over TLS) : port **636** — les communications sont chiffrées. À privilégier en production.\n\n## Structure de l'annuaire : le DN\n\nChaque objet dans un annuaire LDAP est identifié par un **DN** (Distinguished Name), qui représente son **chemin complet** dans l'arborescence.\n\nExemple : `CN=alice,OU=IT,DC=entreprise,DC=com`\n\n| Composant | Signification |\n|-----------|---------------|\n| **CN** | Common Name — nom de l'objet |\n| **OU** | Organizational Unit — unité organisationnelle |\n| **DC** | Domain Component — composant du domaine |\n\n## Opération de bind\n\nLe **bind** est l'opération par laquelle le client LDAP (FortiGate) **s'authentifie auprès du serveur** pour accéder à l'annuaire.\n\n### Types de bind\n\n1. **Anonymous** : aucune information d'authentification. Accès limité.\n2. **Simple** : un seul DN + mot de passe. Limité à un compte connu.\n3. **Regular** : utilise un **compte de service privilégié** (service account). Recommandé pour **rechercher à travers plusieurs domaines** avec un compte ayant les droits nécessaires.\n\n## Attribut commun dans Active Directory\n\nL'attribut le plus utilisé pour identifier un utilisateur dans Active Directory est **sAMAccountName** (le nom de connexion Windows).\n\n## Test CLI\n\nPour tester la connectivité et l'authentification LDAP depuis FortiGate :\n```\ndiagnose test authserver ldap <nom-du-serveur> <utilisateur> <mot-de-passe>\n```\n\n> LDAP port 389 transmet les identifiants en **clair** (**plaintext**) — utiliser LDAPS (port 636) pour chiffrer avec TLS.",
+  "diagrams": [
+    {
+      "caption": "Arborescence LDAP et types de bind (anonymous / simple / regular)",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8f9fa' rx='8'/><text x='300' y='18' text-anchor='middle' font-size='11' font-weight='bold' fill='#374151'>Arborescence LDAP</text><rect x='240' y='22' width='120' height='24' rx='4' fill='#dbeafe' stroke='#3b82f6' stroke-width='1'/><text x='300' y='38' text-anchor='middle' font-size='10' fill='#1e40af'>DC=entreprise,DC=com</text><line x1='300' y1='46' x2='160' y2='62' stroke='#9ca3af' stroke-width='1'/><line x1='300' y1='46' x2='300' y2='62' stroke='#9ca3af' stroke-width='1'/><line x1='300' y1='46' x2='440' y2='62' stroke='#9ca3af' stroke-width='1'/><rect x='100' y='62' width='120' height='22' rx='4' fill='#dcfce7' stroke='#22c55e' stroke-width='1'/><text x='160' y='77' text-anchor='middle' font-size='10' fill='#166534'>OU=IT</text><rect x='240' y='62' width='120' height='22' rx='4' fill='#dcfce7' stroke='#22c55e' stroke-width='1'/><text x='300' y='77' text-anchor='middle' font-size='10' fill='#166534'>OU=RH</text><rect x='380' y='62' width='120' height='22' rx='4' fill='#dcfce7' stroke='#22c55e' stroke-width='1'/><text x='440' y='77' text-anchor='middle' font-size='10' fill='#166534'>OU=Finance</text><line x1='160' y1='84' x2='160' y2='100' stroke='#9ca3af' stroke-width='1'/><rect x='100' y='100' width='120' height='22' rx='4' fill='#fef9c3' stroke='#eab308' stroke-width='1'/><text x='160' y='115' text-anchor='middle' font-size='10' fill='#713f12'>CN=alice (sAMAccount)</text><rect x='20' y='130' width='130' height='22' rx='4' fill='#fee2e2' stroke='#ef4444' stroke-width='1'/><text x='85' y='145' text-anchor='middle' font-size='9' fill='#991b1b'>Anonymous | Simple | Regular</text><text x='280' y='145' text-anchor='start' font-size='9' fill='#4b5563'>Regular bind = compte service + multi-domaines</text><text x='280' y='157' text-anchor='start' font-size='9' fill='#4b5563'>LDAPS port 636 (TLS) — LDAP port 389 (clair)</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Sur quel port fonctionne LDAPS (LDAP over TLS) ?",
+      "choices": [
+        "389",
+        "443",
+        "636",
+        "1812"
+      ],
+      "answer": 2,
+      "explain": "LDAPS utilise le port 636 et chiffre les communications avec TLS. Le LDAP standard utilise le port 389."
+    },
+    {
+      "q": "Que représente un DN (Distinguished Name) dans un annuaire LDAP ?",
+      "choices": [
+        "Un mot de passe chiffré",
+        "Le chemin complet d'un objet dans l'arborescence LDAP",
+        "Le nom du serveur LDAP",
+        "L'adresse IP du contrôleur de domaine"
+      ],
+      "answer": 1,
+      "explain": "Le DN (Distinguished Name) est le chemin complet d'un objet dans l'arborescence LDAP, par exemple CN=alice,OU=IT,DC=domain,DC=com."
+    },
+    {
+      "q": "Quel type de bind LDAP est recommandé pour rechercher à travers plusieurs domaines avec un compte privilégié ?",
+      "choices": [
+        "Anonymous",
+        "Simple",
+        "Regular",
+        "Kerberos"
+      ],
+      "answer": 2,
+      "explain": "Le bind Regular utilise un compte de service (service account) privilégié, adapté pour rechercher à travers plusieurs domaines."
+    },
+    {
+      "q": "Quel attribut Active Directory est le plus couramment utilisé pour identifier un utilisateur dans la configuration LDAP de FortiGate ?",
+      "choices": [
+        "userPrincipalName",
+        "mail",
+        "sAMAccountName",
+        "objectGUID"
+      ],
+      "answer": 2,
+      "explain": "L'attribut sAMAccountName correspond au nom de connexion Windows et est l'attribut commun utilisé dans les configurations LDAP Active Directory."
+    },
+    {
+      "q": "Quelle commande CLI permet de tester l'authentification LDAP sur FortiGate ?",
+      "choices": [
+        "diagnose test authserver radius",
+        "diagnose test authserver ldap",
+        "execute ldap-test",
+        "get user ldap"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose test authserver ldap <nom-serveur> <user> <password>' permet de tester la connectivité et l'authentification LDAP."
+    },
+    {
+      "q": "Sur quel port fonctionne le LDAP standard (non chiffré) ?",
+      "choices": [
+        "636",
+        "389",
+        "443",
+        "88"
+      ],
+      "answer": 1,
+      "explain": "Le LDAP standard fonctionne sur le port 389. Les mots de passe y transitent en clair, contrairement à LDAPS (port 636)."
+    },
+    {
+      "q": "Quel est le but de l'opération de bind dans LDAP ?",
+      "choices": [
+        "Créer un nouvel utilisateur dans l'annuaire",
+        "Supprimer un objet de l'arborescence",
+        "Authentifier le client LDAP auprès du serveur pour accéder à l'annuaire",
+        "Synchroniser les mots de passe entre FortiGate et AD"
+      ],
+      "answer": 2,
+      "explain": "Le bind est l'opération d'authentification du client LDAP (FortiGate) auprès du serveur pour obtenir accès à l'annuaire."
+    },
+    {
+      "q": "Quelle est la différence entre le bind Anonymous et le bind Simple ?",
+      "choices": [
+        "Anonymous chiffre les données, Simple ne le fait pas",
+        "Anonymous n'utilise aucune information d'authentification, Simple utilise un DN + mot de passe",
+        "Anonymous est pour AD, Simple est pour OpenLDAP",
+        "Ils sont identiques"
+      ],
+      "answer": 1,
+      "explain": "Le bind Anonymous n'envoie aucune information d'identification, tandis que le bind Simple envoie un DN et un mot de passe."
+    },
+    {
+      "q": "Quelle différence de sécurité existe entre LDAP et LDAPS ?",
+      "choices": [
+        "LDAPS est plus lent mais identique en sécurité",
+        "LDAP chiffre les données, LDAPS ne le fait pas",
+        "LDAPS chiffre les communications avec TLS, LDAP transmet en clair",
+        "LDAPS utilise Kerberos, LDAP utilise des certificats"
+      ],
+      "answer": 2,
+      "explain": "LDAPS (port 636) utilise TLS pour chiffrer les communications. LDAP standard (port 389) transmet les données, y compris les mots de passe, en clair."
+    },
+    {
+      "q": "Quel est le format d'un Distinguished Name complet dans LDAP ?",
+      "choices": [
+        "username@domain.com",
+        "CN=user,OU=dept,DC=domain,DC=com",
+        "domain\\username",
+        "user:password@ldap-server"
+      ],
+      "answer": 1,
+      "explain": "Un DN complet suit le format CN=user,OU=dept,DC=domain,DC=com, représentant le chemin complet de l'objet dans l'arborescence."
+    },
+    {
+      "q": "Que signifie 'DC' dans un Distinguished Name LDAP ?",
+      "choices": [
+        "Domain Controller",
+        "Domain Component",
+        "Directory Container",
+        "Distinguished Certificate"
+      ],
+      "answer": 1,
+      "explain": "DC signifie 'Domain Component'. C'est un composant du nom de domaine, par exemple DC=entreprise,DC=com pour entreprise.com."
+    },
+    {
+      "q": "Quel type de bind utilise un compte de service (service account) avec des droits élargis ?",
+      "choices": [
+        "Anonymous",
+        "Simple",
+        "Regular",
+        "Privileged"
+      ],
+      "answer": 2,
+      "explain": "Le bind Regular utilise un compte de service privilégié pour rechercher à travers l'annuaire, notamment dans les environnements multi-domaines."
+    },
+    {
+      "q": "Comment les mots de passe sont-ils transmis lors d'un bind LDAP sur le port 389 ?",
+      "choices": [
+        "Chiffrés avec AES",
+        "Hashés en MD5",
+        "En clair (plaintext)",
+        "Via un token OTP"
+      ],
+      "answer": 2,
+      "explain": "Sur le port 389, le LDAP standard transmet les mots de passe en clair sur le réseau. Il faut utiliser LDAPS (port 636) pour les chiffrer."
+    },
+    {
+      "q": "Quelle commande FortiGate permet de tester l'authentification d'un utilisateur sur un serveur LDAP ?",
+      "choices": [
+        "execute test-auth ldap server1 user1 pass1",
+        "diagnose test authserver ldap <nom-serveur> <utilisateur> <mot-de-passe>",
+        "config user ldap test",
+        "diagnose debug ldap on"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose test authserver ldap' permet de tester l'authentification LDAP directement depuis le CLI FortiGate."
+    },
+    {
+      "q": "Quel attribut LDAP est spécifique à Active Directory pour l'identifiant de connexion Windows ?",
+      "choices": [
+        "cn",
+        "uid",
+        "sAMAccountName",
+        "userPrincipalName"
+      ],
+      "answer": 2,
+      "explain": "sAMAccountName est l'attribut Active Directory correspondant au nom de connexion Windows (login). C'est l'attribut par défaut recommandé dans la configuration LDAP de FortiGate."
+    }
+  ]
+}

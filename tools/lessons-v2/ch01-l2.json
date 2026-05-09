@@ -1,0 +1,106 @@
+{
+  "id": "ch01-l2",
+  "module": "System and Network Settings",
+  "title": "Configuration initiale et interfaces",
+  "durationMin": 7,
+  "content": "## Accès initial au FortiGate\nPar défaut, l'interface de gestion est accessible via **HTTPS sur l'adresse 192.168.1.99**, sur le port **port1** (ou l'interface **MGMT** sur les modèles haut de gamme).\n\nLes identifiants par défaut sont :\n- **Nom d'utilisateur** : `admin`\n- **Mot de passe** : *(vide — aucun mot de passe)*\n\n## Serveur DHCP par défaut\nSur le port d'administration, un **serveur DHCP est actif par défaut**. Il distribue automatiquement une adresse IP au poste connecté pour faciliter l'accès initial.\n\n## Rôles d'interface\nDans l'interface graphique, chaque interface peut se voir assigner un **rôle** qui détermine les options visibles :\n\n| Rôle | Options affichées |\n|------|-------------------|\n| **WAN** | Pas de serveur DHCP (option masquée) |\n| **LAN** | Serveur DHCP disponible |\n| **DMZ** | Options limitées aux services exposés |\n| **Undefined** | **Toutes les options sont visibles** |\n\nLe rôle **Undefined** est le plus permissif : il affiche toutes les options sans restriction.\n\n## Interface WAN et masquage DHCP\nQuand le rôle d'une interface est défini comme **WAN**, l'option de **serveur DHCP est automatiquement masquée** dans la GUI, car un pare-feu ne sert généralement pas d'adresses DHCP vers Internet.\n\n## PPPoE\nLe mode **PPPoE (Point-to-Point Protocol over Ethernet)** permet d'obtenir une **adresse IP dynamique fournie par le FAI** (Fournisseur d'Accès Internet). C'est le mode utilisé pour les connexions ADSL/fibre résidentielles ou petites entreprises.\n\n## Route par défaut\nAvant de configurer des politiques de sécurité, il est **indispensable d'avoir une route par défaut** (default route, 0.0.0.0/0). Sans elle :\n- Le FortiGate ne peut pas contacter les **serveurs FortiGuard** (mises à jour de signatures)\n- Le trafic des utilisateurs ne peut pas être **acheminé vers Internet**\n\n## Interface MGMT\nSur les **FortiGate haut de gamme** (FortiGate 1000+, 3000+, etc.), une interface physique dédiée **MGMT** est présente pour l'administration. Sur les modèles d'entrée de gamme, c'est **port1** qui joue ce rôle.\n\n## Méthodes d'attribution d'adresse IP sur une interface\n- **Static** : adresse fixe saisie manuellement\n- **DHCP** : adresse obtenue automatiquement d'un serveur DHCP\n- **PPPoE** : adresse dynamique fournie par le FAI via PPPoE",
+  "diagrams": [
+    {
+      "caption": "Rôles d'interface et options visibles dans la GUI FortiGate",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8fafc'/><rect x='10' y='10' width='120' height='140' rx='8' fill='#e2e8f0' stroke='#94a3b8' stroke-width='1'/><text x='70' y='30' text-anchor='middle' fill='#1e293b' font-size='11' font-family='sans-serif' font-weight='bold'>FortiGate</text><rect x='20' y='40' width='100' height='22' rx='4' fill='#3b82f6'/><text x='70' y='55' text-anchor='middle' fill='white' font-size='10' font-family='sans-serif'>port1 / MGMT</text><rect x='20' y='70' width='100' height='22' rx='4' fill='#f97316'/><text x='70' y='85' text-anchor='middle' fill='white' font-size='10' font-family='sans-serif'>WAN (port2)</text><rect x='20' y='100' width='100' height='22' rx='4' fill='#22c55e'/><text x='70' y='115' text-anchor='middle' fill='white' font-size='10' font-family='sans-serif'>LAN (port3)</text><rect x='20' y='128' width='100' height='18' rx='4' fill='#8b5cf6'/><text x='70' y='141' text-anchor='middle' fill='white' font-size='9' font-family='sans-serif'>Undefined</text><rect x='175' y='35' width='150' height='28' rx='5' fill='#dbeafe' stroke='#3b82f6' stroke-width='1'/><text x='250' y='53' text-anchor='middle' fill='#1e40af' font-size='10' font-family='sans-serif'>HTTPS 192.168.1.99</text><rect x='175' y='67' width='150' height='28' rx='5' fill='#ffedd5' stroke='#f97316' stroke-width='1'/><text x='250' y='82' text-anchor='middle' fill='#9a3412' font-size='10' font-family='sans-serif'>DHCP masqué (WAN)</text><rect x='175' y='97' width='150' height='28' rx='5' fill='#dcfce7' stroke='#22c55e' stroke-width='1'/><text x='250' y='116' text-anchor='middle' fill='#166534' font-size='10' font-family='sans-serif'>Serveur DHCP visible</text><rect x='175' y='124' width='150' height='25' rx='5' fill='#ede9fe' stroke='#8b5cf6' stroke-width='1'/><text x='250' y='140' text-anchor='middle' fill='#5b21b6' font-size='10' font-family='sans-serif'>Toutes options visibles</text><line x1='120' y1='51' x2='175' y2='49' stroke='#64748b' stroke-width='1.5' stroke-dasharray='3,2'/><line x1='120' y1='81' x2='175' y2='81' stroke='#64748b' stroke-width='1.5' stroke-dasharray='3,2'/><line x1='120' y1='111' x2='175' y2='111' stroke='#64748b' stroke-width='1.5' stroke-dasharray='3,2'/><line x1='120' y1='137' x2='175' y2='137' stroke='#64748b' stroke-width='1.5' stroke-dasharray='3,2'/><rect x='360' y='30' width='220' height='100' rx='8' fill='#f1f5f9' stroke='#cbd5e1' stroke-width='1'/><text x='470' y='50' text-anchor='middle' fill='#1e293b' font-size='10' font-family='sans-serif' font-weight='bold'>Avant politique : route par défaut</text><text x='370' y='72' fill='#374151' font-size='9' font-family='sans-serif'>✓ FortiGuard joignable</text><text x='370' y='90' fill='#374151' font-size='9' font-family='sans-serif'>✓ Trafic acheminé vers Internet</text><text x='370' y='108' fill='#dc2626' font-size='9' font-family='sans-serif'>✗ Sans route → pas de MAJ signatures</text><text x='370' y='124' fill='#dc2626' font-size='9' font-family='sans-serif'>✗ Sans route → trafic bloqué</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quelle est l'URL d'accès par défaut à l'interface graphique du FortiGate ?",
+      "choices": ["https://192.168.0.1", "https://192.168.1.99", "https://10.0.0.1", "https://172.16.0.1"],
+      "answer": 1,
+      "explain": "L'URL d'accès par défaut est https://192.168.1.99, accessible sur le port port1 (ou MGMT sur les modèles haut de gamme)."
+    },
+    {
+      "q": "Quel rôle d'interface rend toutes les options visibles dans la GUI FortiGate ?",
+      "choices": ["WAN", "LAN", "DMZ", "Undefined"],
+      "answer": 3,
+      "explain": "Le rôle Undefined est le plus permissif : il affiche toutes les options de configuration d'interface sans restriction."
+    },
+    {
+      "q": "À quoi sert le mode PPPoE sur une interface FortiGate ?",
+      "choices": ["Configurer une adresse IP fixe", "Obtenir une adresse IP dynamique fournie par le FAI", "Activer le mode Transparent", "Chiffrer le trafic de management"],
+      "answer": 1,
+      "explain": "PPPoE (Point-to-Point Protocol over Ethernet) permet d'obtenir une adresse IP dynamique fournie par le FAI, utilisée sur les connexions ADSL/fibre."
+    },
+    {
+      "q": "Pourquoi faut-il configurer une route par défaut avant les politiques de sécurité ?",
+      "choices": ["Pour activer le mode NAT", "Pour permettre au FortiGate de joindre FortiGuard et d'acheminer le trafic vers Internet", "Pour que le serveur DHCP fonctionne", "Pour activer les VDOMs"],
+      "answer": 1,
+      "explain": "Sans route par défaut, le FortiGate ne peut pas contacter les serveurs FortiGuard (mises à jour) ni acheminer le trafic utilisateur vers Internet."
+    },
+    {
+      "q": "Quand l'option de serveur DHCP est-elle masquée dans la GUI FortiGate ?",
+      "choices": ["Quand le rôle est LAN", "Quand le rôle est DMZ", "Quand le rôle est WAN", "Quand le rôle est Undefined"],
+      "answer": 2,
+      "explain": "Lorsque le rôle d'une interface est défini sur WAN, le serveur DHCP est automatiquement masqué dans la GUI, car un pare-feu ne distribue pas d'adresses vers Internet."
+    },
+    {
+      "q": "Sur les modèles FortiGate haut de gamme, quelle interface est dédiée à l'administration ?",
+      "choices": ["port1", "port2", "MGMT", "WAN1"],
+      "answer": 2,
+      "explain": "Sur les FortiGate haut de gamme (1000+, 3000+), une interface physique MGMT est dédiée à l'administration. Sur les petits modèles, c'est port1."
+    },
+    {
+      "q": "Quels sont les identifiants par défaut pour accéder au FortiGate ?",
+      "choices": ["admin / admin", "admin / fortinet", "admin / (mot de passe vide)", "root / admin"],
+      "answer": 2,
+      "explain": "Les identifiants par défaut sont : nom d'utilisateur 'admin' et mot de passe vide (aucun mot de passe). Il est conseillé de le changer immédiatement."
+    },
+    {
+      "q": "Par défaut, qu'est-ce qui est actif sur le port d'administration pour faciliter l'accès initial ?",
+      "choices": ["Un serveur DNS", "Un serveur DHCP", "Un service NTP", "Un serveur RADIUS"],
+      "answer": 1,
+      "explain": "Un serveur DHCP est actif par défaut sur le port d'administration, afin de distribuer automatiquement une adresse IP au poste de gestion connecté."
+    },
+    {
+      "q": "Quelle propriété d'interface contrôle quelles options sont affichées dans la GUI FortiGate ?",
+      "choices": ["Le mode (NAT ou Transparent)", "Le rôle de l'interface (WAN, LAN, DMZ, Undefined)", "L'adresse IP de l'interface", "Le VLAN associé"],
+      "answer": 1,
+      "explain": "Le rôle de l'interface (WAN, LAN, DMZ, Undefined) détermine les options visibles dans la GUI. Par exemple, WAN masque le serveur DHCP."
+    },
+    {
+      "q": "Sur quel port physique est accessible l'interface GUI par défaut sur un FortiGate d'entrée de gamme ?",
+      "choices": ["port2", "port1", "WAN1", "MGMT"],
+      "answer": 1,
+      "explain": "Sur les modèles d'entrée de gamme, la GUI est accessible sur port1 à l'adresse 192.168.1.99. Les modèles haut de gamme ont une interface MGMT dédiée."
+    },
+    {
+      "q": "Sur un FortiGate haut de gamme, quelle interface joue le rôle de management ?",
+      "choices": ["port1", "WAN", "MGMT", "port10"],
+      "answer": 2,
+      "explain": "Les FortiGate haut de gamme disposent d'une interface physique MGMT dédiée exclusivement à l'administration du système."
+    },
+    {
+      "q": "Quel service FortiGate nécessite impérativement une route par défaut pour fonctionner ?",
+      "choices": ["Le service DHCP local", "FortiGuard (mises à jour de signatures)", "Le mode Transparent", "Les VDOMs"],
+      "answer": 1,
+      "explain": "FortiGuard nécessite que le FortiGate puisse joindre les serveurs Fortinet sur Internet. Sans route par défaut, les mises à jour de signatures sont impossibles."
+    },
+    {
+      "q": "Quelles sont les trois méthodes d'attribution d'adresse IP sur une interface FortiGate ?",
+      "choices": ["Static, DHCP, PPPoE", "Static, NAT, VPN", "DHCP, PPPoE, IPSec", "Static, OSPF, BGP"],
+      "answer": 0,
+      "explain": "Les trois méthodes sont : Static (adresse fixe), DHCP (obtenue dynamiquement) et PPPoE (adresse dynamique fournie par le FAI)."
+    },
+    {
+      "q": "Quel est l'effet de définir le rôle WAN sur une interface FortiGate ?",
+      "choices": ["Active le mode Transparent", "Masque l'option de serveur DHCP dans la GUI", "Active le serveur DHCP sur l'interface", "Affiche toutes les options de configuration"],
+      "answer": 1,
+      "explain": "Le rôle WAN masque automatiquement l'option de serveur DHCP dans la GUI, car un pare-feu ne distribue généralement pas d'adresses côté Internet."
+    },
+    {
+      "q": "Comment accède-t-on initialement à un nouveau FortiGate fraîchement déballé ?",
+      "choices": ["Via Telnet sur 192.168.1.99", "Via HTTPS sur 192.168.1.99 avec admin / mot de passe vide", "Via SSH sur 10.0.0.1 avec admin / admin", "Via console RS-232 uniquement"],
+      "answer": 1,
+      "explain": "L'accès initial se fait via HTTPS sur 192.168.1.99 (port1), avec le compte admin et un mot de passe vide. Un serveur DHCP sur port1 attribue une IP au poste."
+    }
+  ]
+}

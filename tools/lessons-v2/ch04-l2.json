@@ -1,0 +1,181 @@
+{
+  "id": "ch04-l2",
+  "module": "Routing",
+  "title": "Routes statiques et ISDB",
+  "durationMin": 7,
+  "content": "## Types de routes sur FortiGate\n\nLe FortiGate supporte trois types de routes :\n\n1. **Connected** : créées **automatiquement** dès qu'une **adresse IP est assignée** à une interface. Pas de configuration manuelle nécessaire.\n2. **Static** : configurées **manuellement** par l'administrateur. Composants obligatoires : **destination** (réseau/masque), **interface de sortie**, **gateway** (passerelle).\n3. **Dynamic** : apprises via des protocoles de routage dynamique : **BGP**, **OSPF**, **RIP**, **IS-IS**.\n\n## Route par défaut\n\nLa **route par défaut** (default route) a pour destination **0.0.0.0/0**. Elle correspond à **toutes les destinations** non résolues par une route plus spécifique. C'est la route de dernier recours.\n\n## Routes ISDB (Internet Service Database)\n\nLes **routes ISDB** sont des routes basées sur la base de données des services Internet maintenue par **FortiGuard**.\n\n- Elles apparaissent dans la **policy route table** (table de routes de politique), **PAS** dans la table de routage standard.\n- Cas d'usage typique : services dont les IPs changent fréquemment (ex : **Netflix**, CDN). Les IPs **Netflix** changent constamment — ISDB les maintient à jour automatiquement via **FortiGuard**.\n- Avantage : l'administrateur n'a pas à mettre à jour manuellement les routes quand les IPs changent.\n\n## Objet adresse firewall avec option Routing\n\nUn **objet adresse firewall** peut être utilisé comme destination dans une route statique si l'option **Routing configuration** est activée sur cet objet. Cela permet d'utiliser des noms symboliques plutôt que des plages d'IP brutes dans les routes.\n\n> Exemple : assigner l'IP 10.0.1.1/24 à port2 crée automatiquement une route **connected** vers **10.0.1.0/24 via port2**.",
+  "diagrams": [
+    {
+      "caption": "Comparaison des types de routes FortiGate",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8fafc'/><rect x='10' y='10' width='175' height='135' rx='8' fill='#dbeafe' stroke='#3b82f6' stroke-width='2'/><text x='97' y='30' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='bold' fill='#1d4ed8'>Connected</text><text x='97' y='48' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#1e40af'>Auto dès IP assignée</text><text x='97' y='64' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#1e40af'>à l'interface</text><text x='97' y='84' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#3b82f6'>Exemple :</text><text x='97' y='98' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#3b82f6'>192.168.1.0/24 → port1</text><rect x='212' y='10' width='175' height='135' rx='8' fill='#dcfce7' stroke='#16a34a' stroke-width='2'/><text x='299' y='30' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='bold' fill='#15803d'>Static</text><text x='299' y='48' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#166534'>Configuration manuelle</text><text x='299' y='64' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#166534'>Dest + Interface + GW</text><text x='299' y='84' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#16a34a'>Default route :</text><text x='299' y='98' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#16a34a'>0.0.0.0/0</text><rect x='414' y='10' width='175' height='135' rx='8' fill='#fef9c3' stroke='#ca8a04' stroke-width='2'/><text x='501' y='30' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='bold' fill='#92400e'>Dynamic</text><text x='501' y='48' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#78350f'>Apprise via protocoles</text><text x='501' y='66' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#92400e'>BGP / OSPF</text><text x='501' y='82' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#92400e'>RIP / IS-IS</text><text x='501' y='100' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#ca8a04'>ISDB → policy route table</text><text x='501' y='114' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#ca8a04'>(pas routing table)</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Comment une route connected est-elle créée sur un FortiGate ?",
+      "choices": [
+        "L'administrateur la configure manuellement",
+        "Elle est apprise via OSPF",
+        "Elle est créée automatiquement dès qu'une adresse IP est assignée à une interface",
+        "Elle est téléchargée depuis FortiGuard"
+      ],
+      "answer": 2,
+      "explain": "Une route **connected** est créée **automatiquement** dès qu'une **adresse IP est assignée à une interface** FortiGate. Aucune configuration manuelle n'est requise."
+    },
+    {
+      "q": "Quelle est la destination d'une route par défaut (default route) ?",
+      "choices": [
+        "10.0.0.0/8",
+        "172.16.0.0/12",
+        "192.168.0.0/16",
+        "0.0.0.0/0"
+      ],
+      "answer": 3,
+      "explain": "La **route par défaut** a pour destination **0.0.0.0/0**, ce qui correspond à toutes les destinations. C'est la route de dernier recours utilisée quand aucune route plus spécifique n'existe."
+    },
+    {
+      "q": "Où apparaissent les routes ISDB sur un FortiGate ?",
+      "choices": [
+        "Dans la table de routage standard (routing table)",
+        "Dans la policy route table (table de routes de politique)",
+        "Dans la FIB uniquement",
+        "Dans la session table"
+      ],
+      "answer": 1,
+      "explain": "Les routes **ISDB** apparaissent dans la **policy route table**, et **non** dans la table de routage standard. C'est une distinction importante : elles ne sont pas visibles dans `get router info routing-table all`."
+    },
+    {
+      "q": "Pourquoi utiliser les routes ISDB plutôt que des routes statiques pour des services comme Netflix ?",
+      "choices": [
+        "Les routes ISDB sont plus rapides à acheminer",
+        "Les IPs de services comme Netflix changent fréquemment ; ISDB est maintenu à jour par FortiGuard automatiquement",
+        "Les routes statiques ne supportent pas IPv6",
+        "ISDB offre une meilleure sécurité grâce au chiffrement"
+      ],
+      "answer": 1,
+      "explain": "Les IPs de services comme **Netflix** changent constamment. Les **routes ISDB** sont maintenues à jour automatiquement par **FortiGuard**, évitant à l'administrateur de mettre à jour manuellement les routes."
+    },
+    {
+      "q": "Quels sont les trois composants obligatoires d'une route statique sur FortiGate ?",
+      "choices": [
+        "Source, destination, gateway",
+        "Destination, interface de sortie, gateway",
+        "Interface d'entrée, interface de sortie, metric",
+        "Destination, distance, priority"
+      ],
+      "answer": 1,
+      "explain": "Une route statique nécessite trois éléments : la **destination** (réseau/masque), l'**interface de sortie**, et la **gateway** (passerelle). Ce sont les composants minimum requis."
+    },
+    {
+      "q": "Quels protocoles de routage dynamique sont supportés par FortiGate ?",
+      "choices": [
+        "OSPF et BGP uniquement",
+        "RIP, OSPF, BGP et IS-IS",
+        "EIGRP, OSPF et BGP",
+        "RIP et OSPF uniquement"
+      ],
+      "answer": 1,
+      "explain": "FortiGate supporte les protocoles de routage dynamique suivants : **BGP**, **OSPF**, **RIP**, et **IS-IS**. EIGRP est un protocole Cisco propriétaire non supporté."
+    },
+    {
+      "q": "Une route connected représente quel type de réseau ?",
+      "choices": [
+        "Un réseau distant accessible via une gateway",
+        "Le réseau directement connecté à une interface du FortiGate",
+        "Un réseau appris via BGP",
+        "Un réseau configuré dans une route statique"
+      ],
+      "answer": 1,
+      "explain": "Une route **connected** représente le réseau **directement connecté** à une interface du FortiGate. Elle est créée automatiquement quand une IP est assignée à l'interface."
+    },
+    {
+      "q": "Quelle option doit être activée sur un objet adresse firewall pour l'utiliser comme destination dans une route statique ?",
+      "choices": [
+        "L'option \"Static Route\"",
+        "L'option Routing configuration",
+        "L'option \"Subnet\"",
+        "L'option \"FQDN routing\""
+      ],
+      "answer": 1,
+      "explain": "Un objet adresse firewall peut être utilisé comme destination dans une route statique uniquement si l'option **Routing configuration** est activée sur cet objet."
+    },
+    {
+      "q": "Quelle est la différence entre la routing table et la policy route table ?",
+      "choices": [
+        "Il n'y a pas de différence, ce sont des synonymes",
+        "La routing table contient les routes standard (connected/static/dynamic) ; la policy route table contient les routes ISDB et de politique",
+        "La policy route table est plus rapide",
+        "La routing table est pour IPv4, la policy route table pour IPv6"
+      ],
+      "answer": 1,
+      "explain": "La **routing table** contient les routes standard (connected, static, dynamic). La **policy route table** contient les routes ISDB et les policy routes. Les routes ISDB n'apparaissent PAS dans la routing table standard."
+    },
+    {
+      "q": "Quel service maintient à jour la base ISDB sur le FortiGate ?",
+      "choices": [
+        "L'administrateur via des scripts",
+        "FortiManager",
+        "FortiGuard",
+        "FortiAnalyzer"
+      ],
+      "answer": 2,
+      "explain": "La base **ISDB** (Internet Service Database) est maintenue et mise à jour automatiquement par **FortiGuard**, le service cloud de sécurité de Fortinet."
+    },
+    {
+      "q": "Pourquoi une route statique vers 0.0.0.0/0 est-elle appelée \"route de dernier recours\" ?",
+      "choices": [
+        "Car elle est la première consultée dans la FIB",
+        "Car elle correspond à toutes les destinations et est utilisée quand aucune route plus spécifique n'existe",
+        "Car elle ne peut être configurée qu'une seule fois",
+        "Car elle remplace toutes les autres routes"
+      ],
+      "answer": 1,
+      "explain": "La route **0.0.0.0/0** correspond à **toutes les destinations**. Elle est utilisée en **dernier recours** quand aucune route plus spécifique (longest prefix match) n'est trouvée dans la FIB."
+    },
+    {
+      "q": "Quel est le cas d'usage principal des routes ISDB ?",
+      "choices": [
+        "Remplacer les routes statiques pour tous les réseaux internes",
+        "Router le trafic vers des services Internet dont les IPs changent fréquemment",
+        "Configurer des routes pour les VPNs IPsec",
+        "Gérer les routes entre VRFs"
+      ],
+      "answer": 1,
+      "explain": "Les routes **ISDB** sont principalement utilisées pour router le trafic vers des services Internet dont les **IPs changent fréquemment** (Netflix, CDN, cloud services), FortiGuard maintenant la liste à jour."
+    },
+    {
+      "q": "Si un administrateur assigne l'IP 10.0.1.1/24 à l'interface port2 du FortiGate, quelle route est automatiquement créée ?",
+      "choices": [
+        "Une route statique vers 10.0.1.1/32",
+        "Une route connected vers 10.0.1.0/24 via port2",
+        "Une route dynamique apprise via OSPF",
+        "Aucune route n'est créée automatiquement"
+      ],
+      "answer": 1,
+      "explain": "Dès qu'une IP est assignée à une interface, une route **connected** est automatiquement créée pour le réseau correspondant. Ici : route connected vers **10.0.1.0/24** via **port2**."
+    },
+    {
+      "q": "Lequel des éléments suivants se trouve dans la policy route table et NON dans la routing table standard ?",
+      "choices": [
+        "Les routes statiques configurées par l'administrateur",
+        "Les routes connected des interfaces",
+        "Les routes ISDB basées sur FortiGuard",
+        "Les routes apprises via OSPF"
+      ],
+      "answer": 2,
+      "explain": "Les routes **ISDB** apparaissent dans la **policy route table**, pas dans la routing table standard. Les routes statiques, connected, et dynamiques (OSPF, BGP...) sont dans la routing table standard."
+    },
+    {
+      "q": "Quels protocoles de routage dynamique peut-on configurer sur FortiGate ? (choisir la liste complète)",
+      "choices": [
+        "EIGRP, OSPF, BGP",
+        "RIP, OSPF, BGP, IS-IS",
+        "OSPF, BGP, VRRP",
+        "RIP, OSPF, EIGRP, BGP"
+      ],
+      "answer": 1,
+      "explain": "FortiGate supporte **RIP, OSPF, BGP et IS-IS** comme protocoles de routage dynamique. EIGRP est propriétaire Cisco et VRRP est un protocole de redondance (pas de routage dynamique)."
+    }
+  ]
+}

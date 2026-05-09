@@ -1,0 +1,181 @@
+{
+  "id": "ch11-l1",
+  "module": "IPsec VPN",
+  "title": "Bases d'IPsec et bénéfices",
+  "durationMin": 7,
+  "content": "## IPsec : suite de standards pour connecter des LAN via Internet\n\nIPsec est une **suite de standards** permettant de connecter des réseaux locaux (LAN) à travers Internet de manière sécurisée. Il offre trois bénéfices fondamentaux :\n\n- **Authentification** : vérifie l'identité des pairs\n- **Intégrité** : garantit que les données n'ont pas été altérées (not tampered)\n- **Confidentialité** : chiffre les données pour les rendre illisibles\n\n## ESP vs AH\n\nFortiGate utilise **ESP (Encapsulating Security Payload)** qui fournit les **3 bénéfices** : authentification, intégrité et confidentialité.\n\n**AH (Authentication Header)** ne fournit **pas de chiffrement** (no encryption) → FortiGate ne l'utilise pas. AH n'offre ni confidentialité ni protection contre l'analyse de trafic.\n\nAttention : utiliser le chiffrement **null** ou l'intégrité **null** n'apporte aucun bénéfice par rapport au texte clair (no benefit vs clear text).\n\n## Ports IKE\n\n- **UDP 500** : port IKE standard (négociation des clés)\n- **UDP 4500** : port IKE NAT-T (NAT Traversal — quand un NAT est détecté sur le chemin)\n\n## Modes de tunnel\n\n### Tunnel mode (mode par défaut sur FortiGate)\nAjoute un **nouvel en-tête IP** (new IP header) qui encapsule le paquet original. L'adresse IP source originale est **masquée** (hides original). C'est le mode recommandé pour les VPN site-à-site.\n\n### Transport mode\nProtège uniquement le **payload** (données utiles). **Conserve l'en-tête IP original** (preserves original IP header) — aucun nouvel en-tête n'est ajouté. Utilisé principalement pour les communications host-to-host.\n\n> VPN **site-to-site** : connecte deux **LANs distants** via Internet — les utilisateurs des deux sites accèdent aux ressources comme s'ils étaient sur le même réseau local.",
+  "diagrams": [
+    {
+      "caption": "Tunnel mode vs Transport mode — encapsulation comparée",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8f9fa'/><text x='300' y='20' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='bold' fill='#333'>Tunnel mode vs Transport mode</text><rect x='10' y='35' width='270' height='55' rx='6' fill='#e3f2fd' stroke='#1565c0' stroke-width='1.5'/><text x='145' y='52' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='bold' fill='#1565c0'>TUNNEL MODE (défaut FortiGate)</text><rect x='18' y='58' width='50' height='22' rx='3' fill='#1565c0'/><text x='43' y='73' text-anchor='middle' font-family='sans-serif' font-size='9' fill='white'>New IP</text><rect x='72' y='58' width='40' height='22' rx='3' fill='#42a5f5'/><text x='92' y='73' text-anchor='middle' font-family='sans-serif' font-size='9' fill='white'>ESP</text><rect x='116' y='58' width='50' height='22' rx='3' fill='#90caf9'/><text x='141' y='73' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#1a237e'>Orig IP</text><rect x='170' y='58' width='100' height='22' rx='3' fill='#bbdefb'/><text x='220' y='73' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#1a237e'>Payload (chiffré)</text><text x='145' y='103' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#555'>Nouvel en-tête IP ajouté — IP originale masquée</text><rect x='320' y='35' width='270' height='55' rx='6' fill='#fce4ec' stroke='#c62828' stroke-width='1.5'/><text x='455' y='52' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='bold' fill='#c62828'>TRANSPORT MODE</text><rect x='328' y='58' width='50' height='22' rx='3' fill='#ef9a9a'/><text x='353' y='73' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#b71c1c'>Orig IP</text><rect x='382' y='58' width='40' height='22' rx='3' fill='#e53935'/><text x='402' y='73' text-anchor='middle' font-family='sans-serif' font-size='9' fill='white'>ESP</text><rect x='426' y='58' width='154' height='22' rx='3' fill='#ffcdd2'/><text x='503' y='73' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#b71c1c'>Payload (chiffré)</text><text x='455' y='103' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#555'>En-tête IP original conservé — pas de nouvel en-tête</text><text x='300' y='130' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#666'>ESP fournit : Authentification + Intégrité + Confidentialité</text><text x='300' y='148' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#666'>IKE : UDP 500  |  IKE NAT-T : UDP 4500</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quels sont les trois bénéfices qu'IPsec offre ?",
+      "choices": [
+        "Vitesse, disponibilité, redondance",
+        "Authentification, intégrité, confidentialité",
+        "Compression, chiffrement, routage",
+        "Filtrage, NAT, inspection"
+      ],
+      "answer": 1,
+      "explain": "IPsec offre Authentification (vérification de l'identité des pairs), Intégrité (données non altérées) et Confidentialité (chiffrement)."
+    },
+    {
+      "q": "Pourquoi FortiGate n'utilise-t-il pas AH (Authentication Header) ?",
+      "choices": [
+        "AH est trop lent",
+        "AH ne fournit pas de chiffrement (no encryption)",
+        "AH n'est pas compatible avec UDP",
+        "AH n'existe plus dans IPsec"
+      ],
+      "answer": 1,
+      "explain": "AH ne fournit pas de chiffrement (no encryption), donc pas de confidentialité. FortiGate utilise ESP qui couvre les 3 bénéfices."
+    },
+    {
+      "q": "Quel protocole IPsec FortiGate utilise-t-il pour fournir les 3 bénéfices ?",
+      "choices": [
+        "AH (Authentication Header)",
+        "GRE (Generic Routing Encapsulation)",
+        "ESP (Encapsulating Security Payload)",
+        "L2TP (Layer 2 Tunneling Protocol)"
+      ],
+      "answer": 2,
+      "explain": "ESP (Encapsulating Security Payload) fournit les 3 bénéfices : authentification, intégrité et confidentialité."
+    },
+    {
+      "q": "Quel port UDP est utilisé pour IKE standard ?",
+      "choices": [
+        "UDP 443",
+        "UDP 1194",
+        "UDP 4500",
+        "UDP 500"
+      ],
+      "answer": 3,
+      "explain": "UDP 500 est le port IKE standard utilisé pour la négociation des Security Associations."
+    },
+    {
+      "q": "Quel port UDP est utilisé pour IKE NAT-T (NAT Traversal) ?",
+      "choices": [
+        "UDP 500",
+        "UDP 4500",
+        "UDP 1701",
+        "UDP 51820"
+      ],
+      "answer": 1,
+      "explain": "UDP 4500 est le port IKE NAT-T (NAT Traversal), utilisé quand un dispositif NAT est détecté sur le chemin."
+    },
+    {
+      "q": "Qu'ajoute le tunnel mode lors de l'encapsulation d'un paquet ?",
+      "choices": [
+        "Un nouvel en-tête TCP",
+        "Un trailer ESP uniquement",
+        "Un nouvel en-tête IP (new IP header)",
+        "Un en-tête GRE"
+      ],
+      "answer": 2,
+      "explain": "Le tunnel mode ajoute un nouvel en-tête IP qui encapsule le paquet original et masque l'adresse IP source d'origine. C'est le mode par défaut de FortiGate."
+    },
+    {
+      "q": "Que fait le transport mode concernant l'en-tête IP original ?",
+      "choices": [
+        "Il le supprime",
+        "Il le chiffre entièrement",
+        "Il le conserve (preserves original IP header)",
+        "Il le remplace par un en-tête IPv6"
+      ],
+      "answer": 2,
+      "explain": "Le transport mode préserve l'en-tête IP original (preserves original IP header) et ne protège que le payload. Aucun nouvel en-tête n'est ajouté."
+    },
+    {
+      "q": "Quel est le mode de tunnel par défaut sur FortiGate ?",
+      "choices": [
+        "Transport mode",
+        "Tunnel mode",
+        "GRE mode",
+        "Aggressive mode"
+      ],
+      "answer": 1,
+      "explain": "Le tunnel mode est le mode par défaut sur FortiGate. Il ajoute un nouvel en-tête IP et masque l'adresse originale."
+    },
+    {
+      "q": "Quel est l'inconvénient d'utiliser le chiffrement null dans un tunnel IPsec ?",
+      "choices": [
+        "Il surcharge le CPU",
+        "Il n'est pas compatible avec AES",
+        "Il n'apporte aucun bénéfice par rapport au texte clair (no benefit vs clear text)",
+        "Il empêche la négociation IKE"
+      ],
+      "answer": 2,
+      "explain": "Null encryption ou null integrity n'apporte aucun bénéfice par rapport au texte clair (no benefit vs clear text) — les données ne sont pas protégées."
+    },
+    {
+      "q": "Quelle est la différence principale entre tunnel mode et transport mode ?",
+      "choices": [
+        "Le tunnel mode est plus lent que le transport mode",
+        "Le tunnel mode ajoute un nouvel en-tête IP, le transport mode conserve l'en-tête original",
+        "Le transport mode chiffre uniquement les en-têtes",
+        "Ils sont identiques techniquement"
+      ],
+      "answer": 1,
+      "explain": "Le tunnel mode ajoute un nouvel en-tête IP (new IP header), tandis que le transport mode conserve l'en-tête IP original (preserves original IP header) et protège uniquement le payload."
+    },
+    {
+      "q": "Dans quel cas utilise-t-on principalement le transport mode ?",
+      "choices": [
+        "VPN site-à-site entre deux FortiGate",
+        "Communications host-to-host",
+        "Accès distant avec FortiClient",
+        "Tunnels GRE sur IPsec"
+      ],
+      "answer": 1,
+      "explain": "Le transport mode est principalement utilisé pour les communications host-to-host. Il préserve l'en-tête IP original et ne protège que le payload."
+    },
+    {
+      "q": "Quel protocole offre à la fois authentification, intégrité ET confidentialité ?",
+      "choices": [
+        "AH uniquement",
+        "ESP uniquement",
+        "AH + ESP combinés uniquement",
+        "GRE avec IPsec"
+      ],
+      "answer": 1,
+      "explain": "ESP (Encapsulating Security Payload) offre à lui seul les 3 bénéfices : authentification, intégrité et confidentialité. C'est pourquoi FortiGate l'utilise exclusivement."
+    },
+    {
+      "q": "Pourquoi un VPN IPsec est-il utilisé pour connecter des sites distants ?",
+      "choices": [
+        "Pour accélérer le trafic Internet",
+        "Pour connecter des LAN de manière sécurisée via Internet (standards suite)",
+        "Pour remplacer le routage BGP",
+        "Pour filtrer le trafic HTTP"
+      ],
+      "answer": 1,
+      "explain": "IPsec est une suite de standards permettant de connecter des réseaux locaux (LAN) de manière sécurisée via Internet — authentification, intégrité et confidentialité garanties."
+    },
+    {
+      "q": "Qu'est-ce qu'un VPN site-to-site IPsec connecte typiquement ?",
+      "choices": [
+        "Un utilisateur mobile à un serveur cloud",
+        "Deux LANs distants via Internet",
+        "Un téléphone IP à une centrale VOIP",
+        "Un datacenter à un CDN"
+      ],
+      "answer": 1,
+      "explain": "Un VPN site-à-site IPsec connecte deux réseaux locaux (LAN) à travers Internet de manière sécurisée, grâce aux bénéfices d'authentification, intégrité et confidentialité."
+    },
+    {
+      "q": "Quelle limitation d'AH explique que FortiGate préfère ESP ?",
+      "choices": [
+        "AH ne supporte pas IPv4",
+        "AH consomme trop de bande passante",
+        "AH ne fournit pas de chiffrement donc pas de confidentialité",
+        "AH n'est pas compatible avec IKEv2"
+      ],
+      "answer": 2,
+      "explain": "AH (Authentication Header) ne fournit pas de chiffrement (no encryption), donc pas de confidentialité. FortiGate utilise ESP qui couvre les 3 bénéfices IPsec."
+    }
+  ]
+}
