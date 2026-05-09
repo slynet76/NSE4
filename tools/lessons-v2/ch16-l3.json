@@ -1,0 +1,238 @@
+{
+  "id": "ch16-l3",
+  "module": "Secure Access Service Edge (SASE)",
+  "title": "Cas d'usage SIA : agent et agentless",
+  "durationMin": 7,
+  "content": "## SIA : Secure Internet Access\n\n**SIA** (Secure Internet Access) est l'ensemble des fonctions FortiSASE permettant de sécuriser l'accès Internet des utilisateurs distants. Il inclut le web filtering, l'antivirus (AV) et l'inspection SSL, tous traités dans le cloud FortiSASE.\n\n## Les deux modes d'accès SIA\n\nFortiSASE propose deux modes pour rediriger le trafic des utilisateurs vers les fonctions SIA :\n\n### Mode agent (FortiClient)\n\nLe **mode agent** repose sur l'installation de **FortiClient** sur le endpoint. FortiClient établit un tunnel sécurisé chiffré vers FortiSASE, et tout le trafic de l'utilisateur est inspecté par les composants SIA.\n\n**Avantages du mode agent :**\n- Sécurité complète : web filtering, AV, inspection SSL\n- **ZTNA** disponible pour l'accès aux applications internes\n- **DLP** (Data Loss Prevention) activé\n- Tunnel chiffré pour tout le trafic\n- Visibilité complète sur l'activité de l'utilisateur\n\n### Mode agentless\n\nLe **mode agentless** ne nécessite pas l'installation d'un agent. Il utilise un **PAC file** (Proxy Auto-Configuration) ou une redirection DNS pour router le trafic web vers FortiSASE.\n\n**Avantages du mode agentless :**\n- Déploiement rapide, pas d'installation requise\n- Compatible **BYOD** (Bring Your Own Device) — appareils personnels non gérés\n- Idéal pour les sous-traitants et visiteurs\n\n**Limitations du mode agentless :**\n- Moins de fonctionnalités disponibles\n- Pas de ZTNA complet disponible\n- Pas de DLP\n- Uniquement le trafic web est redirigé (pas tout le trafic)\n\n## Le PAC file (Proxy Auto-Configuration)\n\nUn **PAC file** est un fichier JavaScript qui indique au navigateur quel proxy utiliser selon l'URL visitée. En mode agentless, le PAC file est configuré dans le navigateur ou distribué via GPO pour rediriger automatiquement le trafic web vers le proxy FortiSASE sans installer de client.\n\nExemple de logique d'un PAC file :\n```\nSi URL interne → connexion directe\nSi URL externe → utiliser proxy FortiSASE\n```\n\n## BYOD : Bring Your Own Device\n\n**BYOD** désigne les appareils personnels non gérés par l'entreprise (smartphone perso, PC familial). Pour ces appareils, le mode agentless est souvent préféré car il ne nécessite pas d'installer FortiClient sur un équipement non géré.\n\n## Tableau comparatif Agent vs Agentless\n\n| Critère | Mode Agent (FortiClient) | Mode Agentless (PAC file) |\n|---|---|---|\n| Installation | FortiClient requis | Aucune installation |\n| ZTNA | Disponible | Non disponible |\n| DLP | Activé | Non disponible |\n| Trafic couvert | Tout le trafic | Trafic web uniquement |\n| BYOD | Non recommandé | Recommandé |\n| Chiffrement | Tunnel SSL/IPsec complet | Proxy web uniquement |",
+  "diagrams": [
+    {
+      "caption": "SIA : mode agent (FortiClient) vs mode agentless (PAC file)",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><text x='135' y='18' fill='#e2e8f0' font-size='10' text-anchor='middle' font-family='monospace' font-weight='bold'>Mode Agent</text><text x='405' y='18' fill='#e2e8f0' font-size='10' text-anchor='middle' font-family='monospace' font-weight='bold'>Mode Agentless</text><line x1='270' y1='0' x2='270' y2='180' stroke='#334155' stroke-width='1'/><rect x='10' y='30' width='90' height='40' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='55' y='48' fill='#3b82f6' font-size='9' text-anchor='middle' font-family='monospace'>Endpoint</text><text x='55' y='61' fill='#e2e8f0' font-size='8' text-anchor='middle' font-family='monospace'>FortiClient</text><path d='M100 50 L140 50' stroke='#22c55e' stroke-width='2.5' stroke-dasharray='none' marker-end='url(#ga)'/><text x='120' y='44' fill='#22c55e' font-size='8' text-anchor='middle' font-family='monospace'>Tunnel</text><text x='120' y='57' fill='#22c55e' font-size='8' text-anchor='middle' font-family='monospace'>chiffre</text><rect x='140' y='30' width='90' height='40' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='1.5'/><text x='185' y='48' fill='#22c55e' font-size='9' text-anchor='middle' font-family='monospace'>FortiSASE</text><text x='185' y='61' fill='#22c55e' font-size='8' text-anchor='middle' font-family='monospace'>SWG+ZTNA+DLP</text><text x='135' y='110' fill='#22c55e' font-size='8' text-anchor='middle' font-family='monospace'>ZTNA : disponible</text><text x='135' y='122' fill='#22c55e' font-size='8' text-anchor='middle' font-family='monospace'>DLP : actif</text><text x='135' y='134' fill='#22c55e' font-size='8' text-anchor='middle' font-family='monospace'>Tout le trafic</text><rect x='285' y='30' width='90' height='40' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='330' y='46' fill='#3b82f6' font-size='9' text-anchor='middle' font-family='monospace'>Navigateur</text><text x='330' y='59' fill='#e2e8f0' font-size='8' text-anchor='middle' font-family='monospace'>PAC file</text><path d='M375 50 L400 50' stroke='#e2e8f0' stroke-width='2' marker-end='url(#gb)'/><rect x='400' y='30' width='80' height='26' rx='4' fill='#1e293b' stroke='#e2e8f0' stroke-width='1'/><text x='440' y='47' fill='#e2e8f0' font-size='9' text-anchor='middle' font-family='monospace'>Proxy</text><path d='M480 43 L505 43' stroke='#22c55e' stroke-width='2' marker-end='url(#gc)'/><rect x='505' y='30' width='28' height='26' rx='3' fill='#1e293b' stroke='#22c55e' stroke-width='1'/><text x='519' y='47' fill='#22c55e' font-size='8' text-anchor='middle' font-family='monospace'>SIA</text><text x='405' y='110' fill='#ef4444' font-size='8' text-anchor='middle' font-family='monospace'>ZTNA : limite</text><text x='405' y='122' fill='#ef4444' font-size='8' text-anchor='middle' font-family='monospace'>DLP : non dispo</text><text x='405' y='134' fill='#22c55e' font-size='8' text-anchor='middle' font-family='monospace'>BYOD compatible</text><defs><marker id='ga' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#22c55e'/></marker><marker id='gb' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#e2e8f0'/></marker><marker id='gc' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#22c55e'/></marker></defs></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Que signifie SIA dans FortiSASE ?",
+      "choices": [
+        "Secure Internet Access : securiser l'acces Internet des utilisateurs distants via FortiSASE",
+        "Standard Internet Architecture",
+        "Secure Intranet Application",
+        "System Integration Agent"
+      ],
+      "answer": 0,
+      "explain": "SIA signifie Secure Internet Access. C'est l'ensemble des fonctions FortiSASE permettant de sécuriser l'accès Internet des utilisateurs distants (web filtering, AV, inspection SSL)."
+    },
+    {
+      "q": "Qu'est-ce qu'un PAC file utilisé en mode agentless FortiSASE ?",
+      "choices": [
+        "Un certificat SSL pour chiffrer le tunnel VPN",
+        "Un fichier JavaScript qui indique au navigateur quel proxy utiliser selon l'URL",
+        "Un fichier de configuration FortiClient pour les endpoints géres",
+        "Un script de déploiement d'agent sur les postes de travail"
+      ],
+      "answer": 1,
+      "explain": "Un PAC file (Proxy Auto-Configuration) est un fichier JavaScript qui indique au navigateur quel proxy utiliser selon l'URL visitée, utilisé en mode agentless pour rediriger le trafic web vers FortiSASE."
+    },
+    {
+      "q": "Que signifie BYOD ?",
+      "choices": [
+        "Build Your Own Device",
+        "Bring Your Own Device : appareils personnels non geres par l'entreprise",
+        "Backup Your Organizational Data",
+        "Browse Your Online Dashboard"
+      ],
+      "answer": 1,
+      "explain": "BYOD signifie Bring Your Own Device, désignant les appareils personnels non gérés par l'entreprise. Le mode agentless est souvent préféré pour ces appareils."
+    },
+    {
+      "q": "Quel mode SIA est recommandé pour les appareils BYOD ?",
+      "choices": [
+        "Mode agent avec FortiClient obligatoire",
+        "Mode agentless avec PAC file ou redirection DNS",
+        "Mode VPN traditionnel IPsec",
+        "Mode SD-WAN avec FortiGate local"
+      ],
+      "answer": 1,
+      "explain": "Pour les appareils BYOD (personnels non gérés), le mode agentless est recommandé car il ne nécessite pas d'installer FortiClient sur un équipement non géré."
+    },
+    {
+      "q": "Quelle fonction n'est PAS disponible en mode agentless SIA ?",
+      "choices": [
+        "Web filtering",
+        "Filtrage des URLs",
+        "ZTNA complet et DLP",
+        "Redirection du trafic web"
+      ],
+      "answer": 2,
+      "explain": "En mode agentless, ZTNA complet et DLP ne sont pas disponibles. Ces fonctions nécessitent FortiClient installé sur le endpoint."
+    },
+    {
+      "q": "Quelles fonctions SIA sont disponibles uniquement avec le mode agent FortiClient ?",
+      "choices": [
+        "Web filtering uniquement",
+        "ZTNA disponible, DLP actif, et tunnel chiffre pour tout le trafic",
+        "Redirection DNS uniquement",
+        "Filtrage par PAC file"
+      ],
+      "answer": 1,
+      "explain": "Le mode agent FortiClient offre ZTNA disponible, DLP actif et un tunnel chiffré pour tout le trafic, contrairement au mode agentless."
+    },
+    {
+      "q": "Quel est l'avantage principal du mode agentless par rapport au mode agent ?",
+      "choices": [
+        "Securite superieure avec DLP et ZTNA",
+        "Deploiement rapide sans installation requise, compatible BYOD",
+        "Tunnel chiffre pour tout le trafic reseau",
+        "Inspection SSL plus performante"
+      ],
+      "answer": 1,
+      "explain": "L'avantage principal du mode agentless est le déploiement rapide sans installation requise, et sa compatibilité BYOD pour les appareils personnels non gérés."
+    },
+    {
+      "q": "Comment le PAC file redirige-t-il le trafic en mode agentless ?",
+      "choices": [
+        "Il chiffre le trafic avec IPsec avant de l'envoyer au datacenter",
+        "Il indique au navigateur d'utiliser le proxy FortiSASE pour les URL externes",
+        "Il installe automatiquement FortiClient sur le poste",
+        "Il configure le routage SD-WAN sur le FortiGate local"
+      ],
+      "answer": 1,
+      "explain": "Le PAC file indique au navigateur d'utiliser le proxy FortiSASE pour les URL externes, permettant de rediriger le trafic web sans installer d'agent."
+    },
+    {
+      "q": "Le mode agentless SIA couvre quel type de trafic ?",
+      "choices": [
+        "Tout le trafic réseau (TCP, UDP, ICMP)",
+        "Uniquement le trafic web du navigateur",
+        "Tout le trafic chiffre IPsec",
+        "Uniquement les emails et les fichiers"
+      ],
+      "answer": 1,
+      "explain": "Le mode agentless SIA couvre uniquement le trafic web du navigateur, contrairement au mode agent FortiClient qui couvre tout le trafic de l'utilisateur."
+    },
+    {
+      "q": "Quelles fonctions SIA le mode agent (FortiClient) active-t-il ?",
+      "choices": [
+        "Web filtering uniquement",
+        "Web filtering, AV, inspection SSL, ZTNA et DLP",
+        "DNS filtering uniquement",
+        "Antivirus et pare-feu local uniquement"
+      ],
+      "answer": 1,
+      "explain": "Le mode agent FortiClient active web filtering, AV (antivirus), inspection SSL, ZTNA et DLP via le tunnel sécurisé vers FortiSASE."
+    },
+    {
+      "q": "Pour quel type d'utilisateur le mode agentless est-il particulierement adapte ?",
+      "choices": [
+        "Les administrateurs systeme avec des droits élévés",
+        "Les sous-traitants et visiteurs avec des appareils BYOD non geres",
+        "Les utilisateurs VIP avec des besoins de securite maximale",
+        "Les ingénieurs réseau configurant les FortiGate"
+      ],
+      "answer": 1,
+      "explain": "Le mode agentless est particulièrement adapté pour les sous-traitants et visiteurs avec des appareils BYOD non gérés, car il ne nécessite aucune installation."
+    },
+    {
+      "q": "Quel protocole le mode agent FortiClient utilise-t-il pour le tunnel vers FortiSASE ?",
+      "choices": [
+        "HTTP/HTTPS non chiffre",
+        "Tunnel SSL/IPsec vers FortiSASE",
+        "MPLS dédié",
+        "GRE non chiffre"
+      ],
+      "answer": 1,
+      "explain": "FortiClient établit un tunnel SSL/IPsec vers FortiSASE pour acheminer et inspecter tout le trafic de l'utilisateur."
+    },
+    {
+      "q": "Comment le mode agentless peut-il distribuer le PAC file dans une entreprise ?",
+      "choices": [
+        "Via FortiClient sur chaque poste",
+        "Via une GPO ou la configuration manuelle du navigateur",
+        "Via un tunnel IPsec dedié",
+        "Via le firmware FortiGate"
+      ],
+      "answer": 1,
+      "explain": "En entreprise, le PAC file peut être distribué via une GPO (Group Policy Object) ou configuré manuellement dans le navigateur pour rediriger le trafic vers le proxy FortiSASE."
+    },
+    {
+      "q": "Pourquoi le DLP n'est-il pas disponible en mode agentless ?",
+      "choices": [
+        "FortiSASE ne supporte pas le DLP",
+        "DLP necessite FortiClient installe sur le endpoint pour inspecter tout le trafic",
+        "DLP est reserve aux utilisateurs administrateurs",
+        "DLP fonctionne uniquement en mode hors ligne"
+      ],
+      "answer": 1,
+      "explain": "DLP (Data Loss Prevention) nécessite FortiClient installé sur le endpoint pour inspecter tout le trafic, ce qui n'est pas possible en mode agentless où seul le trafic web est redirigé."
+    },
+    {
+      "q": "Quelle methode alternative au PAC file peut etre utilisee en mode agentless pour rediriger le trafic ?",
+      "choices": [
+        "Un tunnel GRE vers le datacenter",
+        "Une redirection DNS pour router le trafic web vers FortiSASE",
+        "Un certificat SSL client",
+        "Un script PowerShell d'installation"
+      ],
+      "answer": 1,
+      "explain": "En mode agentless, outre le PAC file, une redirection DNS peut être utilisée pour router automatiquement le trafic web vers FortiSASE sans installer d'agent."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Que signifie SIA dans FortiSASE ?",
+      "choices": [
+        "Secure Internet Access : securiser l'acces Internet des utilisateurs distants via FortiSASE",
+        "Standard Internet Architecture",
+        "Secure Intranet Application",
+        "System Integration Agent"
+      ],
+      "answer": 0,
+      "explain": "SIA signifie Secure Internet Access. C'est l'ensemble des fonctions FortiSASE permettant de sécuriser l'accès Internet des utilisateurs distants (web filtering, AV, inspection SSL)."
+    },
+    {
+      "q": "Qu'est-ce qu'un PAC file utilisé en mode agentless FortiSASE ?",
+      "choices": [
+        "Un certificat SSL pour chiffrer le tunnel VPN",
+        "Un fichier JavaScript qui indique au navigateur quel proxy utiliser selon l'URL",
+        "Un fichier de configuration FortiClient pour les endpoints géres",
+        "Un script de déploiement d'agent sur les postes de travail"
+      ],
+      "answer": 1,
+      "explain": "Un PAC file (Proxy Auto-Configuration) est un fichier JavaScript qui indique au navigateur quel proxy utiliser selon l'URL visitée, utilisé en mode agentless pour rediriger le trafic web vers FortiSASE."
+    },
+    {
+      "q": "Quel mode SIA est recommandé pour les appareils BYOD ?",
+      "choices": [
+        "Mode agent avec FortiClient obligatoire",
+        "Mode agentless avec PAC file ou redirection DNS",
+        "Mode VPN traditionnel IPsec",
+        "Mode SD-WAN avec FortiGate local"
+      ],
+      "answer": 1,
+      "explain": "Pour les appareils BYOD (personnels non gérés), le mode agentless est recommandé car il ne nécessite pas d'installer FortiClient sur un équipement non géré."
+    },
+    {
+      "q": "Quelle fonction n'est PAS disponible en mode agentless SIA ?",
+      "choices": [
+        "Web filtering",
+        "Filtrage des URLs",
+        "ZTNA complet et DLP",
+        "Redirection du trafic web"
+      ],
+      "answer": 2,
+      "explain": "En mode agentless, ZTNA complet et DLP ne sont pas disponibles. Ces fonctions nécessitent FortiClient installé sur le endpoint."
+    },
+    {
+      "q": "Quel est l'avantage principal du mode agentless par rapport au mode agent ?",
+      "choices": [
+        "Securite superieure avec DLP et ZTNA",
+        "Deploiement rapide sans installation requise, compatible BYOD",
+        "Tunnel chiffre pour tout le trafic reseau",
+        "Inspection SSL plus performante"
+      ],
+      "answer": 1,
+      "explain": "L'avantage principal du mode agentless est le déploiement rapide sans installation requise, et sa compatibilité BYOD pour les appareils personnels non gérés."
+    }
+  ]
+}
