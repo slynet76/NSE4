@@ -3,7 +3,7 @@
   "module": "Logging and Monitoring",
   "title": "Visualiser et rechercher les logs",
   "durationMin": 7,
-  "content": "## Visualiser et rechercher les logs FortiGate\n\n### 1. GUI FortiGate — Log & Report\n\nMenu principal : **Log & Report**. Types de logs disponibles :\n- **Forward Traffic** : trafic transité\n- **Local Traffic** : trafic vers/depuis le FortiGate\n- **System Events** : événements système\n- **Security Events** : logs UTM (antivirus, IPS, web filter, etc.)\n\n**Vue formatée** : les logs s'affichent sous forme de tableau. Un clic sur une ligne ouvre le panneau **Log Details** (à droite) avec tous les champs détaillés.\n\n**Section Archived Data** : apparaît uniquement si l'archivage est activé pour certains types de logs (exemple : DLP archive les fichiers transférés).\n\n**Source des logs dans la GUI** : si le disque local ET FortiAnalyzer sont configurés, les logs s'affichent depuis la mémoire ou le disque par défaut. Pour afficher les logs depuis FAZ, changer la **source des logs** dans le menu déroulant en haut de la page.\n\n---\n\n### 2. Raccourci : clic droit sur une politique → Show Matching Logs\n\nSince l'interface Policy & Objects : **clic droit sur une politique → Show Matching Logs**.\n- Affiche directement **tous les logs liés à cette politique** (filtre automatique sur policy_id).\n- Très utile en **dépannage** pour vérifier si le trafic est bien traité par la bonne règle.\n\n---\n\n### 3. CLI FortiGate\n\nDeux commandes essentielles :\n- **`execute log filter`** : configure les filtres de recherche (type, sous-type, date, IP source/destination, niveau de sévérité, etc.).\n- **`execute log display`** : affiche les logs selon le filtre courant configuré.\n\n**Important** : si les logs sont dirigés uniquement vers un SIEM externe (Syslog), ils ne sont pas stockés localement sur le FortiGate. Ils ne sont donc **pas consultables en CLI**.\n\n---\n\n### 4. FortiView\n\n- Vue graphique de type **tableaux de bord**.\n- Affiche : top sources, top destinations, top applications, top menaces, etc.\n- **Drill-down** : cliquer sur un élément (ex: une IP source) pour descendre vers les logs individuels associés.\n- **Real-time** : fenêtre de **5 minutes**.\n- **Historical** : nécessite **FortiAnalyzer ou un disque local** pour accéder aux données passées.\n\n---\n\n### 5. FortiAnalyzer — Log View, FortiView, Reports\n\n- **Log View** : recherche avancée dans les logs indexés en SQL (filtres, colonnes personnalisables).\n- **FortiView** : tableaux de bord graphiques avec drill-down, similaire au FortiView du FortiGate mais basé sur l'ensemble des devices enregistrés.\n- **Reports** : génération de rapports planifiés ou à la demande.\n- **Log Groups** : objets logiques virtuels regroupant plusieurs devices, sans base de données propre. Utiles pour les rapports couvrant plusieurs FortiGates simultanément.\n- **Chart Builder** : nécessite une **vue historique** (données SQL indexées sur une période passée).\n\n---\n\n### Résumé des outils\n\n| Outil | Interface | Fonctionnalité clé |\n|---|---|---|\n| Log & Report GUI | FortiGate GUI | Vue formatée, Log Details, Archived Data |\n| Show Matching Logs | FortiGate GUI | Filtre par policy_id en un clic |\n| execute log display | FortiGate CLI | Affichage selon filtre actif |\n| execute log filter | FortiGate CLI | Configuration des filtres |\n| FortiView | FortiGate / FAZ | Tableaux de bord + drill-down |\n| Log View FAZ | FortiAnalyzer | Recherche SQL avancée |\n| Reports FAZ | FortiAnalyzer | Rapports planifiés |\n| Chart Builder FAZ | FortiAnalyzer | Graphiques sur vue historique |",
+  "content": "## Visualiser et rechercher les logs FortiGate\n\n![Chemins de consultation des logs : GUI, CLI, FortiView, FortiAnalyzer](diagram:0)\n\n### 1. GUI FortiGate — Log & Report\n\nMenu principal : **Log & Report**. Types de logs disponibles :\n- **Forward Traffic** : trafic transité\n- **Local Traffic** : trafic vers/depuis le FortiGate\n- **System Events** : événements système\n- **Security Events** : logs UTM (antivirus, IPS, web filter, etc.)\n\n**Vue formatée** : les logs s'affichent sous forme de tableau. Un clic sur une ligne ouvre le panneau **Log Details** (à droite) avec tous les champs détaillés.\n\n**Section Archived Data** : apparaît uniquement si l'archivage est activé pour certains types de logs (exemple : DLP archive les fichiers transférés).\n\n**Source des logs dans la GUI** : si le disque local ET FortiAnalyzer sont configurés, les logs s'affichent depuis la mémoire ou le disque par défaut. Pour afficher les logs depuis FAZ, changer la **source des logs** dans le menu déroulant en haut de la page.\n\n---\n\n### 2. Raccourci : clic droit sur une politique → Show Matching Logs\n\nSince l'interface Policy & Objects : **clic droit sur une politique → Show Matching Logs**.\n- Affiche directement **tous les logs liés à cette politique** (filtre automatique sur policy_id).\n- Très utile en **dépannage** pour vérifier si le trafic est bien traité par la bonne règle.\n\n---\n\n### 3. CLI FortiGate\n\nDeux commandes essentielles :\n- **`execute log filter`** : configure les filtres de recherche (type, sous-type, date, IP source/destination, niveau de sévérité, etc.).\n- **`execute log display`** : affiche les logs selon le filtre courant configuré.\n\n**Important** : si les logs sont dirigés uniquement vers un SIEM externe (Syslog), ils ne sont pas stockés localement sur le FortiGate. Ils ne sont donc **pas consultables en CLI**.\n\n---\n\n### 4. FortiView\n\n- Vue graphique de type **tableaux de bord**.\n- Affiche : top sources, top destinations, top applications, top menaces, etc.\n- **Drill-down** : cliquer sur un élément (ex: une IP source) pour descendre vers les logs individuels associés.\n- **Real-time** : fenêtre de **5 minutes**.\n- **Historical** : nécessite **FortiAnalyzer ou un disque local** pour accéder aux données passées.\n\n---\n\n### 5. FortiAnalyzer — Log View, FortiView, Reports\n\n- **Log View** : recherche avancée dans les logs indexés en SQL (filtres, colonnes personnalisables).\n- **FortiView** : tableaux de bord graphiques avec drill-down, similaire au FortiView du FortiGate mais basé sur l'ensemble des devices enregistrés.\n- **Reports** : génération de rapports planifiés ou à la demande.\n- **Log Groups** : objets logiques virtuels regroupant plusieurs devices, sans base de données propre. Utiles pour les rapports couvrant plusieurs FortiGates simultanément.\n- **Chart Builder** : nécessite une **vue historique** (données SQL indexées sur une période passée).\n\n---\n\n### Résumé des outils\n\n| Outil | Interface | Fonctionnalité clé |\n|---|---|---|\n| Log & Report GUI | FortiGate GUI | Vue formatée, Log Details, Archived Data |\n| Show Matching Logs | FortiGate GUI | Filtre par policy_id en un clic |\n| execute log display | FortiGate CLI | Affichage selon filtre actif |\n| execute log filter | FortiGate CLI | Configuration des filtres |\n| FortiView | FortiGate / FAZ | Tableaux de bord + drill-down |\n| Log View FAZ | FortiAnalyzer | Recherche SQL avancée |\n| Reports FAZ | FortiAnalyzer | Rapports planifiés |\n| Chart Builder FAZ | FortiAnalyzer | Graphiques sur vue historique |",
   "diagrams": [
     {
       "caption": "Chemins de consultation des logs : GUI, CLI, FortiView, FortiAnalyzer",
@@ -14,91 +14,166 @@
   "questionPool": [
     {
       "q": "Comment afficher rapidement tous les logs liés à une politique spécifique depuis l'interface FortiGate ?",
-      "choices": ["Aller dans Log & Report et filtrer manuellement par policy_id", "Faire un clic droit sur la politique dans Policy & Objects et choisir 'Show Matching Logs'", "Utiliser 'execute log filter category traffic' en CLI", "Ouvrir FortiAnalyzer et filtrer par politique"],
+      "choices": [
+        "Aller dans Log & Report et filtrer manuellement par policy_id",
+        "Faire un clic droit sur la politique dans Policy & Objects et choisir 'Show Matching Logs'",
+        "Utiliser 'execute log filter category traffic' en CLI",
+        "Ouvrir FortiAnalyzer et filtrer par politique"
+      ],
       "answer": 1,
       "explain": "Le raccourci 'clic droit → Show Matching Logs' depuis Policy & Objects filtre automatiquement les logs sur le policy_id de la politique sélectionnée. Très utile en dépannage."
     },
     {
       "q": "À quoi sert la commande CLI 'execute log display' ?",
-      "choices": ["Configurer les filtres de recherche des logs", "Afficher les logs selon le filtre courant configuré", "Envoyer les logs vers FortiAnalyzer", "Effacer les logs du disque local"],
+      "choices": [
+        "Configurer les filtres de recherche des logs",
+        "Afficher les logs selon le filtre courant configuré",
+        "Envoyer les logs vers FortiAnalyzer",
+        "Effacer les logs du disque local"
+      ],
       "answer": 1,
       "explain": "'execute log display' affiche les logs selon le filtre actif. Les filtres sont définis au préalable avec 'execute log filter'."
     },
     {
       "q": "Comment changer la source des logs affichés dans la GUI FortiGate quand FAZ et le disque sont configurés ?",
-      "choices": ["Modifier la configuration en CLI avec 'set log-source'", "Changer la source des logs dans le menu déroulant en haut de la page Log & Report", "Déconnecter FAZ temporairement", "Reboot le FortiGate pour forcer la sélection"],
+      "choices": [
+        "Modifier la configuration en CLI avec 'set log-source'",
+        "Changer la source des logs dans le menu déroulant en haut de la page Log & Report",
+        "Déconnecter FAZ temporairement",
+        "Reboot le FortiGate pour forcer la sélection"
+      ],
       "answer": 1,
       "explain": "Quand le disque local ET FAZ sont configurés, un menu déroulant en haut de la page Log & Report permet de choisir la source d'affichage (mémoire, disque local, FAZ)."
     },
     {
       "q": "La section 'Archived Data' dans Log & Report de FortiGate s'affiche dans quel cas ?",
-      "choices": ["Toujours, pour tous les types de logs", "Uniquement si l'archivage est activé pour certains types de logs (ex: DLP)", "Uniquement si FortiAnalyzer est connecté", "Uniquement après un redémarrage"],
+      "choices": [
+        "Toujours, pour tous les types de logs",
+        "Uniquement si l'archivage est activé pour certains types de logs (ex: DLP)",
+        "Uniquement si FortiAnalyzer est connecté",
+        "Uniquement après un redémarrage"
+      ],
       "answer": 1,
       "explain": "La section Archived Data n'apparaît que si l'archivage est activé pour certains types de logs. Par exemple, DLP peut archiver les fichiers transférés."
     },
     {
       "q": "Quelle est la fenêtre de temps du mode 'Real-time' dans FortiView ?",
-      "choices": ["1 minute", "5 minutes", "15 minutes", "30 minutes"],
+      "choices": [
+        "1 minute",
+        "5 minutes",
+        "15 minutes",
+        "30 minutes"
+      ],
       "answer": 1,
       "explain": "FortiView affiche les données en temps réel sur une fenêtre glissante de 5 minutes."
     },
     {
       "q": "Que nécessite FortiView pour afficher des données historiques ?",
-      "choices": ["Une connexion Internet active", "FortiAnalyzer ou un disque local avec des logs indexés", "Une licence FortiAnalyzer Cloud", "L'activation du mode Collector"],
+      "choices": [
+        "Une connexion Internet active",
+        "FortiAnalyzer ou un disque local avec des logs indexés",
+        "Une licence FortiAnalyzer Cloud",
+        "L'activation du mode Collector"
+      ],
       "answer": 1,
       "explain": "FortiView Historical nécessite FortiAnalyzer ou un disque local pour accéder aux données passées indexées. Sans ces sources, seules les données en temps réel (5 min) sont disponibles."
     },
     {
       "q": "Qu'est-ce qu'un Log Group dans FortiAnalyzer ?",
-      "choices": ["Un ADOM dédié à plusieurs clients", "Un objet logique virtuel regroupant plusieurs devices, sans base de données propre, pour les rapports multi-devices", "Un type de log regroupant traffic et security", "Un cluster FAZ haute disponibilité"],
+      "choices": [
+        "Un ADOM dédié à plusieurs clients",
+        "Un objet logique virtuel regroupant plusieurs devices, sans base de données propre, pour les rapports multi-devices",
+        "Un type de log regroupant traffic et security",
+        "Un cluster FAZ haute disponibilité"
+      ],
       "answer": 1,
       "explain": "Un Log Group est un objet logique virtuel regroupant plusieurs devices, sans base de données propre. Il est utilisé pour générer des rapports couvrant plusieurs FortiGates simultanément."
     },
     {
       "q": "Si les logs FortiGate sont envoyés uniquement vers un SIEM externe (Syslog), que se passe-t-il en CLI ?",
-      "choices": ["Les logs sont consultables en CLI avec 'execute log display'", "Les logs ne sont pas stockés localement et ne sont pas consultables en CLI FortiGate", "Les logs sont dupliqués automatiquement sur le disque local", "La CLI redirige vers le SIEM pour afficher les logs"],
+      "choices": [
+        "Les logs sont consultables en CLI avec 'execute log display'",
+        "Les logs ne sont pas stockés localement et ne sont pas consultables en CLI FortiGate",
+        "Les logs sont dupliqués automatiquement sur le disque local",
+        "La CLI redirige vers le SIEM pour afficher les logs"
+      ],
       "answer": 1,
       "explain": "Si les logs sont dirigés uniquement vers un SIEM externe, ils ne sont pas stockés localement sur le FortiGate. La commande 'execute log display' ne retournera aucun log."
     },
     {
       "q": "À quoi sert la commande 'execute log filter' en CLI FortiGate ?",
-      "choices": ["Afficher les logs filtrés", "Configurer les critères de filtrage (type, sous-type, date, IP, niveau) avant d'utiliser 'execute log display'", "Supprimer les logs anciens selon un filtre", "Envoyer les logs filtrés vers FAZ"],
+      "choices": [
+        "Afficher les logs filtrés",
+        "Configurer les critères de filtrage (type, sous-type, date, IP, niveau) avant d'utiliser 'execute log display'",
+        "Supprimer les logs anciens selon un filtre",
+        "Envoyer les logs filtrés vers FAZ"
+      ],
       "answer": 1,
       "explain": "'execute log filter' configure les critères de filtrage : type de log, sous-type, plage de dates, adresses IP, niveau de sévérité. Ces filtres sont ensuite appliqués par 'execute log display'."
     },
     {
       "q": "Où apparaît le panneau 'Log Details' dans la GUI FortiGate ?",
-      "choices": ["Dans une nouvelle fenêtre popup", "En bas de la liste des logs", "À droite lors d'un clic sur une ligne de log", "Dans un onglet séparé du navigateur"],
+      "choices": [
+        "Dans une nouvelle fenêtre popup",
+        "En bas de la liste des logs",
+        "À droite lors d'un clic sur une ligne de log",
+        "Dans un onglet séparé du navigateur"
+      ],
       "answer": 2,
       "explain": "Dans la GUI Log & Report, cliquer sur une ligne de log ouvre le panneau Log Details sur le côté droit de l'écran, avec tous les champs détaillés de l'entrée."
     },
     {
       "q": "Le Chart Builder de FortiAnalyzer nécessite quoi pour fonctionner ?",
-      "choices": ["Une connexion temps réel active", "Une vue historique (données SQL indexées sur une période passée)", "Un ADOM dédié aux graphiques", "L'activation du mode Collector"],
+      "choices": [
+        "Une connexion temps réel active",
+        "Une vue historique (données SQL indexées sur une période passée)",
+        "Un ADOM dédié aux graphiques",
+        "L'activation du mode Collector"
+      ],
       "answer": 1,
       "explain": "Le Chart Builder de FAZ nécessite des données historiques indexées en SQL. Il ne peut pas générer de graphiques en pur temps réel sans historique."
     },
     {
       "q": "Par défaut, quelle est la source des logs affichés dans la GUI FortiGate si le disque et FAZ sont configurés ?",
-      "choices": ["FAZ en priorité", "Toujours FortiCloud", "Mémoire ou disque local par défaut", "La source est choisie aléatoirement"],
+      "choices": [
+        "FAZ en priorité",
+        "Toujours FortiCloud",
+        "Mémoire ou disque local par défaut",
+        "La source est choisie aléatoirement"
+      ],
       "answer": 2,
       "explain": "Par défaut, si le disque local et FAZ sont configurés, les logs s'affichent depuis la mémoire ou le disque local. Il faut changer la source manuellement pour voir les logs FAZ."
     },
     {
       "q": "Quelle est la différence entre Log View et FortiView dans FortiAnalyzer ?",
-      "choices": ["Log View est pour le temps réel, FortiView pour l'historique", "Log View permet la recherche SQL avancée dans les logs ; FortiView affiche des tableaux de bord graphiques avec drill-down", "Log View est uniquement pour les traffic logs, FortiView pour les UTM", "Il n'y a pas de différence fonctionnelle"],
+      "choices": [
+        "Log View est pour le temps réel, FortiView pour l'historique",
+        "Log View permet la recherche SQL avancée dans les logs ; FortiView affiche des tableaux de bord graphiques avec drill-down",
+        "Log View est uniquement pour les traffic logs, FortiView pour les UTM",
+        "Il n'y a pas de différence fonctionnelle"
+      ],
       "answer": 1,
       "explain": "Log View offre une interface de recherche SQL avancée pour explorer les logs en détail. FortiView présente des tableaux de bord graphiques (top sources, apps, menaces) avec drill-down vers les logs."
     },
     {
       "q": "Dans quel menu de l'interface FortiGate se trouvent les logs Forward Traffic et Security Events ?",
-      "choices": ["System → Dashboard", "Network → Diagnostics", "Log & Report", "Monitor → Security Fabric"],
+      "choices": [
+        "System → Dashboard",
+        "Network → Diagnostics",
+        "Log & Report",
+        "Monitor → Security Fabric"
+      ],
       "answer": 2,
       "explain": "Tous les types de logs (Forward Traffic, Local Traffic, System Events, Security Events) se trouvent dans le menu Log & Report de l'interface FortiGate."
     },
     {
       "q": "La fonctionnalité drill-down de FortiView permet de faire quoi ?",
-      "choices": ["Configurer des politiques directement depuis un log", "Cliquer sur un élément graphique (ex: IP source) pour descendre vers les logs individuels associés", "Supprimer des logs en masse", "Exporter des logs vers un SIEM"],
+      "choices": [
+        "Configurer des politiques directement depuis un log",
+        "Cliquer sur un élément graphique (ex: IP source) pour descendre vers les logs individuels associés",
+        "Supprimer des logs en masse",
+        "Exporter des logs vers un SIEM"
+      ],
       "answer": 1,
       "explain": "Le drill-down dans FortiView permet de cliquer sur un élément d'un tableau de bord (une IP, une application, une menace) pour descendre progressivement vers les logs individuels correspondants."
     }

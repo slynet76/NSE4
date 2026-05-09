@@ -3,7 +3,7 @@
   "module": "System and Network Settings",
   "title": "Rôle et architecture du FortiGate",
   "durationMin": 7,
-  "content": "## Définition NGFW\nUn **Next-Generation Firewall (NGFW)** dépasse le simple filtrage de paquets : il inspecte le contenu applicatif, identifie les utilisateurs et applique des politiques granulaires.\n\n## Zero-Trust et menaces internes\nLe modèle **Zero-Trust** part du principe qu'aucun équipement n'est fiable par défaut, même interne. Une clé USB infectée ou un appareil compromis dans le LAN peut propager une attaque. Le FortiGate répond à ce risque via la segmentation et l'inspection interne.\n\n## Fonctions UTM\nLe FortiGate regroupe plusieurs fonctions de sécurité sous le terme **UTM (Unified Threat Management)** :\n- **AV** : antivirus\n- **IPS** : système de prévention d'intrusion\n- **Web Filter** : filtrage d'URL et de catégories\n- **App Control** : contrôle applicatif\n\n## Modes de déploiement\n### Mode NAT (par défaut)\n- Fonctionne en **couche 3** (routage IP)\n- Le FortiGate route les paquets entre sous-réseaux\n- Mode par défaut à l'installation\n\n### Mode Transparent\n- Fonctionne en **couche 2** (bridge)\n- S'insère sans modifier le plan d'adressage IP existant\n- Identifie l'interface de sortie par l'adresse **MAC** de destination (pas par IP)\n\n## Rôles du FortiGate\n- **Pare-feu périmétrique** : protège le réseau interne contre Internet\n- **Pare-feu datacenter** : sécurise les flux entre serveurs\n- **ISFW (Internal Segmentation Firewall)** : segmente le réseau interne pour limiter les mouvements latéraux d'une menace\n\n## Puces ASIC — SPU\nFortinet utilise des puces matérielles propriétaires regroupées sous le terme **SPU (Secure Processing Unit)** :\n- **NP (Network Processor)** : accélération du **transfert de paquets** (forwarding)\n- **CP (Content Processor)** : accélération des fonctions **UTM** (inspection de contenu) et **cryptographiques**\n- **SP (Security Processor)** : traitement sécurité complémentaire\n\nLe terme **SPU** est le nom collectif pour NP + CP + SP.\n\n## VDOMs\nLes **VDOMs (Virtual Domains)** permettent de créer plusieurs instances virtuelles indépendantes sur un seul FortiGate (multi-tenant, segmentation logique).",
+  "content": "## Définition NGFW\nUn **Next-Generation Firewall (NGFW)** dépasse le simple filtrage de paquets : il inspecte le contenu applicatif, identifie les utilisateurs et applique des politiques granulaires.\n\n## Zero-Trust et menaces internes\nLe modèle **Zero-Trust** part du principe qu'aucun équipement n'est fiable par défaut, même interne. Une clé USB infectée ou un appareil compromis dans le LAN peut propager une attaque. Le FortiGate répond à ce risque via la segmentation et l'inspection interne.\n\n\n![Rôles de déploiement du FortiGate : périmétrique, ISFW et datacenter](diagram:0)\n\n## Fonctions UTM\nLe FortiGate regroupe plusieurs fonctions de sécurité sous le terme **UTM (Unified Threat Management)** :\n- **AV** : antivirus\n- **IPS** : système de prévention d'intrusion\n- **Web Filter** : filtrage d'URL et de catégories\n- **App Control** : contrôle applicatif\n\n## Modes de déploiement\n### Mode NAT (par défaut)\n- Fonctionne en **couche 3** (routage IP)\n- Le FortiGate route les paquets entre sous-réseaux\n- Mode par défaut à l'installation\n\n### Mode Transparent\n- Fonctionne en **couche 2** (bridge)\n- S'insère sans modifier le plan d'adressage IP existant\n- Identifie l'interface de sortie par l'adresse **MAC** de destination (pas par IP)\n\n## Rôles du FortiGate\n- **Pare-feu périmétrique** : protège le réseau interne contre Internet\n- **Pare-feu datacenter** : sécurise les flux entre serveurs\n- **ISFW (Internal Segmentation Firewall)** : segmente le réseau interne pour limiter les mouvements latéraux d'une menace\n\n## Puces ASIC — SPU\nFortinet utilise des puces matérielles propriétaires regroupées sous le terme **SPU (Secure Processing Unit)** :\n- **NP (Network Processor)** : accélération du **transfert de paquets** (forwarding)\n- **CP (Content Processor)** : accélération des fonctions **UTM** (inspection de contenu) et **cryptographiques**\n- **SP (Security Processor)** : traitement sécurité complémentaire\n\nLe terme **SPU** est le nom collectif pour NP + CP + SP.\n\n## VDOMs\nLes **VDOMs (Virtual Domains)** permettent de créer plusieurs instances virtuelles indépendantes sur un seul FortiGate (multi-tenant, segmentation logique).",
   "diagrams": [
     {
       "caption": "Rôles de déploiement du FortiGate : périmétrique, ISFW et datacenter",
@@ -14,91 +14,166 @@
   "questionPool": [
     {
       "q": "Quel est le mode de déploiement par défaut du FortiGate ?",
-      "choices": ["Transparent", "NAT", "Bridge", "Routé avancé"],
+      "choices": [
+        "Transparent",
+        "NAT",
+        "Bridge",
+        "Routé avancé"
+      ],
       "answer": 1,
       "explain": "Le mode NAT est le mode par défaut. Le FortiGate fonctionne en couche 3 et route les paquets entre les sous-réseaux."
     },
     {
       "q": "En mode Transparent, comment le FortiGate détermine-t-il l'interface de sortie ?",
-      "choices": ["Par l'adresse IP de destination", "Par l'adresse MAC de destination", "Par la table de routage IP", "Par le VLAN de destination"],
+      "choices": [
+        "Par l'adresse IP de destination",
+        "Par l'adresse MAC de destination",
+        "Par la table de routage IP",
+        "Par le VLAN de destination"
+      ],
       "answer": 1,
       "explain": "En mode Transparent (couche 2 / bridge), le FortiGate identifie l'interface de sortie grâce à l'adresse MAC de destination, comme un switch."
     },
     {
       "q": "Que signifie l'acronyme SPU dans l'architecture FortiGate ?",
-      "choices": ["Security Policy Unit", "Secure Processing Unit", "System Performance Unit", "Software Processing Unit"],
+      "choices": [
+        "Security Policy Unit",
+        "Secure Processing Unit",
+        "System Performance Unit",
+        "Software Processing Unit"
+      ],
       "answer": 1,
       "explain": "SPU signifie Secure Processing Unit. C'est le terme collectif désignant l'ensemble des puces ASIC propriétaires Fortinet : NP, CP et SP."
     },
     {
       "q": "Quel processeur ASIC est responsable de l'accélération du transfert de paquets (forwarding) ?",
-      "choices": ["CP (Content Processor)", "SP (Security Processor)", "NP (Network Processor)", "UP (UTM Processor)"],
+      "choices": [
+        "CP (Content Processor)",
+        "SP (Security Processor)",
+        "NP (Network Processor)",
+        "UP (UTM Processor)"
+      ],
       "answer": 2,
       "explain": "Le NP (Network Processor) est dédié à l'accélération du forwarding de paquets, permettant des débits élevés sans solliciter le CPU principal."
     },
     {
       "q": "Quel processeur ASIC accélère les fonctions UTM et les opérations cryptographiques ?",
-      "choices": ["NP (Network Processor)", "CP (Content Processor)", "SP (Security Processor)", "DP (Data Processor)"],
+      "choices": [
+        "NP (Network Processor)",
+        "CP (Content Processor)",
+        "SP (Security Processor)",
+        "DP (Data Processor)"
+      ],
       "answer": 1,
       "explain": "Le CP (Content Processor) accélère l'inspection de contenu UTM (AV, IPS...) et les opérations cryptographiques (VPN SSL/IPsec)."
     },
     {
       "q": "Quel rôle FortiGate est conçu pour limiter les mouvements latéraux d'une menace à l'intérieur du réseau ?",
-      "choices": ["Pare-feu périmétrique", "Pare-feu datacenter", "ISFW (Internal Segmentation Firewall)", "NGFW perimeter"],
+      "choices": [
+        "Pare-feu périmétrique",
+        "Pare-feu datacenter",
+        "ISFW (Internal Segmentation Firewall)",
+        "NGFW perimeter"
+      ],
       "answer": 2,
       "explain": "L'ISFW (Internal Segmentation Firewall) segmente le réseau interne. En cas de compromission d'un poste, il empêche la propagation latérale."
     },
     {
       "q": "Quelles fonctions composent le UTM (Unified Threat Management) sur FortiGate ?",
-      "choices": ["VPN, NAT, QoS, VLAN", "AV, IPS, Web Filter, App Control", "DHCP, DNS, NTP, SNMP", "SD-WAN, BGP, OSPF, RIP"],
+      "choices": [
+        "VPN, NAT, QoS, VLAN",
+        "AV, IPS, Web Filter, App Control",
+        "DHCP, DNS, NTP, SNMP",
+        "SD-WAN, BGP, OSPF, RIP"
+      ],
       "answer": 1,
       "explain": "Le UTM regroupe : AV (antivirus), IPS (prévention d'intrusion), Web Filter (filtrage URL) et App Control (contrôle applicatif)."
     },
     {
       "q": "À quoi servent les VDOMs sur un FortiGate ?",
-      "choices": ["Accélérer le traitement des paquets", "Créer plusieurs instances virtuelles indépendantes", "Configurer le mode Transparent", "Gérer les licences FortiGuard"],
+      "choices": [
+        "Accélérer le traitement des paquets",
+        "Créer plusieurs instances virtuelles indépendantes",
+        "Configurer le mode Transparent",
+        "Gérer les licences FortiGuard"
+      ],
       "answer": 1,
       "explain": "Les VDOMs (Virtual Domains) permettent de partitionner un FortiGate physique en plusieurs instances logiques indépendantes, utiles en multi-tenant."
     },
     {
       "q": "Quelle est la différence principale entre le mode NAT et le mode Transparent ?",
-      "choices": ["NAT utilise la couche 2, Transparent utilise la couche 3", "NAT utilise la couche 3 (routage), Transparent utilise la couche 2 (bridge)", "NAT est réservé aux datacenters, Transparent au périmètre", "Il n'y a pas de différence fonctionnelle"],
+      "choices": [
+        "NAT utilise la couche 2, Transparent utilise la couche 3",
+        "NAT utilise la couche 3 (routage), Transparent utilise la couche 2 (bridge)",
+        "NAT est réservé aux datacenters, Transparent au périmètre",
+        "Il n'y a pas de différence fonctionnelle"
+      ],
       "answer": 1,
       "explain": "En mode NAT, le FortiGate route au niveau IP (couche 3). En mode Transparent, il se comporte comme un bridge (couche 2) sans modifier l'adressage."
     },
     {
       "q": "Quelle est la différence de rôle entre un pare-feu périmétrique et un pare-feu datacenter FortiGate ?",
-      "choices": ["Le périmétrique filtre Internet vers le LAN, le datacenter sécurise les flux inter-serveurs", "Le périmétrique est en mode NAT, le datacenter en mode Transparent", "Le périmétrique gère les VDOMs, le datacenter les VLANs", "Ils ont exactement le même rôle"],
+      "choices": [
+        "Le périmétrique filtre Internet vers le LAN, le datacenter sécurise les flux inter-serveurs",
+        "Le périmétrique est en mode NAT, le datacenter en mode Transparent",
+        "Le périmétrique gère les VDOMs, le datacenter les VLANs",
+        "Ils ont exactement le même rôle"
+      ],
       "answer": 0,
       "explain": "Le pare-feu périmétrique protège le réseau interne depuis Internet. Le pare-feu datacenter sécurise les communications entre serveurs (est-ouest)."
     },
     {
       "q": "En mode Transparent, le FortiGate fonctionne comme quel équipement réseau ?",
-      "choices": ["Routeur de couche 3", "Switch / bridge de couche 2", "Concentrateur VPN", "Serveur DHCP"],
+      "choices": [
+        "Routeur de couche 3",
+        "Switch / bridge de couche 2",
+        "Concentrateur VPN",
+        "Serveur DHCP"
+      ],
       "answer": 1,
       "explain": "En mode Transparent, le FortiGate se comporte comme un bridge (switch L2) : il est transparent pour le plan d'adressage IP du réseau."
     },
     {
       "q": "AV + IPS + Web Filter + App Control correspondent à quel concept FortiGate ?",
-      "choices": ["SPU", "VDOM", "UTM", "ASIC"],
+      "choices": [
+        "SPU",
+        "VDOM",
+        "UTM",
+        "ASIC"
+      ],
       "answer": 2,
       "explain": "Ces quatre fonctions (AV, IPS, Web Filter, App Control) sont regroupées sous le terme UTM (Unified Threat Management)."
     },
     {
       "q": "Comment le concept de Zero-Trust justifie-t-il l'utilisation du FortiGate en interne ?",
-      "choices": ["Les menaces viennent uniquement d'Internet", "Une clé USB infectée ou un appareil compromis en interne peut propager une attaque", "Zero-Trust ne s'applique qu'aux accès distants", "Le Zero-Trust remplace le pare-feu périmétrique"],
+      "choices": [
+        "Les menaces viennent uniquement d'Internet",
+        "Une clé USB infectée ou un appareil compromis en interne peut propager une attaque",
+        "Zero-Trust ne s'applique qu'aux accès distants",
+        "Le Zero-Trust remplace le pare-feu périmétrique"
+      ],
       "answer": 1,
       "explain": "Zero-Trust considère qu'aucun équipement n'est fiable par défaut. Une USB infectée ou un device compromis en interne justifie la segmentation via ISFW."
     },
     {
       "q": "Parmi les puces ASIC suivantes, laquelle fait partie du SPU FortiGate ?",
-      "choices": ["GPU (Graphics Processing Unit)", "SP (Security Processor)", "TPM (Trusted Platform Module)", "DPU (Data Processing Unit)"],
+      "choices": [
+        "GPU (Graphics Processing Unit)",
+        "SP (Security Processor)",
+        "TPM (Trusted Platform Module)",
+        "DPU (Data Processing Unit)"
+      ],
       "answer": 1,
       "explain": "Le SP (Security Processor) fait partie du SPU avec le NP et le CP. Le SPU (Secure Processing Unit) est le terme collectif pour ces trois puces."
     },
     {
       "q": "Un profil de sécurité (antivirus, IPS, web filter) est appliqué à quel niveau de la configuration FortiGate ?",
-      "choices": ["Sur l'interface WAN uniquement", "Dans une politique de pare-feu (firewall policy)", "Dans la configuration VDOM globale", "Sur le routage statique"],
+      "choices": [
+        "Sur l'interface WAN uniquement",
+        "Dans une politique de pare-feu (firewall policy)",
+        "Dans la configuration VDOM globale",
+        "Sur le routage statique"
+      ],
       "answer": 1,
       "explain": "Les profils de sécurité (inspection UTM) sont attachés aux politiques de pare-feu. C'est dans la policy que l'on active AV, IPS, web filter, etc."
     }

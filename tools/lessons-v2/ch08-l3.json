@@ -3,7 +3,7 @@
   "module": "Antivirus",
   "title": "Modes d'inspection : flow vs proxy",
   "durationMin": 7,
-  "content": "## Mode flow-based AV\n\nEn mode **flow-based**, FortiGate analyse le trafic en flux (streaming), paquet par paquet, **sans attendre la fin du fichier complet**. Le contenu est inspecté en temps réel pendant le transfert.\n\nAvantages du mode flow-based :\n- **Plus rapide** : faible latence, l'utilisateur reçoit les données presque immédiatement\n- **Moins de mémoire RAM** utilisée : pas de stockage du fichier entier\n- Compatible avec l'accélération hardware via le moteur **NTurbo** si disponible\n\nLimites : certaines techniques d'évasion sont plus difficiles à détecter (fichiers fragmentés, multi-part). Le mode flow-based ne supporte pas CDR.\n\n## Mode proxy-based AV\n\nEn mode **proxy-based**, FortiGate **bufferise** (met en tampon) le fichier **entier** avant de l'analyser — c'est le buffering complet. Ce mode offre une analyse plus complète mais introduit une latence élevée.\n\nAvantages du mode proxy-based :\n- Analyse plus complète et détection avancée\n- Support de **CDR** (Content Disarm and Reconstruction)\n- Fonction **Comfort Clients** disponible\n- Meilleure détection sur les fichiers complexes\n\nInconvénients : consomme plus de mémoire RAM, génère une latence plus élevée due au buffering.\n\n## Comfort Clients\n\nLors du buffering proxy-based, le FortiGate peut mettre du temps à analyser un gros fichier avant de l'envoyer. Pour éviter que le navigateur client ne détecte un **timeout de connexion**, la fonction **Comfort Clients** envoie un filet de données (quelques octets) au navigateur pendant le buffering. Cela maintient la connexion active sans transmettre le fichier réel.\n\n> Comfort Clients est uniquement disponible en mode proxy-based. Cette fonction évite le timeout de connexion côté client pendant le buffering.\n\n## CDR — Content Disarm and Reconstruction\n\n**CDR** (Content Disarm and Reconstruction) est une technologie disponible uniquement en mode **proxy-based**. Elle retire les éléments actifs potentiellement dangereux des documents :\n\n| Élément retiré | Types de fichiers |\n|---|---|\n| Macros | Word, Excel |\n| Scripts actifs | PDF, Word |\n| Hyperliens actifs | PDF, Word, Excel |\n\nLe document résultant est **inoffensif** : le texte et la structure sont conservés, mais tous les éléments exécutables sont supprimés. CDR est particulièrement efficace contre les attaques par document malveillant (spear phishing).\n\n## Choix du mode\n\n| Critère | Flow-based | Proxy-based |\n|---|---|---|\n| Performance | Meilleure | Moins bonne |\n| Latence | Faible | Élevée |\n| RAM | Moins | Plus |\n| CDR | Non supporté | Supporté |\n| Comfort Clients | Non | Oui |\n| Détection | Standard | Avancée |\n\n**Règle générale** : choisir flow-based pour la performance, proxy-based pour la détection maximale incluant CDR et les gros fichiers.",
+  "content": "## Mode flow-based AV\n\nEn mode **flow-based**, FortiGate analyse le trafic en flux (streaming), paquet par paquet, **sans attendre la fin du fichier complet**. Le contenu est inspecté en temps réel pendant le transfert.\n\nAvantages du mode flow-based :\n- **Plus rapide** : faible latence, l'utilisateur reçoit les données presque immédiatement\n- **Moins de mémoire RAM** utilisée : pas de stockage du fichier entier\n- Compatible avec l'accélération hardware via le moteur **NTurbo** si disponible\n\nLimites : certaines techniques d'évasion sont plus difficiles à détecter (fichiers fragmentés, multi-part). Le mode flow-based ne supporte pas CDR.\n\n## Mode proxy-based AV\n\nEn mode **proxy-based**, FortiGate **bufferise** (met en tampon) le fichier **entier** avant de l'analyser — c'est le buffering complet. Ce mode offre une analyse plus complète mais introduit une latence élevée.\n\nAvantages du mode proxy-based :\n- Analyse plus complète et détection avancée\n- Support de **CDR** (Content Disarm and Reconstruction)\n- Fonction **Comfort Clients** disponible\n- Meilleure détection sur les fichiers complexes\n\nInconvénients : consomme plus de mémoire RAM, génère une latence plus élevée due au buffering.\n\n\n![Comparaison pipeline flow-based vs proxy-based — buffering et CDR](diagram:0)\n\n## Comfort Clients\n\nLors du buffering proxy-based, le FortiGate peut mettre du temps à analyser un gros fichier avant de l'envoyer. Pour éviter que le navigateur client ne détecte un **timeout de connexion**, la fonction **Comfort Clients** envoie un filet de données (quelques octets) au navigateur pendant le buffering. Cela maintient la connexion active sans transmettre le fichier réel.\n\n> Comfort Clients est uniquement disponible en mode proxy-based. Cette fonction évite le timeout de connexion côté client pendant le buffering.\n\n## CDR — Content Disarm and Reconstruction\n\n**CDR** (Content Disarm and Reconstruction) est une technologie disponible uniquement en mode **proxy-based**. Elle retire les éléments actifs potentiellement dangereux des documents :\n\n| Élément retiré | Types de fichiers |\n|---|---|\n| Macros | Word, Excel |\n| Scripts actifs | PDF, Word |\n| Hyperliens actifs | PDF, Word, Excel |\n\nLe document résultant est **inoffensif** : le texte et la structure sont conservés, mais tous les éléments exécutables sont supprimés. CDR est particulièrement efficace contre les attaques par document malveillant (spear phishing).\n\n## Choix du mode\n\n| Critère | Flow-based | Proxy-based |\n|---|---|---|\n| Performance | Meilleure | Moins bonne |\n| Latence | Faible | Élevée |\n| RAM | Moins | Plus |\n| CDR | Non supporté | Supporté |\n| Comfort Clients | Non | Oui |\n| Détection | Standard | Avancée |\n\n**Règle générale** : choisir flow-based pour la performance, proxy-based pour la détection maximale incluant CDR et les gros fichiers.",
   "diagrams": [
     {
       "caption": "Comparaison pipeline flow-based vs proxy-based — buffering et CDR",
@@ -14,91 +14,166 @@
   "questionPool": [
     {
       "q": "Quelle fonction envoie un filet de données au navigateur client pour eviter le timeout pendant le buffering proxy-based ?",
-      "choices": ["CDR", "NTurbo", "Comfort Clients", "Flow Engine"],
+      "choices": [
+        "CDR",
+        "NTurbo",
+        "Comfort Clients",
+        "Flow Engine"
+      ],
       "answer": 2,
       "explain": "Comfort Clients envoie un filet de données au navigateur pendant le buffering proxy-based pour eviter le timeout de connexion cote client. Uniquement disponible en proxy-based."
     },
     {
       "q": "Que signifie CDR en antivirus FortiGate ?",
-      "choices": ["Content Delivery Router", "Content Disarm and Reconstruction", "Central Detection and Response", "Compressed Data Removal"],
+      "choices": [
+        "Content Delivery Router",
+        "Content Disarm and Reconstruction",
+        "Central Detection and Response",
+        "Compressed Data Removal"
+      ],
       "answer": 1,
       "explain": "CDR signifie Content Disarm and Reconstruction. Cette technologie retire les macros, scripts et hyperliens actifs des documents Word, PDF et Excel en conservant le texte et la structure."
     },
     {
       "q": "Quel mode AV FortiGate supporte CDR (Content Disarm and Reconstruction) ?",
-      "choices": ["Flow-based uniquement", "Les deux modes", "Proxy-based uniquement", "NTurbo uniquement"],
+      "choices": [
+        "Flow-based uniquement",
+        "Les deux modes",
+        "Proxy-based uniquement",
+        "NTurbo uniquement"
+      ],
       "answer": 2,
       "explain": "CDR est uniquement disponible en mode proxy-based. Le mode flow-based ne supporte pas CDR car il n'effectue pas de buffering du fichier entier."
     },
     {
       "q": "Pourquoi le mode proxy-based introduit-il une latence elevee ?",
-      "choices": ["Il analyse moins de protocoles", "Il effectue le buffering du fichier entier avant l'analyse", "Il consomme moins de CPU", "Il necessite FortiSandbox"],
+      "choices": [
+        "Il analyse moins de protocoles",
+        "Il effectue le buffering du fichier entier avant l'analyse",
+        "Il consomme moins de CPU",
+        "Il necessite FortiSandbox"
+      ],
       "answer": 1,
       "explain": "Le mode proxy-based doit effectuer le buffering complet du fichier avant de commencer l'analyse. Cette attente introduit une latence elevee par rapport au mode flow-based."
     },
     {
       "q": "Quel moteur hardware peut accelerer le mode flow-based AV sur FortiGate ?",
-      "choices": ["CDR", "NTurbo", "FortiSandbox", "ASIC Security"],
+      "choices": [
+        "CDR",
+        "NTurbo",
+        "FortiSandbox",
+        "ASIC Security"
+      ],
       "answer": 1,
       "explain": "Le moteur NTurbo est disponible sur certains FortiGate pour accelerer le traitement en mode flow-based, offrant de meilleures performances hardware."
     },
     {
       "q": "Qu'est-ce que CDR retire des documents Word et PDF ?",
-      "choices": ["Le texte et la mise en forme", "Les images uniquement", "Les macros, scripts et hyperliens actifs", "Les metadonnees uniquement"],
+      "choices": [
+        "Le texte et la mise en forme",
+        "Les images uniquement",
+        "Les macros, scripts et hyperliens actifs",
+        "Les metadonnees uniquement"
+      ],
       "answer": 2,
       "explain": "CDR (Content Disarm and Reconstruction) retire les macros, scripts et hyperliens actifs des documents Word, PDF et Excel. Le texte et la structure sont conserves, le document devient inoffensif."
     },
     {
       "q": "Dans quel mode AV le FortiGate analyse-t-il le trafic paquet par paquet sans attendre la fin du fichier ?",
-      "choices": ["Proxy-based", "Sandbox", "Flow-based", "CDR"],
+      "choices": [
+        "Proxy-based",
+        "Sandbox",
+        "Flow-based",
+        "CDR"
+      ],
       "answer": 2,
       "explain": "Le mode flow-based analyse le trafic en flux (streaming), paquet par paquet, sans attendre la fin du fichier complet. Cela offre une faible latence et une consommation RAM reduite."
     },
     {
       "q": "Quel mode AV FortiGate est recommande pour la detection maximale avec CDR sur les gros fichiers ?",
-      "choices": ["Flow-based", "NTurbo", "Proxy-based", "Heuristique"],
+      "choices": [
+        "Flow-based",
+        "NTurbo",
+        "Proxy-based",
+        "Heuristique"
+      ],
       "answer": 2,
       "explain": "Le mode proxy-based est recommande pour la detection maximale car il supporte CDR et permet une analyse complete du fichier entier grace au buffering, particulierement utile pour les gros fichiers."
     },
     {
       "q": "Quelle est la limitation principale du mode flow-based pour la detection des menaces evasives ?",
-      "choices": ["Il ne scanne pas les archives", "Il consomme trop de RAM", "Les fichiers fragmentes et multi-part sont plus difficiles a detecter", "Il ne supporte pas HTTP"],
+      "choices": [
+        "Il ne scanne pas les archives",
+        "Il consomme trop de RAM",
+        "Les fichiers fragmentes et multi-part sont plus difficiles a detecter",
+        "Il ne supporte pas HTTP"
+      ],
       "answer": 2,
       "explain": "En mode flow-based, certaines techniques d'evasion sont plus difficiles a detecter, notamment les fichiers fragmentes et multi-part, car le fichier n'est pas analyse en entier."
     },
     {
       "q": "Comfort Clients est disponible dans quel mode d'inspection AV ?",
-      "choices": ["Flow-based uniquement", "Proxy-based uniquement", "Les deux modes", "Sandbox uniquement"],
+      "choices": [
+        "Flow-based uniquement",
+        "Proxy-based uniquement",
+        "Les deux modes",
+        "Sandbox uniquement"
+      ],
       "answer": 1,
       "explain": "Comfort Clients est uniquement disponible en mode proxy-based. Cette fonction maintient la connexion client active pendant le buffering en envoyant un filet de donnees pour eviter le timeout."
     },
     {
       "q": "Lequel des avantages suivants est propre au mode flow-based AV ?",
-      "choices": ["Support CDR", "Comfort Clients", "Faible latence et moins de RAM utilisee", "Analyse plus complete des gros fichiers"],
+      "choices": [
+        "Support CDR",
+        "Comfort Clients",
+        "Faible latence et moins de RAM utilisee",
+        "Analyse plus complete des gros fichiers"
+      ],
       "answer": 2,
       "explain": "Le mode flow-based offre une faible latence et consomme moins de RAM car il analyse le flux en temps reel sans buffering. CDR et Comfort Clients sont uniquement disponibles en proxy-based."
     },
     {
       "q": "Que se passe-t-il si le FortiGate analyse un document Word en mode proxy-based avec CDR active ?",
-      "choices": ["Le document est bloque systematiquement", "Les macros et scripts actifs sont retires, le texte est conserve", "Le document est envoye a FortiSandbox", "Le document est converti en PDF"],
+      "choices": [
+        "Le document est bloque systematiquement",
+        "Les macros et scripts actifs sont retires, le texte est conserve",
+        "Le document est envoye a FortiSandbox",
+        "Le document est converti en PDF"
+      ],
       "answer": 1,
       "explain": "Avec CDR active en proxy-based, le FortiGate retire les macros et scripts actifs du document Word tout en conservant le texte et la structure. Le document resultant est inoffensif."
     },
     {
       "q": "Pourquoi le mode proxy-based consomme-t-il plus de RAM que le flow-based ?",
-      "choices": ["Il genere plus de logs", "Il doit stocker le fichier entier en memoire pendant le buffering", "Il analyse plus de protocoles", "Il utilise NTurbo"],
+      "choices": [
+        "Il genere plus de logs",
+        "Il doit stocker le fichier entier en memoire pendant le buffering",
+        "Il analyse plus de protocoles",
+        "Il utilise NTurbo"
+      ],
       "answer": 1,
       "explain": "Le mode proxy-based doit stocker le fichier entier en memoire (buffering) pendant l'analyse, ce qui consomme significativement plus de RAM que le flow-based qui traite les paquets un par un."
     },
     {
       "q": "Quel mode AV est generalement prefere pour les environnements ou les performances sont prioritaires ?",
-      "choices": ["Proxy-based avec CDR", "Flow-based", "Sandbox", "Heuristique"],
+      "choices": [
+        "Proxy-based avec CDR",
+        "Flow-based",
+        "Sandbox",
+        "Heuristique"
+      ],
       "answer": 1,
       "explain": "Le mode flow-based est prefere pour les environnements ou les performances sont prioritaires car il offre une faible latence, moins de consommation RAM et peut utiliser l'acceleration NTurbo."
     },
     {
       "q": "Sur quels types de fichiers CDR est-il particulierement efficace contre les attaques par document malveillant ?",
-      "choices": ["ZIP et RAR uniquement", "Word, PDF et Excel", "Images PNG et JPG", "Executables EXE et DLL"],
+      "choices": [
+        "ZIP et RAR uniquement",
+        "Word, PDF et Excel",
+        "Images PNG et JPG",
+        "Executables EXE et DLL"
+      ],
       "answer": 1,
       "explain": "CDR est particulierement efficace sur les documents Word, PDF et Excel car ce sont les formats qui contiennent des macros, scripts actifs et hyperliens pouvant etre exploites dans des attaques de type spear phishing."
     }
@@ -106,31 +181,56 @@
   "quiz": [
     {
       "q": "Quelle fonction envoie un filet de donnees au navigateur client pour eviter le timeout pendant le buffering proxy-based ?",
-      "choices": ["CDR", "NTurbo", "Comfort Clients", "Flow Engine"],
+      "choices": [
+        "CDR",
+        "NTurbo",
+        "Comfort Clients",
+        "Flow Engine"
+      ],
       "answer": 2,
       "explain": "Comfort Clients envoie un filet de donnees au navigateur pendant le buffering proxy-based pour eviter le timeout de connexion cote client. Uniquement disponible en proxy-based."
     },
     {
       "q": "Que signifie CDR en antivirus FortiGate ?",
-      "choices": ["Content Delivery Router", "Content Disarm and Reconstruction", "Central Detection and Response", "Compressed Data Removal"],
+      "choices": [
+        "Content Delivery Router",
+        "Content Disarm and Reconstruction",
+        "Central Detection and Response",
+        "Compressed Data Removal"
+      ],
       "answer": 1,
       "explain": "CDR signifie Content Disarm and Reconstruction. Cette technologie retire les macros, scripts et hyperliens actifs des documents Word, PDF et Excel en conservant le texte et la structure."
     },
     {
       "q": "Quel mode AV FortiGate supporte CDR (Content Disarm and Reconstruction) ?",
-      "choices": ["Flow-based uniquement", "Les deux modes", "Proxy-based uniquement", "NTurbo uniquement"],
+      "choices": [
+        "Flow-based uniquement",
+        "Les deux modes",
+        "Proxy-based uniquement",
+        "NTurbo uniquement"
+      ],
       "answer": 2,
       "explain": "CDR est uniquement disponible en mode proxy-based. Le mode flow-based ne supporte pas CDR car il n'effectue pas de buffering du fichier entier."
     },
     {
       "q": "Dans quel mode AV le FortiGate analyse-t-il le trafic paquet par paquet sans attendre la fin du fichier ?",
-      "choices": ["Proxy-based", "Sandbox", "Flow-based", "CDR"],
+      "choices": [
+        "Proxy-based",
+        "Sandbox",
+        "Flow-based",
+        "CDR"
+      ],
       "answer": 2,
       "explain": "Le mode flow-based analyse le trafic en flux (streaming), paquet par paquet, sans attendre la fin du fichier complet. Cela offre une faible latence et une consommation RAM reduite."
     },
     {
       "q": "Pourquoi le mode proxy-based introduit-il une latence elevee ?",
-      "choices": ["Il analyse moins de protocoles", "Il effectue le buffering du fichier entier avant l'analyse", "Il consomme moins de CPU", "Il necessite FortiSandbox"],
+      "choices": [
+        "Il analyse moins de protocoles",
+        "Il effectue le buffering du fichier entier avant l'analyse",
+        "Il consomme moins de CPU",
+        "Il necessite FortiSandbox"
+      ],
       "answer": 1,
       "explain": "Le mode proxy-based doit effectuer le buffering complet du fichier avant de commencer l'analyse. Cette attente introduit une latence elevee par rapport au mode flow-based."
     }

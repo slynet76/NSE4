@@ -3,7 +3,7 @@
   "module": "IPsec VPN",
   "title": "Monitoring et dépannage IPsec",
   "durationMin": 8,
-  "content": "## Monitoring via GUI\n\nLa surveillance des tunnels IPsec s'effectue via **VPN > Monitor > IPsec Monitor** dans l'interface graphique FortiGate. Cette vue affiche :\n- Les tunnels actifs avec leur statut **Up** ou **Down**\n- Les compteurs de trafic : bytes in (octets entrants) et bytes out (octets sortants)\n- La possibilité de forcer la montée ou la descente d'un tunnel manuellement\n\n## Commandes CLI de monitoring IPsec\n\n### Résumé des tunnels\n```\nget vpn ipsec tunnel summary\n```\nAffiche un résumé des tunnels IPsec : statut (up/down), nommage, compteurs.\n\n### IKE SAs actives (Phase 1)\n```\ndiagnose vpn ike gateway list\n```\nListe les **IKE SAs** (Security Associations de Phase 1) actives. Permet de vérifier que la Phase 1 est bien établie.\n\n### Tunnels IPsec actifs (Phase 2)\n```\ndiagnose vpn tunnel list\n```\nListe les tunnels **IPsec** actifs (Phase 2) avec les proxy IDs et les compteurs de trafic.\n\n### Debug IKE complet\n```\ndiagnose debug application ike -1\n```\nActive le **debug IKE** complet. Très verbeux — affiche toutes les étapes de négociation IKE. À utiliser avec parcimonie en production. Arrêter le debug avec :\n```\ndiagnose debug reset\ndiagnose debug disable\n```\n\n### Filtre des logs IKE\n```\ndiagnose vpn ike log-filter\n```\nPermet de **filtrer les logs IKE** par adresse IP du pair distant pour cibler un tunnel spécifique.\n\n## Causes courantes de panne IPsec\n\n### Mismatch Phase 1\n- **Algorithmes incompatibles** : algorithme de chiffrement ou d'intégrité différent entre les deux extrémités\n- **Authentification incorrecte** : pre-shared key (PSK) incorrecte ou certificat non reconnu\n- **Version IKE différente** : une extrémité en IKEv1, l'autre en IKEv2\n\n### Mismatch Phase 2\n- **Proxy IDs incompatibles** : les réseaux source/destination ne correspondent pas\n- **Algorithmes Phase 2 différents** : chiffrement ou intégrité non concordants\n- **PFS asymétrique** : PFS activé d'un côté uniquement\n\n### Problèmes réseau et firewall\n- **Pas de route vers le pair** : FortiGate ne peut pas atteindre l'IP du pair distant\n- **Pas de route vers le réseau distant** : trafic ne trouve pas de chemin via le tunnel\n- **Firewall bloque UDP 500 ou UDP 4500** : IKE utilise UDP 500, NAT-T utilise UDP 4500. Si un firewall intermédiaire bloque ces ports, le tunnel ne peut pas s'établir\n\n## Messages d'erreur IKE courants\n\n| Message | Cause |\n|---|---|\n| **NO_PROPOSAL_CHOSEN** | Mismatch d'algorithmes Phase 1 ou Phase 2 |\n| **AUTH_FAILED** | Pre-shared key incorrecte ou problème certificat |\n| **TS_UNACCEPTABLE** | Proxy IDs incompatibles (Phase 2) |\n| **TIMEOUT** | Pair distant injoignable, UDP 500/4500 bloqué |\n\n## Procédure de débogage recommandée\n\n1. Vérifier le statut Phase 1 : `diagnose vpn ike gateway list`\n2. Vérifier le statut Phase 2 : `diagnose vpn tunnel list`\n3. Activer le debug IKE : `diagnose debug application ike -1`\n4. Analyser les messages d'erreur (NO_PROPOSAL_CHOSEN, AUTH_FAILED...)\n5. Vérifier les routes vers le pair et le réseau distant\n6. Vérifier que UDP 500 et UDP 4500 ne sont pas bloqués\n7. Désactiver le debug : `diagnose debug reset` puis `diagnose debug disable`",
+  "content": "## Monitoring via GUI\n\nLa surveillance des tunnels IPsec s'effectue via **VPN > Monitor > IPsec Monitor** dans l'interface graphique FortiGate. Cette vue affiche :\n- Les tunnels actifs avec leur statut **Up** ou **Down**\n- Les compteurs de trafic : bytes in (octets entrants) et bytes out (octets sortants)\n- La possibilité de forcer la montée ou la descente d'un tunnel manuellement\n\n## Commandes CLI de monitoring IPsec\n\n### Résumé des tunnels\n```\nget vpn ipsec tunnel summary\n```\nAffiche un résumé des tunnels IPsec : statut (up/down), nommage, compteurs.\n\n### IKE SAs actives (Phase 1)\n```\ndiagnose vpn ike gateway list\n```\nListe les **IKE SAs** (Security Associations de Phase 1) actives. Permet de vérifier que la Phase 1 est bien établie.\n\n### Tunnels IPsec actifs (Phase 2)\n```\ndiagnose vpn tunnel list\n```\nListe les tunnels **IPsec** actifs (Phase 2) avec les proxy IDs et les compteurs de trafic.\n\n### Debug IKE complet\n```\ndiagnose debug application ike -1\n```\nActive le **debug IKE** complet. Très verbeux — affiche toutes les étapes de négociation IKE. À utiliser avec parcimonie en production. Arrêter le debug avec :\n```\ndiagnose debug reset\ndiagnose debug disable\n```\n\n### Filtre des logs IKE\n```\ndiagnose vpn ike log-filter\n```\nPermet de **filtrer les logs IKE** par adresse IP du pair distant pour cibler un tunnel spécifique.\n\n\n![Flux de dépannage IPsec : Phase 1 → Phase 2 → routage → politiques](diagram:0)\n\n## Causes courantes de panne IPsec\n\n### Mismatch Phase 1\n- **Algorithmes incompatibles** : algorithme de chiffrement ou d'intégrité différent entre les deux extrémités\n- **Authentification incorrecte** : pre-shared key (PSK) incorrecte ou certificat non reconnu\n- **Version IKE différente** : une extrémité en IKEv1, l'autre en IKEv2\n\n### Mismatch Phase 2\n- **Proxy IDs incompatibles** : les réseaux source/destination ne correspondent pas\n- **Algorithmes Phase 2 différents** : chiffrement ou intégrité non concordants\n- **PFS asymétrique** : PFS activé d'un côté uniquement\n\n### Problèmes réseau et firewall\n- **Pas de route vers le pair** : FortiGate ne peut pas atteindre l'IP du pair distant\n- **Pas de route vers le réseau distant** : trafic ne trouve pas de chemin via le tunnel\n- **Firewall bloque UDP 500 ou UDP 4500** : IKE utilise UDP 500, NAT-T utilise UDP 4500. Si un firewall intermédiaire bloque ces ports, le tunnel ne peut pas s'établir\n\n## Messages d'erreur IKE courants\n\n| Message | Cause |\n|---|---|\n| **NO_PROPOSAL_CHOSEN** | Mismatch d'algorithmes Phase 1 ou Phase 2 |\n| **AUTH_FAILED** | Pre-shared key incorrecte ou problème certificat |\n| **TS_UNACCEPTABLE** | Proxy IDs incompatibles (Phase 2) |\n| **TIMEOUT** | Pair distant injoignable, UDP 500/4500 bloqué |\n\n## Procédure de débogage recommandée\n\n1. Vérifier le statut Phase 1 : `diagnose vpn ike gateway list`\n2. Vérifier le statut Phase 2 : `diagnose vpn tunnel list`\n3. Activer le debug IKE : `diagnose debug application ike -1`\n4. Analyser les messages d'erreur (NO_PROPOSAL_CHOSEN, AUTH_FAILED...)\n5. Vérifier les routes vers le pair et le réseau distant\n6. Vérifier que UDP 500 et UDP 4500 ne sont pas bloqués\n7. Désactiver le debug : `diagnose debug reset` puis `diagnose debug disable`",
   "diagrams": [
     {
       "caption": "Flux de dépannage IPsec : Phase 1 → Phase 2 → routage → politiques",
@@ -14,91 +14,166 @@
   "questionPool": [
     {
       "q": "Quel chemin GUI affiche les tunnels IPsec actifs avec statut Up/Down sur FortiGate ?",
-      "choices": ["System > Certificates > Monitor", "VPN > Monitor > IPsec Monitor", "Dashboard > Network", "Log > VPN Tunnels"],
+      "choices": [
+        "System > Certificates > Monitor",
+        "VPN > Monitor > IPsec Monitor",
+        "Dashboard > Network",
+        "Log > VPN Tunnels"
+      ],
       "answer": 1,
       "explain": "Les tunnels IPsec actifs avec statut Up/Down et compteurs de trafic (bytes in/out) se consultent via VPN > Monitor > IPsec Monitor dans l'interface GUI FortiGate."
     },
     {
       "q": "Quelle commande CLI liste les IKE SAs (Phase 1) actives sur FortiGate ?",
-      "choices": ["get vpn ipsec tunnel summary", "diagnose vpn ike gateway list", "diagnose vpn tunnel list", "diagnose debug application ike -1"],
+      "choices": [
+        "get vpn ipsec tunnel summary",
+        "diagnose vpn ike gateway list",
+        "diagnose vpn tunnel list",
+        "diagnose debug application ike -1"
+      ],
       "answer": 1,
       "explain": "La commande diagnose vpn ike gateway list liste les IKE SAs (Phase 1) actives. Elle permet de vérifier que la Phase 1 est bien établie entre les deux pairs."
     },
     {
       "q": "Quelle commande CLI affiche la liste des tunnels IPsec actifs (Phase 2) avec les proxy IDs ?",
-      "choices": ["diagnose vpn ike gateway list", "get vpn ipsec tunnel summary", "diagnose vpn tunnel list", "show vpn ipsec phase2"],
+      "choices": [
+        "diagnose vpn ike gateway list",
+        "get vpn ipsec tunnel summary",
+        "diagnose vpn tunnel list",
+        "show vpn ipsec phase2"
+      ],
       "answer": 2,
       "explain": "La commande diagnose vpn tunnel list affiche la liste des tunnels IPsec actifs (Phase 2) avec les proxy IDs et les compteurs de trafic."
     },
     {
       "q": "Que signifie le message d'erreur IKE NO_PROPOSAL_CHOSEN ?",
-      "choices": ["La pre-shared key est incorrecte", "Il y a un mismatch d'algorithmes en Phase 1 ou Phase 2 entre les deux extrémités", "Le pair distant est injoignable", "Les proxy IDs sont incompatibles"],
+      "choices": [
+        "La pre-shared key est incorrecte",
+        "Il y a un mismatch d'algorithmes en Phase 1 ou Phase 2 entre les deux extrémités",
+        "Le pair distant est injoignable",
+        "Les proxy IDs sont incompatibles"
+      ],
       "answer": 1,
       "explain": "Le message NO_PROPOSAL_CHOSEN indique un mismatch d'algorithmes — les propositions (algorithme de chiffrement, intégrité) ne correspondent pas entre les deux extrémités en Phase 1 ou Phase 2."
     },
     {
       "q": "Que signifie le message d'erreur IKE AUTH_FAILED ?",
-      "choices": ["Un mismatch d'algorithmes Phase 2", "La pre-shared key est incorrecte ou il y a un problème de certificat lors de l'authentification", "Les proxy IDs ne correspondent pas", "UDP 500 est bloqué par un firewall intermédiaire"],
+      "choices": [
+        "Un mismatch d'algorithmes Phase 2",
+        "La pre-shared key est incorrecte ou il y a un problème de certificat lors de l'authentification",
+        "Les proxy IDs ne correspondent pas",
+        "UDP 500 est bloqué par un firewall intermédiaire"
+      ],
       "answer": 1,
       "explain": "AUTH_FAILED indique un échec d'authentification : pre-shared key incorrecte ou problème de certificat. Il survient en Phase 1 lors de la vérification de l'identité du pair."
     },
     {
       "q": "Quel port UDP doit être ouvert pour que IKE fonctionne normalement (sans NAT) ?",
-      "choices": ["UDP 443", "UDP 500", "UDP 4500", "UDP 1194"],
+      "choices": [
+        "UDP 443",
+        "UDP 500",
+        "UDP 4500",
+        "UDP 1194"
+      ],
       "answer": 1,
       "explain": "IKE (Internet Key Exchange) utilise le port UDP 500 pour la négociation Phase 1 et Phase 2. Ce port doit être ouvert sur tous les firewalls entre les deux pairs VPN."
     },
     {
       "q": "Quel port UDP est utilisé par NAT-T (NAT Traversal) pour IPsec ?",
-      "choices": ["UDP 500", "UDP 4500", "UDP 1723", "UDP 443"],
+      "choices": [
+        "UDP 500",
+        "UDP 4500",
+        "UDP 1723",
+        "UDP 443"
+      ],
       "answer": 1,
       "explain": "NAT-T (NAT Traversal) encapsule les paquets IKE et ESP dans UDP 4500 pour traverser les équipements NAT. Ce port doit être ouvert si des équipements NAT sont présents entre les pairs VPN."
     },
     {
       "q": "Comment arrêter le debug IKE après une session de dépannage sur FortiGate ?",
-      "choices": ["Redémarrer FortiGate", "Utiliser diagnose debug reset puis diagnose debug disable", "Fermer la session CLI", "Utiliser get vpn ipsec tunnel summary"],
+      "choices": [
+        "Redémarrer FortiGate",
+        "Utiliser diagnose debug reset puis diagnose debug disable",
+        "Fermer la session CLI",
+        "Utiliser get vpn ipsec tunnel summary"
+      ],
       "answer": 1,
       "explain": "Pour arrêter le debug IKE sur FortiGate, on utilise les commandes diagnose debug reset (réinitialise les filtres) puis diagnose debug disable (désactive le mode debug)."
     },
     {
       "q": "Quelle commande permet de filtrer les logs IKE par adresse IP du pair distant ?",
-      "choices": ["diagnose debug application ike -1", "diagnose vpn ike log-filter", "get vpn ipsec tunnel summary", "diagnose vpn tunnel list"],
+      "choices": [
+        "diagnose debug application ike -1",
+        "diagnose vpn ike log-filter",
+        "get vpn ipsec tunnel summary",
+        "diagnose vpn tunnel list"
+      ],
       "answer": 1,
       "explain": "La commande diagnose vpn ike log-filter permet de filtrer les logs IKE par adresse IP du pair distant, ce qui est utile pour cibler un tunnel spécifique lors du dépannage."
     },
     {
       "q": "Une panne IPsec avec le message TS_UNACCEPTABLE indique quel problème ?",
-      "choices": ["Mismatch d'algorithmes Phase 1", "Pre-shared key incorrecte", "Proxy IDs incompatibles entre les deux extrémités (Phase 2)", "UDP 500 bloqué par un firewall"],
+      "choices": [
+        "Mismatch d'algorithmes Phase 1",
+        "Pre-shared key incorrecte",
+        "Proxy IDs incompatibles entre les deux extrémités (Phase 2)",
+        "UDP 500 bloqué par un firewall"
+      ],
       "answer": 2,
       "explain": "TS_UNACCEPTABLE (Traffic Selectors Unacceptable) indique que les proxy IDs (selectors) Phase 2 ne correspondent pas entre les deux extrémités du tunnel."
     },
     {
       "q": "Quelle commande affiche un résumé des tunnels IPsec avec statut et nommage ?",
-      "choices": ["diagnose vpn tunnel list", "diagnose vpn ike gateway list", "get vpn ipsec tunnel summary", "show vpn monitor"],
+      "choices": [
+        "diagnose vpn tunnel list",
+        "diagnose vpn ike gateway list",
+        "get vpn ipsec tunnel summary",
+        "show vpn monitor"
+      ],
       "answer": 2,
       "explain": "La commande get vpn ipsec tunnel summary affiche un résumé des tunnels IPsec avec leur statut (up/down), leur nommage et les compteurs de trafic."
     },
     {
       "q": "Si un tunnel IPsec ne s'établit pas et que Phase 1 échoue à cause d'une version IKE différente, comment le corriger ?",
-      "choices": ["Modifier les proxy IDs Phase 2", "Aligner la version IKE (IKEv1 ou IKEv2) sur les deux extrémités du tunnel", "Changer la pre-shared key", "Ajouter une route statique vers le pair"],
+      "choices": [
+        "Modifier les proxy IDs Phase 2",
+        "Aligner la version IKE (IKEv1 ou IKEv2) sur les deux extrémités du tunnel",
+        "Changer la pre-shared key",
+        "Ajouter une route statique vers le pair"
+      ],
       "answer": 1,
       "explain": "Un mismatch de version IKE (une extrémité en IKEv1, l'autre en IKEv2) provoque l'échec de la Phase 1. La solution est d'aligner la version IKE sur les deux extrémités."
     },
     {
       "q": "Quel problème peut causer le blocage de UDP 4500 sur un firewall intermédiaire ?",
-      "choices": ["Échec de la Phase 2 uniquement", "Impossibilité d'établir le tunnel IPsec quand NAT-T est requis (présence de NAT entre les pairs)", "Mismatch de proxy IDs", "Expiration prématurée des SA Phase 2"],
+      "choices": [
+        "Échec de la Phase 2 uniquement",
+        "Impossibilité d'établir le tunnel IPsec quand NAT-T est requis (présence de NAT entre les pairs)",
+        "Mismatch de proxy IDs",
+        "Expiration prématurée des SA Phase 2"
+      ],
       "answer": 1,
       "explain": "Si UDP 4500 est bloqué, NAT-T (NAT Traversal) ne peut pas fonctionner. Cela empêche l'établissement du tunnel IPsec lorsque des équipements NAT sont présents entre les pairs."
     },
     {
       "q": "Que vérifie-t-on en priorité si un tunnel IPsec est Down sans message d'erreur visible dans les logs IKE ?",
-      "choices": ["Les algorithmes Phase 2 en premier", "La connectivité réseau vers le pair (route existante, UDP 500 et UDP 4500 non bloqués)", "Les proxy IDs en premier", "La durée de vie des SA"],
+      "choices": [
+        "Les algorithmes Phase 2 en premier",
+        "La connectivité réseau vers le pair (route existante, UDP 500 et UDP 4500 non bloqués)",
+        "Les proxy IDs en premier",
+        "La durée de vie des SA"
+      ],
       "answer": 1,
       "explain": "Si aucun message IKE n'apparaît dans les logs, cela suggère un problème de connectivité réseau. On vérifie la route vers le pair distant et que UDP 500 et UDP 4500 ne sont pas bloqués."
     },
     {
       "q": "Quelle information affiche VPN > Monitor > IPsec Monitor dans l'interface GUI FortiGate ?",
-      "choices": ["Les logs IKE détaillés de chaque session", "Les tunnels actifs avec statut Up/Down et compteurs bytes in/bytes out", "La configuration détaillée de chaque Phase 2", "Les certificats utilisés pour l'authentification VPN"],
+      "choices": [
+        "Les logs IKE détaillés de chaque session",
+        "Les tunnels actifs avec statut Up/Down et compteurs bytes in/bytes out",
+        "La configuration détaillée de chaque Phase 2",
+        "Les certificats utilisés pour l'authentification VPN"
+      ],
       "answer": 1,
       "explain": "VPN > Monitor > IPsec Monitor affiche les tunnels actifs avec leur statut Up ou Down, ainsi que les compteurs de trafic bytes in (octets entrants) et bytes out (octets sortants)."
     }
@@ -106,31 +181,56 @@
   "quiz": [
     {
       "q": "Quel chemin GUI affiche les tunnels IPsec actifs avec statut Up/Down sur FortiGate ?",
-      "choices": ["System > Certificates > Monitor", "VPN > Monitor > IPsec Monitor", "Dashboard > Network", "Log > VPN Tunnels"],
+      "choices": [
+        "System > Certificates > Monitor",
+        "VPN > Monitor > IPsec Monitor",
+        "Dashboard > Network",
+        "Log > VPN Tunnels"
+      ],
       "answer": 1,
       "explain": "Les tunnels IPsec actifs avec statut Up/Down et compteurs de trafic (bytes in/out) se consultent via VPN > Monitor > IPsec Monitor dans l'interface GUI FortiGate."
     },
     {
       "q": "Que signifie le message d'erreur IKE NO_PROPOSAL_CHOSEN ?",
-      "choices": ["La pre-shared key est incorrecte", "Il y a un mismatch d'algorithmes en Phase 1 ou Phase 2 entre les deux extrémités", "Le pair distant est injoignable", "Les proxy IDs sont incompatibles"],
+      "choices": [
+        "La pre-shared key est incorrecte",
+        "Il y a un mismatch d'algorithmes en Phase 1 ou Phase 2 entre les deux extrémités",
+        "Le pair distant est injoignable",
+        "Les proxy IDs sont incompatibles"
+      ],
       "answer": 1,
       "explain": "Le message NO_PROPOSAL_CHOSEN indique un mismatch d'algorithmes — les propositions (algorithme de chiffrement, intégrité) ne correspondent pas entre les deux extrémités en Phase 1 ou Phase 2."
     },
     {
       "q": "Comment arrêter le debug IKE après une session de dépannage sur FortiGate ?",
-      "choices": ["Redémarrer FortiGate", "Utiliser diagnose debug reset puis diagnose debug disable", "Fermer la session CLI", "Utiliser get vpn ipsec tunnel summary"],
+      "choices": [
+        "Redémarrer FortiGate",
+        "Utiliser diagnose debug reset puis diagnose debug disable",
+        "Fermer la session CLI",
+        "Utiliser get vpn ipsec tunnel summary"
+      ],
       "answer": 1,
       "explain": "Pour arrêter le debug IKE sur FortiGate, on utilise les commandes diagnose debug reset (réinitialise les filtres) puis diagnose debug disable (désactive le mode debug)."
     },
     {
       "q": "Quel port UDP doit être ouvert pour que IKE fonctionne normalement (sans NAT) ?",
-      "choices": ["UDP 443", "UDP 500", "UDP 4500", "UDP 1194"],
+      "choices": [
+        "UDP 443",
+        "UDP 500",
+        "UDP 4500",
+        "UDP 1194"
+      ],
       "answer": 1,
       "explain": "IKE (Internet Key Exchange) utilise le port UDP 500 pour la négociation Phase 1 et Phase 2. Ce port doit être ouvert sur tous les firewalls entre les deux pairs VPN."
     },
     {
       "q": "Quelle commande CLI liste les IKE SAs (Phase 1) actives sur FortiGate ?",
-      "choices": ["get vpn ipsec tunnel summary", "diagnose vpn ike gateway list", "diagnose vpn tunnel list", "diagnose debug application ike -1"],
+      "choices": [
+        "get vpn ipsec tunnel summary",
+        "diagnose vpn ike gateway list",
+        "diagnose vpn tunnel list",
+        "diagnose debug application ike -1"
+      ],
       "answer": 1,
       "explain": "La commande diagnose vpn ike gateway list liste les IKE SAs (Phase 1) actives. Elle permet de vérifier que la Phase 1 est bien établie entre les deux pairs."
     }

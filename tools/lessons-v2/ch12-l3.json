@@ -3,7 +3,7 @@
   "module": "SD-WAN Configuration and Monitoring",
   "title": "Performance SLA et santé des liens",
   "durationMin": 7,
-  "content": "## Performance SLA et santé des liens SD-WAN\n\n### Rôle des Performance SLAs\nLes **Performance SLAs** ont deux fonctions :\n1. Monitorer l'**état** des membres : **alive** ou **dead**\n2. Monitorer la **qualité** des membres : packet loss, latence (latency), jitter\n\n### Modes de monitoring\n\n#### Mode Active (recommandé)\nFortiGate envoie des **sondes périodiques** vers les serveurs beacon. Intervalle par défaut : **500 ms**.\n- C'est le **SEUL mode capable de détecter alive/dead**.\n- Recommandé car il détecte immédiatement les pannes de lien sans attendre du trafic réel.\n\n#### Mode Passive\nDéduit la santé du lien depuis le **trafic réel des sessions** (pas de sondes envoyées).\n- Nécessite une policy avec l'option `passive-wan-health-measurement` activée.\n- Ne peut PAS détecter alive/dead de manière indépendante.\n\n#### Mode Prefer Passive\nFonctionne en mode **passif en priorité** : si du trafic réel est présent, l'analyse de ce trafic est utilisée. En l'absence de trafic, bascule automatiquement en mode **actif** pour envoyer des sondes.\n\n### Redondance : 2 serveurs beacon\nConfigurer **2 serveurs beacon** (au minimum) est recommandé pour la redondance. Cela permet de **distinguer une panne du beacon** d'une **panne du lien lui-même**. Avec un seul serveur beacon, impossible de faire la différence.\n\n### SLA Target\nLe **SLA target** définit des seuils pour les trois métriques :\n- **Packet loss** (seuil en %)\n- **Latency** (seuil en ms)\n- **Jitter** (seuil en ms)\n\nLe SLA target est utilisé par la stratégie de sélection **Lowest Cost (SLA)** pour choisir le lien le moins coûteux qui respecte les seuils.\n\n### Link Status\nLes paramètres de **Link Status** contrôlent :\n- L'**intervalle entre sondes** (probe interval)\n- Le **nombre d'échecs consécutifs** avant de marquer le lien comme dead\n\n### Interprétation GUI SD-WAN\n| Indicateur | Signification |\n|---|---|\n| Flèche **verte** | Le beacon répond — le membre est **alive**. Ne signifie PAS que le SLA target est respecté. |\n| Flèche **rouge** | Le beacon ne répond pas — le membre est **dead**. |\n| Métrique en **rouge** | La valeur mesurée dépasse le **SLA target** défini. |\n\n**Point clé NSE4** : flèche verte ≠ SLA OK. Un lien peut être alive (beacon répond) mais avoir des métriques dégradées qui dépassent le SLA target.\n\n### Récapitulatif NSE4\n- **Seul le mode Active** détecte alive/dead\n- Intervalle par défaut des sondes actives = **500 ms**\n- **2 beacon servers** = distinguer panne beacon vs panne lien\n- Mode Passive = déduit depuis trafic réel, `passive-wan-health-measurement`\n- **Flèche verte ≠ SLA respectée** (beacon répond, mais métriques peuvent être dégradées)\n- **SLA target** utilisé par la stratégie **Lowest Cost (SLA)**\n- 3 métriques : **packet loss**, **latency**, **jitter**",
+  "content": "## Performance SLA et santé des liens SD-WAN\n\n![Monitoring actif SD-WAN : FortiGate envoie des sondes vers 2 serveurs beacon et surveille l'état alive/dead](diagram:0)\n\n### Rôle des Performance SLAs\nLes **Performance SLAs** ont deux fonctions :\n1. Monitorer l'**état** des membres : **alive** ou **dead**\n2. Monitorer la **qualité** des membres : packet loss, latence (latency), jitter\n\n### Modes de monitoring\n\n#### Mode Active (recommandé)\nFortiGate envoie des **sondes périodiques** vers les serveurs beacon. Intervalle par défaut : **500 ms**.\n- C'est le **SEUL mode capable de détecter alive/dead**.\n- Recommandé car il détecte immédiatement les pannes de lien sans attendre du trafic réel.\n\n#### Mode Passive\nDéduit la santé du lien depuis le **trafic réel des sessions** (pas de sondes envoyées).\n- Nécessite une policy avec l'option `passive-wan-health-measurement` activée.\n- Ne peut PAS détecter alive/dead de manière indépendante.\n\n#### Mode Prefer Passive\nFonctionne en mode **passif en priorité** : si du trafic réel est présent, l'analyse de ce trafic est utilisée. En l'absence de trafic, bascule automatiquement en mode **actif** pour envoyer des sondes.\n\n### Redondance : 2 serveurs beacon\nConfigurer **2 serveurs beacon** (au minimum) est recommandé pour la redondance. Cela permet de **distinguer une panne du beacon** d'une **panne du lien lui-même**. Avec un seul serveur beacon, impossible de faire la différence.\n\n### SLA Target\nLe **SLA target** définit des seuils pour les trois métriques :\n- **Packet loss** (seuil en %)\n- **Latency** (seuil en ms)\n- **Jitter** (seuil en ms)\n\nLe SLA target est utilisé par la stratégie de sélection **Lowest Cost (SLA)** pour choisir le lien le moins coûteux qui respecte les seuils.\n\n### Link Status\nLes paramètres de **Link Status** contrôlent :\n- L'**intervalle entre sondes** (probe interval)\n- Le **nombre d'échecs consécutifs** avant de marquer le lien comme dead\n\n### Interprétation GUI SD-WAN\n| Indicateur | Signification |\n|---|---|\n| Flèche **verte** | Le beacon répond — le membre est **alive**. Ne signifie PAS que le SLA target est respecté. |\n| Flèche **rouge** | Le beacon ne répond pas — le membre est **dead**. |\n| Métrique en **rouge** | La valeur mesurée dépasse le **SLA target** défini. |\n\n**Point clé NSE4** : flèche verte ≠ SLA OK. Un lien peut être alive (beacon répond) mais avoir des métriques dégradées qui dépassent le SLA target.\n\n### Récapitulatif NSE4\n- **Seul le mode Active** détecte alive/dead\n- Intervalle par défaut des sondes actives = **500 ms**\n- **2 beacon servers** = distinguer panne beacon vs panne lien\n- Mode Passive = déduit depuis trafic réel, `passive-wan-health-measurement`\n- **Flèche verte ≠ SLA respectée** (beacon répond, mais métriques peuvent être dégradées)\n- **SLA target** utilisé par la stratégie **Lowest Cost (SLA)**\n- 3 métriques : **packet loss**, **latency**, **jitter**",
   "diagrams": [
     {
       "caption": "Monitoring actif SD-WAN : FortiGate envoie des sondes vers 2 serveurs beacon et surveille l'état alive/dead",
@@ -14,91 +14,166 @@
   "questionPool": [
     {
       "q": "Quel mode Performance SLA est le SEUL capable de détecter l'état alive/dead d'un lien SD-WAN ?",
-      "choices": ["Mode Passive", "Mode Prefer Passive", "Mode Active", "Mode Hybrid"],
+      "choices": [
+        "Mode Passive",
+        "Mode Prefer Passive",
+        "Mode Active",
+        "Mode Hybrid"
+      ],
       "answer": 2,
       "explain": "Seul le mode Active peut détecter l'état alive/dead d'un lien. Il envoie des sondes périodiques actives et détecte immédiatement toute absence de réponse du beacon."
     },
     {
       "q": "Quel est l'intervalle par défaut des sondes en mode Active ?",
-      "choices": ["100 ms", "1000 ms (1 seconde)", "500 ms", "250 ms"],
+      "choices": [
+        "100 ms",
+        "1000 ms (1 seconde)",
+        "500 ms",
+        "250 ms"
+      ],
       "answer": 2,
       "explain": "L'intervalle par défaut des sondes actives est de 500 ms. Ce paramètre est configurable via les paramètres de Link Status du Performance SLA."
     },
     {
       "q": "Pourquoi est-il recommandé de configurer 2 serveurs beacon dans un Performance SLA ?",
-      "choices": ["Pour doubler la bande passante des sondes", "Pour distinguer une panne du beacon lui-même d'une panne du lien SD-WAN", "Parce que FortiOS exige obligatoirement 2 beacons", "Pour équilibrer la charge des sondes entre deux datacenters"],
+      "choices": [
+        "Pour doubler la bande passante des sondes",
+        "Pour distinguer une panne du beacon lui-même d'une panne du lien SD-WAN",
+        "Parce que FortiOS exige obligatoirement 2 beacons",
+        "Pour équilibrer la charge des sondes entre deux datacenters"
+      ],
       "answer": 1,
       "explain": "Avec 2 serveurs beacon, si l'un échoue, le FortiGate peut vérifier si l'autre répond encore. Cela permet de distinguer une panne du beacon d'une panne du lien. Avec un seul beacon, la distinction est impossible."
     },
     {
       "q": "Quel paramètre doit être activé dans une policy pour que le mode Passive soit opérationnel ?",
-      "choices": ["enable-passive-monitoring", "passive-wan-health-measurement", "wan-health-check-passive", "sla-passive-mode"],
+      "choices": [
+        "enable-passive-monitoring",
+        "passive-wan-health-measurement",
+        "wan-health-check-passive",
+        "sla-passive-mode"
+      ],
       "answer": 1,
       "explain": "Le mode Passive nécessite l'activation de l'option passive-wan-health-measurement dans la policy firewall concernée. Sans cela, le mode passif ne peut pas analyser le trafic réel."
     },
     {
       "q": "Que signifie une flèche verte dans l'interface GUI SD-WAN pour un membre ?",
-      "choices": ["Le lien respecte le SLA target défini", "Le beacon répond : le membre est alive", "Le lien n'a aucune perte de paquets", "La latence est inférieure à 10 ms"],
+      "choices": [
+        "Le lien respecte le SLA target défini",
+        "Le beacon répond : le membre est alive",
+        "Le lien n'a aucune perte de paquets",
+        "La latence est inférieure à 10 ms"
+      ],
       "answer": 1,
       "explain": "La flèche verte indique que le beacon répond, donc que le membre est alive. Elle ne signifie PAS que le SLA target est respecté — les métriques peuvent être dégradées malgré une flèche verte."
     },
     {
       "q": "Par quelle stratégie de sélection SD-WAN le SLA target est-il utilisé ?",
-      "choices": ["Best Quality", "Lowest Cost (SLA)", "Manual", "Round Robin"],
+      "choices": [
+        "Best Quality",
+        "Lowest Cost (SLA)",
+        "Manual",
+        "Round Robin"
+      ],
       "answer": 1,
       "explain": "Le SLA target est utilisé par la stratégie Lowest Cost (SLA). Elle sélectionne le lien le moins coûteux parmi ceux qui respectent les seuils de packet loss, latency et jitter définis."
     },
     {
       "q": "Quelles sont les 3 métriques de qualité mesurées par les Performance SLAs SD-WAN ?",
-      "choices": ["Bandwidth, CPU usage, session count", "Packet loss, latency, jitter", "Throughput, RTT, retransmission rate", "MTU, TTL, hop count"],
+      "choices": [
+        "Bandwidth, CPU usage, session count",
+        "Packet loss, latency, jitter",
+        "Throughput, RTT, retransmission rate",
+        "MTU, TTL, hop count"
+      ],
       "answer": 1,
       "explain": "Les 3 métriques de qualité mesurées par les Performance SLAs sont : packet loss (perte de paquets), latency (latence) et jitter (variation de latence)."
     },
     {
       "q": "Quel est le comportement du mode Prefer Passive ?",
-      "choices": ["Utilise uniquement les sondes actives, jamais le trafic passif", "Analyse le trafic réel en priorité, bascule en mode actif si aucun trafic n'est présent", "Envoie des sondes uniquement la nuit", "Combine simultanément les modes actif et passif en permanence"],
+      "choices": [
+        "Utilise uniquement les sondes actives, jamais le trafic passif",
+        "Analyse le trafic réel en priorité, bascule en mode actif si aucun trafic n'est présent",
+        "Envoie des sondes uniquement la nuit",
+        "Combine simultanément les modes actif et passif en permanence"
+      ],
       "answer": 1,
       "explain": "Le mode Prefer Passive fonctionne en priorité sur le trafic réel des sessions. En l'absence de trafic, il bascule automatiquement en mode actif pour envoyer des sondes périodiques."
     },
     {
       "q": "Quels paramètres contrôlent le comportement du Link Status dans un Performance SLA ?",
-      "choices": ["La bande passante maximale et le MTU", "L'intervalle entre sondes et le nombre d'échecs consécutifs avant de marquer dead", "Le timeout TCP et le nombre de sessions simultanées", "L'adresse IP du beacon et le type de protocole"],
+      "choices": [
+        "La bande passante maximale et le MTU",
+        "L'intervalle entre sondes et le nombre d'échecs consécutifs avant de marquer dead",
+        "Le timeout TCP et le nombre de sessions simultanées",
+        "L'adresse IP du beacon et le type de protocole"
+      ],
       "answer": 1,
       "explain": "Les paramètres de Link Status contrôlent l'intervalle entre les sondes (probe interval) et le nombre d'échecs consécutifs nécessaires pour marquer un lien comme dead."
     },
     {
       "q": "Que signifie une flèche rouge dans l'interface GUI SD-WAN pour un membre ?",
-      "choices": ["Le SLA target n'est pas respecté", "La bande passante est saturée", "Le beacon ne répond pas : le membre est dead", "Une mise à jour FortiOS est requise"],
+      "choices": [
+        "Le SLA target n'est pas respecté",
+        "La bande passante est saturée",
+        "Le beacon ne répond pas : le membre est dead",
+        "Une mise à jour FortiOS est requise"
+      ],
       "answer": 2,
       "explain": "La flèche rouge indique que le beacon ne répond pas et que le membre est dead. Le lien est considéré indisponible jusqu'à ce que le beacon réponde à nouveau."
     },
     {
       "q": "Que signifie une métrique affichée en rouge dans la GUI SD-WAN ?",
-      "choices": ["Le lien est dead", "La valeur mesurée dépasse le SLA target défini", "Le mode actif est désactivé", "La sonde n'a pas pu être envoyée"],
+      "choices": [
+        "Le lien est dead",
+        "La valeur mesurée dépasse le SLA target défini",
+        "Le mode actif est désactivé",
+        "La sonde n'a pas pu être envoyée"
+      ],
       "answer": 1,
       "explain": "Une métrique affichée en rouge indique que la valeur mesurée (packet loss, latency ou jitter) dépasse le seuil du SLA target défini. Le lien peut être alive mais hors SLA."
     },
     {
       "q": "Quelle est la différence principale entre le mode Active et le mode Passive ?",
-      "choices": ["Le mode Active est plus lent que le mode Passive", "Le mode Active envoie des sondes périodiques et peut détecter alive/dead ; le mode Passive analyse uniquement le trafic réel des sessions", "Le mode Passive consomme plus de bande passante", "Il n'y a pas de différence fonctionnelle entre les deux modes"],
+      "choices": [
+        "Le mode Active est plus lent que le mode Passive",
+        "Le mode Active envoie des sondes périodiques et peut détecter alive/dead ; le mode Passive analyse uniquement le trafic réel des sessions",
+        "Le mode Passive consomme plus de bande passante",
+        "Il n'y a pas de différence fonctionnelle entre les deux modes"
+      ],
       "answer": 1,
       "explain": "Le mode Active envoie des sondes périodiques (500 ms par défaut) et est le seul capable de détecter alive/dead. Le mode Passive déduit la santé depuis le trafic réel des sessions sans envoyer de sondes."
     },
     {
       "q": "Qui configure les serveurs beacon pour les Performance SLAs SD-WAN ?",
-      "choices": ["Ils sont configurés automatiquement par FortiManager", "L'administrateur FortiGate les configure manuellement dans chaque Performance SLA", "FortiGuard les assigne automatiquement selon la géolocalisation", "L'ISP les fournit lors de l'activation du contrat SD-WAN"],
+      "choices": [
+        "Ils sont configurés automatiquement par FortiManager",
+        "L'administrateur FortiGate les configure manuellement dans chaque Performance SLA",
+        "FortiGuard les assigne automatiquement selon la géolocalisation",
+        "L'ISP les fournit lors de l'activation du contrat SD-WAN"
+      ],
       "answer": 1,
       "explain": "L'administrateur FortiGate configure manuellement les serveurs beacon dans chaque Performance SLA. Il est recommandé de configurer au moins 2 serveurs pour assurer la redondance."
     },
     {
       "q": "Avec un seul serveur beacon configuré, que se passe-t-il si le beacon tombe en panne ?",
-      "choices": ["Le FortiGate bascule automatiquement sur un beacon de secours FortiGuard", "Le lien est marqué dead, et il est impossible de savoir si c'est le beacon ou le lien qui est en panne", "FortiGate continue à utiliser le lien normalement sans alerte", "FortiGate passe automatiquement en mode passif"],
+      "choices": [
+        "Le FortiGate bascule automatiquement sur un beacon de secours FortiGuard",
+        "Le lien est marqué dead, et il est impossible de savoir si c'est le beacon ou le lien qui est en panne",
+        "FortiGate continue à utiliser le lien normalement sans alerte",
+        "FortiGate passe automatiquement en mode passif"
+      ],
       "answer": 1,
       "explain": "Avec un seul beacon, si celui-ci tombe en panne, le lien est marqué dead. Il est impossible de distinguer une panne du beacon d'une panne réelle du lien. C'est pourquoi 2 beacons sont recommandés."
     },
     {
       "q": "Un membre SD-WAN affiche une flèche verte mais sa latence est affichée en rouge. Que cela signifie-t-il ?",
-      "choices": ["Le lien est dead et la latence est critique", "Le lien est alive (beacon répond) mais la latence dépasse le SLA target — le SLA n'est pas respecté", "La flèche verte et la métrique rouge se contredisent : c'est un bug d'affichage", "Le lien fonctionne parfaitement, la couleur rouge est cosmétique"],
+      "choices": [
+        "Le lien est dead et la latence est critique",
+        "Le lien est alive (beacon répond) mais la latence dépasse le SLA target — le SLA n'est pas respecté",
+        "La flèche verte et la métrique rouge se contredisent : c'est un bug d'affichage",
+        "Le lien fonctionne parfaitement, la couleur rouge est cosmétique"
+      ],
       "answer": 1,
       "explain": "Flèche verte = beacon répond = lien alive. Métrique en rouge = valeur dépasse le SLA target. Ces deux indicateurs sont indépendants : un lien alive peut ne pas respecter le SLA target."
     }

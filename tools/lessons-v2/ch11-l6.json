@@ -3,7 +3,7 @@
   "module": "IPsec VPN",
   "title": "Routage et politiques VPN",
   "durationMin": 6,
-  "content": "## Mode route-based : interface virtuelle tunnel\n\nEn **mode route-based** (aussi appelé interface mode), FortiGate crée une **interface virtuelle IPsec** pour chaque tunnel configuré. Cette interface tunnel (par exemple `tunnel.1`) apparaît dans la liste des interfaces FortiGate et se comporte comme une interface physique normale.\n\nLe trafic est routé vers le tunnel via les mécanismes de routage standard de FortiGate : routes statiques, OSPF, BGP. C'est la grande force du mode route-based : le routage dynamique est possible via l'interface tunnel.\n\n## Configuration route-based : les étapes\n\n**Étape 1 — Route statique VPN :**\n- Destination = réseau distant (ex: 10.0.0.0/24)\n- Interface = interface tunnel (ex: `tunnel.1`)\n- Gateway = IP du pair distant ou laissée vide en route-based\n\n**Étape 2 — Politiques firewall requises :**\nDeux politiques sont nécessaires en mode route-based :\n1. **Internal → Tunnel** : autorise le trafic sortant depuis le réseau interne vers le tunnel VPN\n2. **Tunnel → Internal** : autorise le trafic entrant depuis le tunnel VPN vers le réseau interne\n\nSans ces deux politiques, le trafic ne peut pas traverser le tunnel, même si les Phase 1 et Phase 2 sont établies.\n\n## Mode policy-based : action IPsec directe\n\nEn **mode policy-based**, il n'y a pas d'interface virtuelle. Le trafic à tunneliser est sélectionné directement dans la politique firewall grâce à l'action **IPsec**. La politique définit les réseaux source et destination qui constituent les proxy IDs Phase 2.\n\n## Comparaison route-based vs policy-based\n\n| Critère | Route-based | Policy-based |\n|---|---|---|\n| Interface virtuelle | Oui (tunnel interface) | Non |\n| Routage dynamique | Oui (OSPF, BGP) | Non |\n| Proxy IDs | 0.0.0.0/0 ↔ 0.0.0.0/0 | Extraits des politiques |\n| Politiques requises | 2 (Internal↔Tunnel) | 1 (avec action IPsec) |\n| Flexibilité | Élevée | Simple pour petits déploiements |\n\n## Interface VPN en route-based\n\nL'**interface VPN** (interface tunnel) en mode route-based est une interface logique FortiGate. Elle peut être utilisée :\n- Dans les routes statiques comme interface de sortie\n- Dans les politiques firewall comme interface source ou destination\n- Dans les configurations de routage dynamique\n\n## Avantages route-based pour les déploiements complexes\n\n> Le mode route-based est recommandé pour les déploiements avec plusieurs réseaux distants, les architectures hub-and-spoke et les topologies nécessitant du routage dynamique. Il est aussi plus facile à déboguer car l'état du tunnel est visible dans les routes.\n\nLe mode policy-based reste pertinent pour les **petits déploiements** simples où la configuration doit être minimale, ou pour assurer la **compatibilité avec des équipements tiers** qui ne supportent que le mode policy-based.",
+  "content": "## Mode route-based : interface virtuelle tunnel\n\nEn **mode route-based** (aussi appelé interface mode), FortiGate crée une **interface virtuelle IPsec** pour chaque tunnel configuré. Cette interface tunnel (par exemple `tunnel.1`) apparaît dans la liste des interfaces FortiGate et se comporte comme une interface physique normale.\n\nLe trafic est routé vers le tunnel via les mécanismes de routage standard de FortiGate : routes statiques, OSPF, BGP. C'est la grande force du mode route-based : le routage dynamique est possible via l'interface tunnel.\n\n## Configuration route-based : les étapes\n\n**Étape 1 — Route statique VPN :**\n- Destination = réseau distant (ex: 10.0.0.0/24)\n- Interface = interface tunnel (ex: `tunnel.1`)\n- Gateway = IP du pair distant ou laissée vide en route-based\n\n**Étape 2 — Politiques firewall requises :**\nDeux politiques sont nécessaires en mode route-based :\n1. **Internal → Tunnel** : autorise le trafic sortant depuis le réseau interne vers le tunnel VPN\n2. **Tunnel → Internal** : autorise le trafic entrant depuis le tunnel VPN vers le réseau interne\n\nSans ces deux politiques, le trafic ne peut pas traverser le tunnel, même si les Phase 1 et Phase 2 sont établies.\n\n\n![Architecture VPN route-based : réseau interne → FortiGate (interface tunnel) → tunnel IPsec → FortiGate distant → réseau distant](diagram:0)\n\n## Mode policy-based : action IPsec directe\n\nEn **mode policy-based**, il n'y a pas d'interface virtuelle. Le trafic à tunneliser est sélectionné directement dans la politique firewall grâce à l'action **IPsec**. La politique définit les réseaux source et destination qui constituent les proxy IDs Phase 2.\n\n## Comparaison route-based vs policy-based\n\n| Critère | Route-based | Policy-based |\n|---|---|---|\n| Interface virtuelle | Oui (tunnel interface) | Non |\n| Routage dynamique | Oui (OSPF, BGP) | Non |\n| Proxy IDs | 0.0.0.0/0 ↔ 0.0.0.0/0 | Extraits des politiques |\n| Politiques requises | 2 (Internal↔Tunnel) | 1 (avec action IPsec) |\n| Flexibilité | Élevée | Simple pour petits déploiements |\n\n## Interface VPN en route-based\n\nL'**interface VPN** (interface tunnel) en mode route-based est une interface logique FortiGate. Elle peut être utilisée :\n- Dans les routes statiques comme interface de sortie\n- Dans les politiques firewall comme interface source ou destination\n- Dans les configurations de routage dynamique\n\n## Avantages route-based pour les déploiements complexes\n\n> Le mode route-based est recommandé pour les déploiements avec plusieurs réseaux distants, les architectures hub-and-spoke et les topologies nécessitant du routage dynamique. Il est aussi plus facile à déboguer car l'état du tunnel est visible dans les routes.\n\nLe mode policy-based reste pertinent pour les **petits déploiements** simples où la configuration doit être minimale, ou pour assurer la **compatibilité avec des équipements tiers** qui ne supportent que le mode policy-based.",
   "diagrams": [
     {
       "caption": "Architecture VPN route-based : réseau interne → FortiGate (interface tunnel) → tunnel IPsec → FortiGate distant → réseau distant",
@@ -14,91 +14,166 @@
   "questionPool": [
     {
       "q": "En mode route-based, combien de politiques firewall faut-il configurer pour un tunnel VPN bidirectionnel ?",
-      "choices": ["Une seule politique bidirectionnelle", "Deux politiques : Internal → Tunnel et Tunnel → Internal", "Trois politiques incluant une pour le trafic de contrôle IKE", "Aucune politique, le routage suffit"],
+      "choices": [
+        "Une seule politique bidirectionnelle",
+        "Deux politiques : Internal → Tunnel et Tunnel → Internal",
+        "Trois politiques incluant une pour le trafic de contrôle IKE",
+        "Aucune politique, le routage suffit"
+      ],
       "answer": 1,
       "explain": "En mode route-based, deux politiques firewall sont requises : Internal → Tunnel pour le trafic sortant vers le VPN, et Tunnel → Internal pour le trafic entrant depuis le VPN."
     },
     {
       "q": "En mode route-based, quelle est la destination d'une route statique VPN vers le réseau distant 10.0.0.0/24 ?",
-      "choices": ["L'adresse IP publique du pair distant", "Le réseau distant 10.0.0.0/24 avec l'interface tunnel comme interface de sortie", "L'adresse IP de la passerelle par défaut", "L'interface WAN de FortiGate"],
+      "choices": [
+        "L'adresse IP publique du pair distant",
+        "Le réseau distant 10.0.0.0/24 avec l'interface tunnel comme interface de sortie",
+        "L'adresse IP de la passerelle par défaut",
+        "L'interface WAN de FortiGate"
+      ],
       "answer": 1,
       "explain": "En mode route-based, la route statique VPN a pour destination le réseau distant (10.0.0.0/24) et utilise l'interface tunnel comme interface de sortie."
     },
     {
       "q": "Quel avantage le mode route-based offre-t-il par rapport au mode policy-based ?",
-      "choices": ["Il nécessite moins de configuration", "Il supporte le routage dynamique (OSPF, BGP) via l'interface tunnel et est plus flexible", "Il ne nécessite pas de Phase 2", "Il est plus rapide en débit"],
+      "choices": [
+        "Il nécessite moins de configuration",
+        "Il supporte le routage dynamique (OSPF, BGP) via l'interface tunnel et est plus flexible",
+        "Il ne nécessite pas de Phase 2",
+        "Il est plus rapide en débit"
+      ],
       "answer": 1,
       "explain": "Le mode route-based supporte le routage dynamique (OSPF, BGP) via l'interface tunnel VPN et offre plus de flexibilité. Il est plus facile à déboguer car l'état du tunnel est visible dans les routes."
     },
     {
       "q": "En mode policy-based, quelle action est configurée dans la politique firewall pour tunneliser le trafic ?",
-      "choices": ["Accept", "Deny", "IPsec", "SNAT"],
+      "choices": [
+        "Accept",
+        "Deny",
+        "IPsec",
+        "SNAT"
+      ],
       "answer": 2,
       "explain": "En mode policy-based, la politique firewall utilise l'action IPsec pour identifier et tunneliser le trafic correspondant aux réseaux source et destination définis."
     },
     {
       "q": "Qu'est-ce que l'interface VPN (interface tunnel) en mode route-based ?",
-      "choices": ["Un alias de l'interface WAN", "Une interface logique IPsec qui apparaît dans la liste des interfaces et peut être utilisée dans les routes et politiques", "Un VLAN dédié au trafic VPN", "L'interface d'administration FortiGate"],
+      "choices": [
+        "Un alias de l'interface WAN",
+        "Une interface logique IPsec qui apparaît dans la liste des interfaces et peut être utilisée dans les routes et politiques",
+        "Un VLAN dédié au trafic VPN",
+        "L'interface d'administration FortiGate"
+      ],
       "answer": 1,
       "explain": "En mode route-based, l'interface VPN est une interface logique IPsec (interface tunnel). Elle apparaît dans la liste des interfaces FortiGate et peut être utilisée dans les routes statiques et les politiques firewall."
     },
     {
       "q": "Dans quel cas le mode policy-based est-il préférable au mode route-based ?",
-      "choices": ["Pour les architectures hub-and-spoke complexes", "Pour les petits déploiements simples ou pour assurer la compatibilité avec des équipements tiers", "Quand le routage dynamique OSPF est requis", "Pour les déploiements avec plusieurs réseaux distants"],
+      "choices": [
+        "Pour les architectures hub-and-spoke complexes",
+        "Pour les petits déploiements simples ou pour assurer la compatibilité avec des équipements tiers",
+        "Quand le routage dynamique OSPF est requis",
+        "Pour les déploiements avec plusieurs réseaux distants"
+      ],
       "answer": 1,
       "explain": "Le mode policy-based est pertinent pour les petits déploiements simples ou pour assurer la compatibilité avec des équipements tiers qui ne supportent que ce mode."
     },
     {
       "q": "En mode route-based, une politique Internal → Tunnel sans la politique Tunnel → Internal que permet-elle ?",
-      "choices": ["Le trafic est bidirectionnel automatiquement", "Seul le trafic sortant (interne vers VPN) est autorisé — le trafic retour est bloqué", "Le tunnel ne s'établit pas", "FortiGate crée automatiquement la politique retour"],
+      "choices": [
+        "Le trafic est bidirectionnel automatiquement",
+        "Seul le trafic sortant (interne vers VPN) est autorisé — le trafic retour est bloqué",
+        "Le tunnel ne s'établit pas",
+        "FortiGate crée automatiquement la politique retour"
+      ],
       "answer": 1,
       "explain": "Sans la politique Tunnel → Internal, seul le trafic sortant est autorisé. Le trafic entrant depuis le VPN vers le réseau interne est bloqué. Les deux politiques sont nécessaires pour un trafic bidirectionnel."
     },
     {
       "q": "Peut-on utiliser BGP via une interface tunnel IPsec en mode route-based ?",
-      "choices": ["Non, BGP n'est pas supporté sur les interfaces tunnel", "Oui, le routage dynamique incluant BGP est possible via l'interface tunnel en mode route-based", "Seulement avec IKEv2", "Seulement si PFS est désactivé"],
+      "choices": [
+        "Non, BGP n'est pas supporté sur les interfaces tunnel",
+        "Oui, le routage dynamique incluant BGP est possible via l'interface tunnel en mode route-based",
+        "Seulement avec IKEv2",
+        "Seulement si PFS est désactivé"
+      ],
       "answer": 1,
       "explain": "En mode route-based, le routage dynamique incluant BGP et OSPF est possible via l'interface tunnel IPsec. C'est un des avantages clés du mode route-based par rapport au mode policy-based."
     },
     {
       "q": "En mode policy-based, combien de politiques firewall configure-t-on pour un tunnel VPN ?",
-      "choices": ["Deux politiques avec action Accept", "Une seule politique avec l'action IPsec", "Trois politiques incluant les règles NAT", "Aucune politique n'est nécessaire"],
+      "choices": [
+        "Deux politiques avec action Accept",
+        "Une seule politique avec l'action IPsec",
+        "Trois politiques incluant les règles NAT",
+        "Aucune politique n'est nécessaire"
+      ],
       "answer": 1,
       "explain": "En mode policy-based, une seule politique firewall avec l'action IPsec est configurée. Les réseaux source et destination de cette politique définissent les proxy IDs Phase 2."
     },
     {
       "q": "Quel est le principal avantage du mode route-based pour le débogage ?",
-      "choices": ["Les logs IKE sont plus détaillés", "L'état du tunnel est visible dans les routes, et l'interface tunnel apparaît comme une interface normale facile à analyser", "Le mode route-based génère moins de logs", "Le mode route-based supporte ICMP pour tester le tunnel"],
+      "choices": [
+        "Les logs IKE sont plus détaillés",
+        "L'état du tunnel est visible dans les routes, et l'interface tunnel apparaît comme une interface normale facile à analyser",
+        "Le mode route-based génère moins de logs",
+        "Le mode route-based supporte ICMP pour tester le tunnel"
+      ],
       "answer": 1,
       "explain": "En mode route-based, l'interface tunnel apparaît comme une interface normale. L'état du tunnel est visible dans les routes, ce qui facilite le débogage par rapport au mode policy-based."
     },
     {
       "q": "Quelle commande CLI affiche les tunnels IPsec actifs (Phase 2) sur FortiGate ?",
-      "choices": ["get vpn ipsec tunnel summary", "diagnose vpn tunnel list", "show vpn ipsec phase2-interface", "get system interface tunnel"],
+      "choices": [
+        "get vpn ipsec tunnel summary",
+        "diagnose vpn tunnel list",
+        "show vpn ipsec phase2-interface",
+        "get system interface tunnel"
+      ],
       "answer": 1,
       "explain": "La commande diagnose vpn tunnel list affiche la liste des tunnels IPsec actifs (Phase 2). Pour un résumé avec statut, on utilise get vpn ipsec tunnel summary."
     },
     {
       "q": "En mode route-based, quelle valeur peut-on laisser vide pour la gateway d'une route statique VPN ?",
-      "choices": ["La destination réseau", "La gateway (next-hop), car FortiGate route directement via l'interface tunnel", "L'interface de sortie", "La distance administrative"],
+      "choices": [
+        "La destination réseau",
+        "La gateway (next-hop), car FortiGate route directement via l'interface tunnel",
+        "L'interface de sortie",
+        "La distance administrative"
+      ],
       "answer": 1,
       "explain": "En mode route-based, la gateway (next-hop) d'une route statique VPN peut être laissée vide. FortiGate route directement le trafic via l'interface tunnel sans besoin d'une adresse next-hop explicite."
     },
     {
       "q": "Quelle topologie bénéficie le plus du mode route-based ?",
-      "choices": ["Un tunnel simple point-à-point sans routage dynamique", "Les architectures hub-and-spoke et les déploiements avec plusieurs réseaux distants nécessitant du routage dynamique", "Les accès VPN SSL clientless", "Les tunnels GRE sans chiffrement"],
+      "choices": [
+        "Un tunnel simple point-à-point sans routage dynamique",
+        "Les architectures hub-and-spoke et les déploiements avec plusieurs réseaux distants nécessitant du routage dynamique",
+        "Les accès VPN SSL clientless",
+        "Les tunnels GRE sans chiffrement"
+      ],
       "answer": 1,
       "explain": "Les architectures hub-and-spoke et les déploiements avec plusieurs réseaux distants bénéficient du mode route-based grâce au support du routage dynamique (OSPF, BGP) et à la flexibilité de configuration."
     },
     {
       "q": "En mode policy-based, d'où proviennent les proxy IDs Phase 2 ?",
-      "choices": ["Ils sont configurés manuellement dans les paramètres Phase 2", "Ils sont extraits des politiques firewall ayant l'action IPsec (réseaux source et destination)", "Ils sont toujours 0.0.0.0/0 ↔ 0.0.0.0/0 comme en route-based", "Ils sont récupérés depuis le serveur LDAP"],
+      "choices": [
+        "Ils sont configurés manuellement dans les paramètres Phase 2",
+        "Ils sont extraits des politiques firewall ayant l'action IPsec (réseaux source et destination)",
+        "Ils sont toujours 0.0.0.0/0 ↔ 0.0.0.0/0 comme en route-based",
+        "Ils sont récupérés depuis le serveur LDAP"
+      ],
       "answer": 1,
       "explain": "En mode policy-based, les proxy IDs Phase 2 sont extraits des politiques firewall avec action IPsec. Les réseaux source et destination de la politique deviennent les selectors."
     },
     {
       "q": "Quelle interface est utilisée comme interface de sortie dans la route statique VPN en mode route-based ?",
-      "choices": ["L'interface WAN (port1 ou port2)", "L'interface tunnel IPsec virtuelle (ex: tunnel.1)", "L'interface MGMT", "L'interface LAN interne"],
+      "choices": [
+        "L'interface WAN (port1 ou port2)",
+        "L'interface tunnel IPsec virtuelle (ex: tunnel.1)",
+        "L'interface MGMT",
+        "L'interface LAN interne"
+      ],
       "answer": 1,
       "explain": "En mode route-based, la route statique VPN utilise l'interface tunnel IPsec virtuelle (ex: tunnel.1) comme interface de sortie. C'est ce qui distingue le mode route-based du mode policy-based."
     }
@@ -106,31 +181,56 @@
   "quiz": [
     {
       "q": "En mode route-based, combien de politiques firewall faut-il configurer pour un tunnel VPN bidirectionnel ?",
-      "choices": ["Une seule politique bidirectionnelle", "Deux politiques : Internal → Tunnel et Tunnel → Internal", "Trois politiques incluant une pour le trafic de contrôle IKE", "Aucune politique, le routage suffit"],
+      "choices": [
+        "Une seule politique bidirectionnelle",
+        "Deux politiques : Internal → Tunnel et Tunnel → Internal",
+        "Trois politiques incluant une pour le trafic de contrôle IKE",
+        "Aucune politique, le routage suffit"
+      ],
       "answer": 1,
       "explain": "En mode route-based, deux politiques firewall sont requises : Internal → Tunnel pour le trafic sortant vers le VPN, et Tunnel → Internal pour le trafic entrant depuis le VPN."
     },
     {
       "q": "Quel avantage le mode route-based offre-t-il par rapport au mode policy-based ?",
-      "choices": ["Il nécessite moins de configuration", "Il supporte le routage dynamique (OSPF, BGP) via l'interface tunnel et est plus flexible", "Il ne nécessite pas de Phase 2", "Il est plus rapide en débit"],
+      "choices": [
+        "Il nécessite moins de configuration",
+        "Il supporte le routage dynamique (OSPF, BGP) via l'interface tunnel et est plus flexible",
+        "Il ne nécessite pas de Phase 2",
+        "Il est plus rapide en débit"
+      ],
       "answer": 1,
       "explain": "Le mode route-based supporte le routage dynamique (OSPF, BGP) via l'interface tunnel VPN et offre plus de flexibilité. Il est plus facile à déboguer car l'état du tunnel est visible dans les routes."
     },
     {
       "q": "En mode policy-based, quelle action est configurée dans la politique firewall pour tunneliser le trafic ?",
-      "choices": ["Accept", "Deny", "IPsec", "SNAT"],
+      "choices": [
+        "Accept",
+        "Deny",
+        "IPsec",
+        "SNAT"
+      ],
       "answer": 2,
       "explain": "En mode policy-based, la politique firewall utilise l'action IPsec pour identifier et tunneliser le trafic correspondant aux réseaux source et destination définis."
     },
     {
       "q": "Qu'est-ce que l'interface VPN (interface tunnel) en mode route-based ?",
-      "choices": ["Un alias de l'interface WAN", "Une interface logique IPsec qui apparaît dans la liste des interfaces et peut être utilisée dans les routes et politiques", "Un VLAN dédié au trafic VPN", "L'interface d'administration FortiGate"],
+      "choices": [
+        "Un alias de l'interface WAN",
+        "Une interface logique IPsec qui apparaît dans la liste des interfaces et peut être utilisée dans les routes et politiques",
+        "Un VLAN dédié au trafic VPN",
+        "L'interface d'administration FortiGate"
+      ],
       "answer": 1,
       "explain": "En mode route-based, l'interface VPN est une interface logique IPsec (interface tunnel). Elle apparaît dans la liste des interfaces FortiGate et peut être utilisée dans les routes statiques et les politiques firewall."
     },
     {
       "q": "Dans quel cas le mode policy-based est-il préférable au mode route-based ?",
-      "choices": ["Pour les architectures hub-and-spoke complexes", "Pour les petits déploiements simples ou pour assurer la compatibilité avec des équipements tiers", "Quand le routage dynamique OSPF est requis", "Pour les déploiements avec plusieurs réseaux distants"],
+      "choices": [
+        "Pour les architectures hub-and-spoke complexes",
+        "Pour les petits déploiements simples ou pour assurer la compatibilité avec des équipements tiers",
+        "Quand le routage dynamique OSPF est requis",
+        "Pour les déploiements avec plusieurs réseaux distants"
+      ],
       "answer": 1,
       "explain": "Le mode policy-based est pertinent pour les petits déploiements simples ou pour assurer la compatibilité avec des équipements tiers qui ne supportent que ce mode."
     }

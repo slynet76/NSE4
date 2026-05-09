@@ -3,7 +3,7 @@
   "module": "IPsec VPN",
   "title": "Phase 1 : configuration",
   "durationMin": 7,
-  "content": "## Rôle de la Phase 1\n\nLa Phase 1 **authentifie les pairs** et établit un **canal sécurisé** (IKE SA bidirectionnelle) pour la Phase 2. Sans Phase 1 établie, la Phase 2 ne peut pas démarrer.\n\n## Méthodes d'authentification\n\n- **Pre-shared key (PSK)** : clé secrète partagée entre les deux pairs\n- **Digital signature** : certificats numériques (PKI)\n- **XAuth** : couche d'authentification supplémentaire pour les utilisateurs (en plus de PSK ou certificat)\n\n## Assistant FortiGate (Wizard)\n\nLe wizard FortiGate comprend **4 à 5 étapes** selon le template. Templates disponibles :\n- **Site to Site**\n- **Hub-and-Spoke**\n- **Remote Access**\n\n## Main mode vs Aggressive mode\n\n| Mode | Paquets | Sécurité |\n|---|---|---|\n| **Main mode** | **6 paquets** | Plus sécurisé |\n| **Aggressive mode** | **3 paquets** | Moins sécurisé |\n\nMain mode est **plus sécurisé** car il **chiffre le hash de la PSK** (PSK hash is encrypted). En Aggressive mode, le hash PSK est envoyé en clair, ce qui le rend vulnérable.\n\n## DPD (Dead Peer Detection)\n\n**DPD** détecte un pair qui ne répond plus. Mode par défaut = **On Demand** : envoie des messages DPD quand du trafic doit partir mais ne reçoit pas de réponse.\n\n## NAT Traversal\n\nMode **Forced** : force l'utilisation d'**UDP 4500** même si aucun NAT n'est détecté sur le chemin.\n\n## Mode Config\n\n**Mode Config** distribue aux clients distants des informations réseau via IKE : **adresse IP** et **DNS**. Utile pour les VPN d'accès distant.",
+  "content": "## Rôle de la Phase 1\n\nLa Phase 1 **authentifie les pairs** et établit un **canal sécurisé** (IKE SA bidirectionnelle) pour la Phase 2. Sans Phase 1 établie, la Phase 2 ne peut pas démarrer.\n\n## Méthodes d'authentification\n\n- **Pre-shared key (PSK)** : clé secrète partagée entre les deux pairs\n- **Digital signature** : certificats numériques (PKI)\n- **XAuth** : couche d'authentification supplémentaire pour les utilisateurs (en plus de PSK ou certificat)\n\n\n![Main mode (6 paquets) vs Aggressive mode (3 paquets)](diagram:0)\n\n## Assistant FortiGate (Wizard)\n\nLe wizard FortiGate comprend **4 à 5 étapes** selon le template. Templates disponibles :\n- **Site to Site**\n- **Hub-and-Spoke**\n- **Remote Access**\n\n## Main mode vs Aggressive mode\n\n| Mode | Paquets | Sécurité |\n|---|---|---|\n| **Main mode** | **6 paquets** | Plus sécurisé |\n| **Aggressive mode** | **3 paquets** | Moins sécurisé |\n\nMain mode est **plus sécurisé** car il **chiffre le hash de la PSK** (PSK hash is encrypted). En Aggressive mode, le hash PSK est envoyé en clair, ce qui le rend vulnérable.\n\n## DPD (Dead Peer Detection)\n\n**DPD** détecte un pair qui ne répond plus. Mode par défaut = **On Demand** : envoie des messages DPD quand du trafic doit partir mais ne reçoit pas de réponse.\n\n## NAT Traversal\n\nMode **Forced** : force l'utilisation d'**UDP 4500** même si aucun NAT n'est détecté sur le chemin.\n\n## Mode Config\n\n**Mode Config** distribue aux clients distants des informations réseau via IKE : **adresse IP** et **DNS**. Utile pour les VPN d'accès distant.",
   "diagrams": [
     {
       "caption": "Main mode (6 paquets) vs Aggressive mode (3 paquets)",
@@ -14,91 +14,166 @@
   "questionPool": [
     {
       "q": "Combien de paquets échange l'Aggressive mode en Phase 1 ?",
-      "choices": ["6 paquets", "4 paquets", "3 paquets", "8 paquets"],
+      "choices": [
+        "6 paquets",
+        "4 paquets",
+        "3 paquets",
+        "8 paquets"
+      ],
       "answer": 2,
       "explain": "L'Aggressive mode échange 3 paquets en Phase 1, contre 6 pour le Main mode. Il est plus rapide mais moins sécurisé."
     },
     {
       "q": "Quel est le mode DPD par défaut sur FortiGate ?",
-      "choices": ["Always On", "Disabled", "On Demand", "Periodic"],
+      "choices": [
+        "Always On",
+        "Disabled",
+        "On Demand",
+        "Periodic"
+      ],
       "answer": 2,
       "explain": "Le mode DPD par défaut est On Demand : FortiGate envoie des messages DPD quand du trafic doit partir mais ne reçoit pas de réponse du pair."
     },
     {
       "q": "Pourquoi le Main mode est-il plus sécurisé que l'Aggressive mode ?",
-      "choices": ["Il utilise un chiffrement AES-256 uniquement", "Il chiffre le hash de la PSK (PSK hash is encrypted)", "Il ne supporte pas les clés PSK faibles", "Il utilise toujours des certificats numériques"],
+      "choices": [
+        "Il utilise un chiffrement AES-256 uniquement",
+        "Il chiffre le hash de la PSK (PSK hash is encrypted)",
+        "Il ne supporte pas les clés PSK faibles",
+        "Il utilise toujours des certificats numériques"
+      ],
       "answer": 1,
       "explain": "Main mode est plus sécurisé car il chiffre le hash de la PSK (PSK hash is encrypted). En Aggressive mode, le hash PSK est envoyé en clair, vulnérable aux attaques."
     },
     {
       "q": "Quel est l'effet du mode NAT Traversal 'Forced' ?",
-      "choices": ["Désactive complètement le NAT-T", "Force l'utilisation d'UDP 4500 même sans NAT détecté", "Force l'utilisation d'UDP 500 uniquement", "Redémarre automatiquement les tunnels NAT"],
+      "choices": [
+        "Désactive complètement le NAT-T",
+        "Force l'utilisation d'UDP 4500 même sans NAT détecté",
+        "Force l'utilisation d'UDP 500 uniquement",
+        "Redémarre automatiquement les tunnels NAT"
+      ],
       "answer": 1,
       "explain": "NAT Traversal Forced force l'utilisation d'UDP 4500 même si aucun NAT n'est détecté sur le chemin du tunnel."
     },
     {
       "q": "Quel est le rôle de Mode Config en Phase 1 ?",
-      "choices": ["Configurer les algorithmes ESP de Phase 2", "Distribuer adresse IP et DNS aux clients distants via IKE", "Activer le mode Aggressive automatiquement", "Vérifier la validité des certificats PKI"],
+      "choices": [
+        "Configurer les algorithmes ESP de Phase 2",
+        "Distribuer adresse IP et DNS aux clients distants via IKE",
+        "Activer le mode Aggressive automatiquement",
+        "Vérifier la validité des certificats PKI"
+      ],
       "answer": 1,
       "explain": "Mode Config distribue aux clients distants des informations réseau via IKE : adresse IP et DNS. Utile pour les VPN d'accès distant."
     },
     {
       "q": "Quelles sont les méthodes d'authentification disponibles en Phase 1 sur FortiGate ?",
-      "choices": ["PSK uniquement", "Certificat numérique uniquement", "PSK ou digital signature (certificat)", "Kerberos ou NTLM uniquement"],
+      "choices": [
+        "PSK uniquement",
+        "Certificat numérique uniquement",
+        "PSK ou digital signature (certificat)",
+        "Kerberos ou NTLM uniquement"
+      ],
       "answer": 2,
       "explain": "Les deux méthodes d'authentification Phase 1 sont la pre-shared key (PSK) et la digital signature (certificat numérique)."
     },
     {
       "q": "Quel est le rôle de XAuth en Phase 1 ?",
-      "choices": ["Remplacer le chiffrement ESP", "Ajouter une couche d'authentification supplémentaire pour les utilisateurs", "Configurer les sélecteurs Phase 2", "Activer le mode Full Tunnel"],
+      "choices": [
+        "Remplacer le chiffrement ESP",
+        "Ajouter une couche d'authentification supplémentaire pour les utilisateurs",
+        "Configurer les sélecteurs Phase 2",
+        "Activer le mode Full Tunnel"
+      ],
       "answer": 1,
       "explain": "XAuth est une couche d'authentification supplémentaire (en plus de PSK ou certificat) pour authentifier les utilisateurs individuellement."
     },
     {
       "q": "Combien de paquets échange le Main mode en Phase 1 ?",
-      "choices": ["3 paquets", "4 paquets", "6 paquets", "8 paquets"],
+      "choices": [
+        "3 paquets",
+        "4 paquets",
+        "6 paquets",
+        "8 paquets"
+      ],
       "answer": 2,
       "explain": "Le Main mode échange 6 paquets en Phase 1. Il est plus lent qu'Aggressive mode (3 paquets) mais plus sécurisé car il chiffre le hash de la PSK."
     },
     {
       "q": "Quel est le rôle principal de la Phase 1 IKE ?",
-      "choices": ["Négocier les sélecteurs de trafic ESP", "Authentifier les pairs et établir un canal sécurisé (IKE SA)", "Distribuer des adresses IP aux clients", "Configurer les routes VPN automatiquement"],
+      "choices": [
+        "Négocier les sélecteurs de trafic ESP",
+        "Authentifier les pairs et établir un canal sécurisé (IKE SA)",
+        "Distribuer des adresses IP aux clients",
+        "Configurer les routes VPN automatiquement"
+      ],
       "answer": 1,
       "explain": "La Phase 1 authentifie les pairs et établit un canal sécurisé (IKE SA bidirectionnelle) dans lequel se déroulera la Phase 2."
     },
     {
       "q": "Quelle est la direction de l'IKE SA établie en Phase 1 ?",
-      "choices": ["Unidirectionnelle sortante uniquement", "Unidirectionnelle entrante uniquement", "Bidirectionnelle (une seule SA pour les deux sens)", "Deux SA séparées comme en Phase 2"],
+      "choices": [
+        "Unidirectionnelle sortante uniquement",
+        "Unidirectionnelle entrante uniquement",
+        "Bidirectionnelle (une seule SA pour les deux sens)",
+        "Deux SA séparées comme en Phase 2"
+      ],
       "answer": 2,
       "explain": "L'IKE SA de Phase 1 est bidirectionnelle — une seule SA pour les deux sens, qui sert de canal sécurisé pour négocier les IPsec SAs de Phase 2."
     },
     {
       "q": "Quels templates sont disponibles dans le wizard Phase 1 de FortiGate ?",
-      "choices": ["Full mesh, Partial mesh, Star", "Site to Site, Hub-and-Spoke, Remote Access", "IKEv1, IKEv2, L2TP", "PSK, Certificate, XAuth"],
+      "choices": [
+        "Full mesh, Partial mesh, Star",
+        "Site to Site, Hub-and-Spoke, Remote Access",
+        "IKEv1, IKEv2, L2TP",
+        "PSK, Certificate, XAuth"
+      ],
       "answer": 1,
       "explain": "Le wizard FortiGate propose 3 templates : Site to Site, Hub-and-Spoke et Remote Access, avec 4 à 5 étapes de configuration."
     },
     {
       "q": "Que fait DPD (Dead Peer Detection) ?",
-      "choices": ["Chiffre les paquets ESP avec un algorithme renforcé", "Détecte un pair qui ne répond plus", "Redémarre automatiquement le tunnel après expiration des SAs", "Distribue les clés DH de remplacement"],
+      "choices": [
+        "Chiffre les paquets ESP avec un algorithme renforcé",
+        "Détecte un pair qui ne répond plus",
+        "Redémarre automatiquement le tunnel après expiration des SAs",
+        "Distribue les clés DH de remplacement"
+      ],
       "answer": 1,
       "explain": "DPD (Dead Peer Detection) détecte un pair IPsec qui ne répond plus. Le mode par défaut est On Demand."
     },
     {
       "q": "Quel mode Phase 1 envoie le hash PSK en clair, le rendant vulnérable ?",
-      "choices": ["Main mode", "Aggressive mode", "Transport mode", "Tunnel mode"],
+      "choices": [
+        "Main mode",
+        "Aggressive mode",
+        "Transport mode",
+        "Tunnel mode"
+      ],
       "answer": 1,
       "explain": "En Aggressive mode, le hash PSK est envoyé en clair, ce qui le rend vulnérable aux attaques. Main mode chiffre le hash de la PSK, d'où sa supériorité en sécurité."
     },
     {
       "q": "Comment Mode Config distribue-t-il les informations aux clients distants ?",
-      "choices": ["Via DHCP sur le réseau local", "Via IKE pendant la Phase 1", "Via un serveur RADIUS externe", "Via OSPF après établissement du tunnel"],
+      "choices": [
+        "Via DHCP sur le réseau local",
+        "Via IKE pendant la Phase 1",
+        "Via un serveur RADIUS externe",
+        "Via OSPF après établissement du tunnel"
+      ],
       "answer": 1,
       "explain": "Mode Config distribue les informations (adresse IP, DNS) aux clients distants via IKE pendant la Phase 1."
     },
     {
       "q": "Combien d'étapes comprend le wizard FortiGate pour configurer une Phase 1 ?",
-      "choices": ["2 à 3 étapes", "4 à 5 étapes", "7 à 8 étapes", "10 étapes exactement"],
+      "choices": [
+        "2 à 3 étapes",
+        "4 à 5 étapes",
+        "7 à 8 étapes",
+        "10 étapes exactement"
+      ],
       "answer": 1,
       "explain": "Le wizard FortiGate comprend 4 à 5 étapes selon le template choisi (Site to Site, Hub-and-Spoke ou Remote Access)."
     }

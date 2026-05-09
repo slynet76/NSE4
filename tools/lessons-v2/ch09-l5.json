@@ -3,7 +3,7 @@
   "module": "Web Filtering",
   "title": "Dépannage du filtrage web",
   "durationMin": 5,
-  "content": "## Vérifier la connectivité FortiGuard\n\nLe filtrage par catégorie repose sur une connexion active à FortiGuard. La commande de référence est :\n\n```\ndiagnose debug rating\n```\n\nElle affiche la liste des serveurs FortiGuard connus et plusieurs métriques :\n\n| Champ | Signification |\n|---|---|\n| **Weight** | Écart de fuseau horaire entre FortiGate et le serveur (pour éviter un serveur trop éloigné) |\n| **RTT** | Round-Trip Time — temps aller-retour |\n| **Flags** | État du serveur (voir ci-dessous) |\n| **TZ** | Fuseau horaire du serveur |\n| **FortiGuard-requests** | Nombre total de requêtes envoyées |\n| **Curr Lost / Total Lost** | Requêtes perdues — utile pour détecter une connectivité dégradée |\n\n### Drapeaux (Flags)\n\n- **D** — IP reçue par DNS\n- **I** — Serveur de contrat contacté\n- **T** — Serveur en cours de chronométrage\n- **F** — Failed (échec de la connexion)\n\n## Ports et protocoles vers FortiGuard\n\nPar défaut, FortiGate utilise **HTTPS sur le port 443** vers FortiGuard (ou FortiManager en local).\n\n### Mode anycast\n\nQuand `fortiguard-anycast` est **activé** (défaut) : le domaine FortiGuard résout vers **une seule IP anycast** — un seul serveur s'affiche dans `diagnose debug rating`.\n\nQuand **désactivé** : plusieurs options disponibles :\n- HTTPS sur **port 53** ou **8888**\n- UDP sur **443**, **53** ou **8888**\n\n> ⚠️ **UDP/53 peut être bloqué** par les inspections DNS car le trafic n'est pas réellement DNS. Dans ce cas, basculer sur **443 ou 8888**.\n\n## Web Filter cache\n\nSi le volume de requêtes FortiGuard est élevé, activer le **Web Filter cache** :\n- FortiGate conserve les ratings récents en mémoire.\n- Évite de re-interroger FortiGuard pour les URL déjà évaluées.\n- **Améliore la latence** et réduit la charge réseau vers FortiGuard.\n\n## Dépannage d'un profil qui ne fonctionne pas\n\nSi le filtrage web est configuré mais ne fonctionne pas, vérifier dans cet ordre :\n\n1. **Connexion FortiGuard** : `diagnose debug rating` — chercher le flag **F** (Failed) ou des `Total Lost` élevés.\n2. **Profil SSL Inspection** : doit contenir au moins une méthode SSL certificate inspection.\n3. **Profil web filter** : vérifier que le bon profil est appliqué à la policy.\n4. **Mode d'inspection** : vérifier la cohérence entre flow-based et proxy-based dans le profil.\n\n## Consulter les logs\n\nLes **Web Filter logs** confirment le bon comportement :\n- Profil utilisé\n- URL et catégorie\n- Quota FortiGuard si configuré\n- Détails de l'événement\n\nOn peut télécharger les logs bruts au format **syslog texte**.",
+  "content": "## Vérifier la connectivité FortiGuard\n\nLe filtrage par catégorie repose sur une connexion active à FortiGuard. La commande de référence est :\n\n```\ndiagnose debug rating\n```\n\nElle affiche la liste des serveurs FortiGuard connus et plusieurs métriques :\n\n| Champ | Signification |\n|---|---|\n| **Weight** | Écart de fuseau horaire entre FortiGate et le serveur (pour éviter un serveur trop éloigné) |\n| **RTT** | Round-Trip Time — temps aller-retour |\n| **Flags** | État du serveur (voir ci-dessous) |\n| **TZ** | Fuseau horaire du serveur |\n| **FortiGuard-requests** | Nombre total de requêtes envoyées |\n| **Curr Lost / Total Lost** | Requêtes perdues — utile pour détecter une connectivité dégradée |\n\n### Drapeaux (Flags)\n\n- **D** — IP reçue par DNS\n- **I** — Serveur de contrat contacté\n- **T** — Serveur en cours de chronométrage\n- **F** — Failed (échec de la connexion)\n\n## Ports et protocoles vers FortiGuard\n\nPar défaut, FortiGate utilise **HTTPS sur le port 443** vers FortiGuard (ou FortiManager en local).\n\n### Mode anycast\n\nQuand `fortiguard-anycast` est **activé** (défaut) : le domaine FortiGuard résout vers **une seule IP anycast** — un seul serveur s'affiche dans `diagnose debug rating`.\n\nQuand **désactivé** : plusieurs options disponibles :\n- HTTPS sur **port 53** ou **8888**\n- UDP sur **443**, **53** ou **8888**\n\n> ⚠️ **UDP/53 peut être bloqué** par les inspections DNS car le trafic n'est pas réellement DNS. Dans ce cas, basculer sur **443 ou 8888**.\n\n\n![Flux de dépannage web filter : connexion FortiGuard → SSL inspection → profil → logs.](diagram:0)\n\n## Web Filter cache\n\nSi le volume de requêtes FortiGuard est élevé, activer le **Web Filter cache** :\n- FortiGate conserve les ratings récents en mémoire.\n- Évite de re-interroger FortiGuard pour les URL déjà évaluées.\n- **Améliore la latence** et réduit la charge réseau vers FortiGuard.\n\n## Dépannage d'un profil qui ne fonctionne pas\n\nSi le filtrage web est configuré mais ne fonctionne pas, vérifier dans cet ordre :\n\n1. **Connexion FortiGuard** : `diagnose debug rating` — chercher le flag **F** (Failed) ou des `Total Lost` élevés.\n2. **Profil SSL Inspection** : doit contenir au moins une méthode SSL certificate inspection.\n3. **Profil web filter** : vérifier que le bon profil est appliqué à la policy.\n4. **Mode d'inspection** : vérifier la cohérence entre flow-based et proxy-based dans le profil.\n\n## Consulter les logs\n\nLes **Web Filter logs** confirment le bon comportement :\n- Profil utilisé\n- URL et catégorie\n- Quota FortiGuard si configuré\n- Détails de l'événement\n\nOn peut télécharger les logs bruts au format **syslog texte**.",
   "diagrams": [
     {
       "caption": "Flux de dépannage web filter : connexion FortiGuard → SSL inspection → profil → logs.",
@@ -14,73 +14,133 @@
   "questionPool": [
     {
       "q": "Quelle commande vérifie la connectivité vers les serveurs FortiGuard Web Filtering ?",
-      "choices": ["diagnose sys rating", "diagnose debug rating", "get system fortiguard", "diagnose debug application urlfilter"],
+      "choices": [
+        "diagnose sys rating",
+        "diagnose debug rating",
+        "get system fortiguard",
+        "diagnose debug application urlfilter"
+      ],
       "answer": 1,
       "explain": "diagnose debug rating affiche les serveurs FortiGuard, leur RTT, leur état (flags) et les statistiques de requêtes."
     },
     {
       "q": "Que signifie le flag F dans la sortie de diagnose debug rating ?",
-      "choices": ["FortiGuard", "Forwarding", "Failed", "Full"],
+      "choices": [
+        "FortiGuard",
+        "Forwarding",
+        "Failed",
+        "Full"
+      ],
       "answer": 2,
       "explain": "Le flag F (Failed) indique que FortiGate n'a pas réussi à joindre ce serveur FortiGuard."
     },
     {
       "q": "Quel port FortiGate utilise-t-il par défaut vers FortiGuard Web Filtering ?",
-      "choices": ["UDP 8888", "HTTPS 443", "HTTP 80", "UDP 53"],
+      "choices": [
+        "UDP 8888",
+        "HTTPS 443",
+        "HTTP 80",
+        "UDP 53"
+      ],
       "answer": 1,
       "explain": "Par défaut, FortiGate utilise HTTPS sur le port 443 vers FortiGuard (ou FortiManager si configuré en serveur local)."
     },
     {
       "q": "Quel bénéfice apporte le Web Filter cache ?",
-      "choices": ["Il bloque les sites non catégorisés", "Il réduit le nombre de requêtes FortiGuard et améliore la latence", "Il stocke les pages web pour les utilisateurs", "Il permet le filtrage sans connexion internet"],
+      "choices": [
+        "Il bloque les sites non catégorisés",
+        "Il réduit le nombre de requêtes FortiGuard et améliore la latence",
+        "Il stocke les pages web pour les utilisateurs",
+        "Il permet le filtrage sans connexion internet"
+      ],
       "answer": 1,
       "explain": "Le Web Filter cache conserve les ratings récents en mémoire, évitant de re-interroger FortiGuard pour les URL déjà évaluées."
     },
     {
       "q": "Que vérifier en priorité si le filtrage web ne fonctionne pas malgré une connexion FortiGuard correcte ?",
-      "choices": ["Les règles de routage", "Le profil SSL inspection et le profil web filter appliqué à la policy", "Les licences FortiGuard", "Les règles NAT"],
+      "choices": [
+        "Les règles de routage",
+        "Le profil SSL inspection et le profil web filter appliqué à la policy",
+        "Les licences FortiGuard",
+        "Les règles NAT"
+      ],
       "answer": 1,
       "explain": "Vérifier : (1) le profil SSL Inspection avec méthode certificate inspection, (2) que le bon profil web filter est appliqué à la policy, (3) la cohérence flow/proxy."
     },
     {
       "q": "Que signifie le champ Weight dans diagnose debug rating ?",
-      "choices": ["La bande passante vers le serveur", "L'écart de fuseau horaire entre FortiGate et le serveur", "Le nombre de requêtes en attente", "La priorité du serveur dans la liste"],
+      "choices": [
+        "La bande passante vers le serveur",
+        "L'écart de fuseau horaire entre FortiGate et le serveur",
+        "Le nombre de requêtes en attente",
+        "La priorité du serveur dans la liste"
+      ],
       "answer": 1,
       "explain": "Weight reflète l'écart de fuseau horaire — FortiGate préfère les serveurs géographiquement proches pour limiter la latence."
     },
     {
       "q": "Que signifie le flag D dans diagnose debug rating ?",
-      "choices": ["Disabled — serveur désactivé", "IP reçue par DNS", "Down — serveur inaccessible", "Default — serveur par défaut"],
+      "choices": [
+        "Disabled — serveur désactivé",
+        "IP reçue par DNS",
+        "Down — serveur inaccessible",
+        "Default — serveur par défaut"
+      ],
       "answer": 1,
       "explain": "Le flag D indique que l'IP du serveur a été obtenue par résolution DNS."
     },
     {
       "q": "Pourquoi UDP/53 peut-il poser problème comme protocole vers FortiGuard ?",
-      "choices": ["UDP/53 est trop lent", "Il peut être bloqué par les inspections DNS car le trafic n'est pas réellement DNS", "UDP n'est pas supporté par FortiGuard", "UDP/53 nécessite une licence spéciale"],
+      "choices": [
+        "UDP/53 est trop lent",
+        "Il peut être bloqué par les inspections DNS car le trafic n'est pas réellement DNS",
+        "UDP n'est pas supporté par FortiGuard",
+        "UDP/53 nécessite une licence spéciale"
+      ],
       "answer": 1,
       "explain": "UDP/53 ressemble à du DNS mais n'en est pas — les inspections DNS peuvent le bloquer. Dans ce cas, basculer sur 443 ou 8888."
     },
     {
       "q": "Quand fortiguard-anycast est activé, combien de serveurs apparaît dans diagnose debug rating ?",
-      "choices": ["Autant que de serveurs dans la région", "Un seul (IP anycast)", "Trois (primaire + deux de secours)", "Dépend de la version de firmware"],
+      "choices": [
+        "Autant que de serveurs dans la région",
+        "Un seul (IP anycast)",
+        "Trois (primaire + deux de secours)",
+        "Dépend de la version de firmware"
+      ],
       "answer": 1,
       "explain": "Avec anycast activé, le domaine FortiGuard résout vers une seule IP anycast — un seul serveur s'affiche dans diagnose debug rating."
     },
     {
       "q": "Quel champ de diagnose debug rating permet de détecter une connectivité dégradée ?",
-      "choices": ["RTT uniquement", "Curr Lost et Total Lost", "Weight", "TZ"],
+      "choices": [
+        "RTT uniquement",
+        "Curr Lost et Total Lost",
+        "Weight",
+        "TZ"
+      ],
       "answer": 1,
       "explain": "Curr Lost et Total Lost indiquent les requêtes FortiGuard perdues — des valeurs élevées signalent une connectivité dégradée."
     },
     {
       "q": "Quel format permet d'exporter les Web Filter logs ?",
-      "choices": ["CSV uniquement", "JSON", "Syslog texte", "XML"],
+      "choices": [
+        "CSV uniquement",
+        "JSON",
+        "Syslog texte",
+        "XML"
+      ],
       "answer": 2,
       "explain": "On peut télécharger les logs bruts au format syslog texte depuis l'interface FortiGate."
     },
     {
       "q": "En mode non-anycast, quels ports alternatifs peut-on utiliser en HTTPS vers FortiGuard ?",
-      "choices": ["8080 et 8443", "53 et 8888", "443 uniquement", "8000 et 9000"],
+      "choices": [
+        "8080 et 8443",
+        "53 et 8888",
+        "443 uniquement",
+        "8000 et 9000"
+      ],
       "answer": 1,
       "explain": "En mode non-anycast, FortiGate peut utiliser HTTPS sur les ports 53 ou 8888 (en plus du 443 par défaut)."
     }
@@ -88,31 +148,56 @@
   "quiz": [
     {
       "q": "Quelle commande vérifie la connectivité vers les serveurs FortiGuard Web Filtering ?",
-      "choices": ["diagnose sys rating", "diagnose debug rating", "get system fortiguard", "diagnose debug application urlfilter"],
+      "choices": [
+        "diagnose sys rating",
+        "diagnose debug rating",
+        "get system fortiguard",
+        "diagnose debug application urlfilter"
+      ],
       "answer": 1,
       "explain": "diagnose debug rating affiche les serveurs FortiGuard, leur RTT, leur état (flags) et les stats de requêtes."
     },
     {
       "q": "Que signifie le flag F dans la sortie de diagnose debug rating ?",
-      "choices": ["FortiGuard", "Forwarding", "Failed", "Full"],
+      "choices": [
+        "FortiGuard",
+        "Forwarding",
+        "Failed",
+        "Full"
+      ],
       "answer": 2,
       "explain": "Le flag F (Failed) indique que FortiGate n'a pas réussi à joindre ce serveur FortiGuard."
     },
     {
       "q": "Quel port FortiGate utilise-t-il par défaut vers FortiGuard ?",
-      "choices": ["UDP 8888", "HTTPS 443", "HTTP 80", "UDP 53"],
+      "choices": [
+        "UDP 8888",
+        "HTTPS 443",
+        "HTTP 80",
+        "UDP 53"
+      ],
       "answer": 1,
       "explain": "Par défaut, FortiGate utilise HTTPS sur le port 443 vers FortiGuard."
     },
     {
       "q": "Quel bénéfice apporte le Web Filter cache ?",
-      "choices": ["Il bloque les sites non catégorisés", "Il réduit les requêtes FortiGuard et améliore la latence", "Il stocke les pages pour les utilisateurs", "Il permet le filtrage sans internet"],
+      "choices": [
+        "Il bloque les sites non catégorisés",
+        "Il réduit les requêtes FortiGuard et améliore la latence",
+        "Il stocke les pages pour les utilisateurs",
+        "Il permet le filtrage sans internet"
+      ],
       "answer": 1,
       "explain": "Le cache conserve les ratings récents — évite de re-interroger FortiGuard pour les URL déjà évaluées."
     },
     {
       "q": "Que vérifier en priorité si le filtrage web ne fonctionne pas ?",
-      "choices": ["Les règles de routage", "Le profil SSL inspection et le profil web filter de la policy", "Les licences FortiGuard", "Les règles NAT"],
+      "choices": [
+        "Les règles de routage",
+        "Le profil SSL inspection et le profil web filter de la policy",
+        "Les licences FortiGuard",
+        "Les règles NAT"
+      ],
       "answer": 1,
       "explain": "Vérifier le profil SSL Inspection (certificate inspection) et que le bon profil web filter est appliqué."
     }

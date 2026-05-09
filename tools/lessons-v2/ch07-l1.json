@@ -3,7 +3,7 @@
   "module": "Certificate Operations",
   "title": "Bases des certificats numériques",
   "durationMin": 7,
-  "content": "## Infrastructure PKI\n\nUne **infrastructure PKI** (Public Key Infrastructure) repose sur une hiérarchie d'autorités de certification. La **CA racine** (Root CA) est au sommet : elle signe sa propre clé et constitue l'ancre de confiance ultime. En dessous se trouvent les **CA intermédiaires** qui signent les certificats finaux (**end-entity**). Cette délégation permet de protéger la CA racine en la gardant hors ligne.\n\n## Contenu d'un certificat X.509 v3\n\nUn certificat X.509 v3 contient les champs suivants :\n\n| Champ | Description |\n|---|---|\n| **Subject** | Identité du titulaire : CN (Common Name), O (Organisation), OU (Unité), C (Pays) |\n| **Issuer** | Identité de la CA signataire |\n| **Validité** | NotBefore et NotAfter (dates limites) |\n| **Clé publique** | Clé RSA ou ECDSA du titulaire |\n| **Extensions** | SAN (Subject Alternative Name), KeyUsage, BasicConstraints |\n| **Numéro de série** | Identifiant unique par CA |\n| **Signature** | Hash du certificat chiffré par la clé privée de la CA |\n\nL'extension **SAN** (Subject Alternative Name) permet de couvrir plusieurs domaines ou adresses IP dans un seul certificat. **BasicConstraints** indique si le certificat peut signer d'autres certificats (CA:TRUE).\n\n## Signature numérique\n\nLa **signature numérique** fonctionne ainsi : la CA calcule un hash du contenu du certificat (avec SHA-256 par exemple), puis chiffre ce hash avec sa **clé privée**. N'importe quel client peut vérifier la signature en déchiffrant avec la **clé publique** de la CA et en comparant le hash recalculé.\n\n## Chaîne de confiance\n\nLe navigateur ou client remonte la **chaîne de confiance** depuis le certificat end-entity jusqu'à une CA racine présente dans son **store de confiance** (magasin de certificats). Si un maillon manque ou n'est pas reconnu, la connexion est rejetée.\n\n## Types de validation\n\n- **DV** (Domain Validation) : vérifie uniquement le domaine — rapide et automatisé\n- **OV** (Organization Validation) : vérifie l'organisation — contrôle manuel\n- **EV** (Extended Validation) : vérification étendue renforcée — affichait historiquement la barre verte dans les navigateurs\n\n## Self-signed vs CA-signed\n\nUn certificat **self-signed** est signé par sa propre clé privée : il ne bénéficie d'aucune chaîne de confiance externe. Les navigateurs affichent une alerte. Un certificat **CA-signed** est émis par une CA reconnue : la chaîne de confiance est validée automatiquement.\n\n## Formats de certificats\n\n| Format | Extension | Description |\n|---|---|---|\n| **PEM** | .pem, .crt, .cer | Encodage base64, texte lisible |\n| **DER** | .der | Format binaire, non lisible |\n| **PKCS12** | .p12, .pfx | Certificat + clé privée groupés |\n| **PKCS7** | .p7b | Chaîne de certificats sans clé privée |\n\n## CSR — Certificate Signing Request\n\nUne **CSR** (Certificate Signing Request) est générée par le client. Elle contient la clé publique, les informations du sujet (CN, O, etc.) et une signature avec la clé privée du client pour prouver la possession. La CSR est envoyée à la CA qui la signe pour produire le certificat final.",
+  "content": "## Infrastructure PKI\n\nUne **infrastructure PKI** (Public Key Infrastructure) repose sur une hiérarchie d'autorités de certification. La **CA racine** (Root CA) est au sommet : elle signe sa propre clé et constitue l'ancre de confiance ultime. En dessous se trouvent les **CA intermédiaires** qui signent les certificats finaux (**end-entity**). Cette délégation permet de protéger la CA racine en la gardant hors ligne.\n\n## Contenu d'un certificat X.509 v3\n\nUn certificat X.509 v3 contient les champs suivants :\n\n| Champ | Description |\n|---|---|\n| **Subject** | Identité du titulaire : CN (Common Name), O (Organisation), OU (Unité), C (Pays) |\n| **Issuer** | Identité de la CA signataire |\n| **Validité** | NotBefore et NotAfter (dates limites) |\n| **Clé publique** | Clé RSA ou ECDSA du titulaire |\n| **Extensions** | SAN (Subject Alternative Name), KeyUsage, BasicConstraints |\n| **Numéro de série** | Identifiant unique par CA |\n| **Signature** | Hash du certificat chiffré par la clé privée de la CA |\n\nL'extension **SAN** (Subject Alternative Name) permet de couvrir plusieurs domaines ou adresses IP dans un seul certificat. **BasicConstraints** indique si le certificat peut signer d'autres certificats (CA:TRUE).\n\n\n![Hiérarchie PKI : Root CA → CA intermédiaire → Certificat end-entity](diagram:0)\n\n## Signature numérique\n\nLa **signature numérique** fonctionne ainsi : la CA calcule un hash du contenu du certificat (avec SHA-256 par exemple), puis chiffre ce hash avec sa **clé privée**. N'importe quel client peut vérifier la signature en déchiffrant avec la **clé publique** de la CA et en comparant le hash recalculé.\n\n## Chaîne de confiance\n\nLe navigateur ou client remonte la **chaîne de confiance** depuis le certificat end-entity jusqu'à une CA racine présente dans son **store de confiance** (magasin de certificats). Si un maillon manque ou n'est pas reconnu, la connexion est rejetée.\n\n## Types de validation\n\n- **DV** (Domain Validation) : vérifie uniquement le domaine — rapide et automatisé\n- **OV** (Organization Validation) : vérifie l'organisation — contrôle manuel\n- **EV** (Extended Validation) : vérification étendue renforcée — affichait historiquement la barre verte dans les navigateurs\n\n## Self-signed vs CA-signed\n\nUn certificat **self-signed** est signé par sa propre clé privée : il ne bénéficie d'aucune chaîne de confiance externe. Les navigateurs affichent une alerte. Un certificat **CA-signed** est émis par une CA reconnue : la chaîne de confiance est validée automatiquement.\n\n## Formats de certificats\n\n| Format | Extension | Description |\n|---|---|---|\n| **PEM** | .pem, .crt, .cer | Encodage base64, texte lisible |\n| **DER** | .der | Format binaire, non lisible |\n| **PKCS12** | .p12, .pfx | Certificat + clé privée groupés |\n| **PKCS7** | .p7b | Chaîne de certificats sans clé privée |\n\n## CSR — Certificate Signing Request\n\nUne **CSR** (Certificate Signing Request) est générée par le client. Elle contient la clé publique, les informations du sujet (CN, O, etc.) et une signature avec la clé privée du client pour prouver la possession. La CSR est envoyée à la CA qui la signe pour produire le certificat final.",
   "diagrams": [
     {
       "caption": "Hiérarchie PKI : Root CA → CA intermédiaire → Certificat end-entity",
@@ -14,91 +14,166 @@
   "questionPool": [
     {
       "q": "Quel champ X.509 identifie l'autorité qui a signé le certificat ?",
-      "choices": ["Subject", "Issuer", "SAN", "BasicConstraints"],
+      "choices": [
+        "Subject",
+        "Issuer",
+        "SAN",
+        "BasicConstraints"
+      ],
       "answer": 1,
       "explain": "Le champ Issuer identifie la CA signataire du certificat. Le champ Subject identifie le titulaire."
     },
     {
       "q": "Que contient une CSR (Certificate Signing Request) ?",
-      "choices": ["La clé privée du client et la signature CA", "La clé publique, les infos sujet et une signature avec la clé privée du client", "Uniquement le CN et le SAN", "Le certificat signé et la chaîne de confiance"],
+      "choices": [
+        "La clé privée du client et la signature CA",
+        "La clé publique, les infos sujet et une signature avec la clé privée du client",
+        "Uniquement le CN et le SAN",
+        "Le certificat signé et la chaîne de confiance"
+      ],
       "answer": 1,
       "explain": "Une CSR contient la clé publique du client, les informations du sujet (CN, O, etc.) et une signature réalisée avec la clé privée du client pour prouver la possession."
     },
     {
       "q": "Quel format regroupe le certificat ET la clé privée dans un seul fichier ?",
-      "choices": ["PEM", "DER", "PKCS7", "PKCS12"],
+      "choices": [
+        "PEM",
+        "DER",
+        "PKCS7",
+        "PKCS12"
+      ],
       "answer": 3,
       "explain": "Le format PKCS12 (extensions .p12 ou .pfx) regroupe le certificat et la clé privée dans un seul fichier protégé par mot de passe."
     },
     {
       "q": "Qu'est-ce que l'extension SAN dans un certificat X.509 ?",
-      "choices": ["Un indicateur de révocation", "Subject Alternative Name — permet de couvrir plusieurs domaines ou IP dans un certificat", "La durée de validité du certificat", "L'algorithme de signature utilisé"],
+      "choices": [
+        "Un indicateur de révocation",
+        "Subject Alternative Name — permet de couvrir plusieurs domaines ou IP dans un certificat",
+        "La durée de validité du certificat",
+        "L'algorithme de signature utilisé"
+      ],
       "answer": 1,
       "explain": "SAN (Subject Alternative Name) est une extension X.509 qui permet d'associer plusieurs domaines ou adresses IP à un seul certificat."
     },
     {
       "q": "Un certificat self-signed présente quelle caractéristique principale ?",
-      "choices": ["Il est signé par une CA racine reconnue", "Il est signé par sa propre clé privée, sans chaîne de confiance externe", "Il utilise le format DER obligatoirement", "Il est réservé aux CA intermédiaires"],
+      "choices": [
+        "Il est signé par une CA racine reconnue",
+        "Il est signé par sa propre clé privée, sans chaîne de confiance externe",
+        "Il utilise le format DER obligatoirement",
+        "Il est réservé aux CA intermédiaires"
+      ],
       "answer": 1,
       "explain": "Un certificat self-signed est signé par sa propre clé privée. Il ne bénéficie d'aucune chaîne de confiance externe, ce qui provoque une alerte dans les navigateurs."
     },
     {
       "q": "Quel type de validation de certificat effectue une vérification étendue renforcée ?",
-      "choices": ["DV (Domain Validation)", "OV (Organization Validation)", "EV (Extended Validation)", "SV (Server Validation)"],
+      "choices": [
+        "DV (Domain Validation)",
+        "OV (Organization Validation)",
+        "EV (Extended Validation)",
+        "SV (Server Validation)"
+      ],
       "answer": 2,
       "explain": "EV (Extended Validation) effectue une vérification étendue renforcée de l'organisation. Il affichait historiquement la barre verte dans les navigateurs."
     },
     {
       "q": "Comment la CA crée-t-elle la signature d'un certificat ?",
-      "choices": ["Elle chiffre la clé publique avec son certificat racine", "Elle calcule un hash du certificat et le chiffre avec sa clé privée", "Elle envoie le CSR à la CA racine pour validation", "Elle copie la signature du certificat précédent"],
+      "choices": [
+        "Elle chiffre la clé publique avec son certificat racine",
+        "Elle calcule un hash du certificat et le chiffre avec sa clé privée",
+        "Elle envoie le CSR à la CA racine pour validation",
+        "Elle copie la signature du certificat précédent"
+      ],
       "answer": 1,
       "explain": "La CA calcule un hash du contenu du certificat puis chiffre ce hash avec sa clé privée. Le client vérifie en déchiffrant avec la clé publique de la CA."
     },
     {
       "q": "Quel format de certificat est encodé en base64 et lisible en texte ?",
-      "choices": ["DER", "PKCS12", "PEM", "PKCS7"],
+      "choices": [
+        "DER",
+        "PKCS12",
+        "PEM",
+        "PKCS7"
+      ],
       "answer": 2,
       "explain": "Le format PEM utilise un encodage base64 et est lisible en texte. Il est reconnaissable aux en-têtes BEGIN CERTIFICATE et END CERTIFICATE."
     },
     {
       "q": "Que signifie BasicConstraints CA:TRUE dans un certificat X.509 ?",
-      "choices": ["Le certificat est valide indéfiniment", "Le certificat peut signer d'autres certificats (il s'agit d'une CA)", "Le certificat est de type DV", "Le certificat est auto-signé"],
+      "choices": [
+        "Le certificat est valide indéfiniment",
+        "Le certificat peut signer d'autres certificats (il s'agit d'une CA)",
+        "Le certificat est de type DV",
+        "Le certificat est auto-signé"
+      ],
       "answer": 1,
       "explain": "L'extension BasicConstraints avec CA:TRUE indique que le certificat appartient à une autorité de certification capable de signer d'autres certificats."
     },
     {
       "q": "Quel champ X.509 contient les dates de début et fin de validité ?",
-      "choices": ["Subject", "KeyUsage", "Validité (NotBefore et NotAfter)", "Numéro de série"],
+      "choices": [
+        "Subject",
+        "KeyUsage",
+        "Validité (NotBefore et NotAfter)",
+        "Numéro de série"
+      ],
       "answer": 2,
       "explain": "Le champ Validité contient NotBefore (date de début) et NotAfter (date d'expiration) du certificat."
     },
     {
       "q": "Quel format PKCS7 (.p7b) contient-il ?",
-      "choices": ["Certificat et clé privée", "Uniquement la clé publique", "La chaîne de certificats sans clé privée", "Un certificat DER compressé"],
+      "choices": [
+        "Certificat et clé privée",
+        "Uniquement la clé publique",
+        "La chaîne de certificats sans clé privée",
+        "Un certificat DER compressé"
+      ],
       "answer": 2,
       "explain": "Le format PKCS7 (.p7b) contient une chaîne de certificats (CA chain) sans inclure la clé privée."
     },
     {
       "q": "Qu'est-ce que le store de confiance d'un navigateur ?",
-      "choices": ["Un répertoire de fichiers PEM sur le disque dur", "Le magasin de certificats contenant les CA racines reconnues par le système", "La liste des certificats révoqués (CRL)", "La base de données des CSR en attente"],
+      "choices": [
+        "Un répertoire de fichiers PEM sur le disque dur",
+        "Le magasin de certificats contenant les CA racines reconnues par le système",
+        "La liste des certificats révoqués (CRL)",
+        "La base de données des CSR en attente"
+      ],
       "answer": 1,
       "explain": "Le store de confiance est le magasin de certificats contenant les CA racines reconnues. Le navigateur remonte la chaîne de confiance jusqu'à une CA racine présente dans ce magasin."
     },
     {
       "q": "Quel type de validation vérifie uniquement que le demandeur contrôle le domaine ?",
-      "choices": ["EV (Extended Validation)", "OV (Organization Validation)", "DV (Domain Validation)", "RV (Root Validation)"],
+      "choices": [
+        "EV (Extended Validation)",
+        "OV (Organization Validation)",
+        "DV (Domain Validation)",
+        "RV (Root Validation)"
+      ],
       "answer": 2,
       "explain": "DV (Domain Validation) vérifie uniquement le domaine. C'est le type le plus rapide et automatisé, sans vérification de l'organisation."
     },
     {
       "q": "Quel est le rôle de la CA intermédiaire dans une PKI ?",
-      "choices": ["Elle stocke les clés privées des utilisateurs", "Elle signe les certificats finaux à la place de la CA racine, permettant de protéger cette dernière", "Elle gère uniquement les CRL", "Elle effectue la validation DV des domaines"],
+      "choices": [
+        "Elle stocke les clés privées des utilisateurs",
+        "Elle signe les certificats finaux à la place de la CA racine, permettant de protéger cette dernière",
+        "Elle gère uniquement les CRL",
+        "Elle effectue la validation DV des domaines"
+      ],
       "answer": 1,
       "explain": "La CA intermédiaire signe les certificats finaux (end-entity) à la place de la CA racine. Cela permet de garder la CA racine hors ligne et mieux protégée."
     },
     {
       "q": "Quelle extension X.509 contrôle les usages autorisés de la clé (signature, chiffrement...) ?",
-      "choices": ["SAN", "BasicConstraints", "KeyUsage", "Issuer"],
+      "choices": [
+        "SAN",
+        "BasicConstraints",
+        "KeyUsage",
+        "Issuer"
+      ],
       "answer": 2,
       "explain": "L'extension KeyUsage définit les usages autorisés de la clé du certificat : signature numérique, chiffrement de clé, authentification client/serveur, etc."
     }
@@ -106,31 +181,56 @@
   "quiz": [
     {
       "q": "Quel champ X.509 identifie l'autorité qui a signé le certificat ?",
-      "choices": ["Subject", "Issuer", "SAN", "BasicConstraints"],
+      "choices": [
+        "Subject",
+        "Issuer",
+        "SAN",
+        "BasicConstraints"
+      ],
       "answer": 1,
       "explain": "Le champ Issuer identifie la CA signataire du certificat. Le champ Subject identifie le titulaire."
     },
     {
       "q": "Que contient une CSR (Certificate Signing Request) ?",
-      "choices": ["La clé privée du client et la signature CA", "La clé publique, les infos sujet et une signature avec la clé privée du client", "Uniquement le CN et le SAN", "Le certificat signé et la chaîne de confiance"],
+      "choices": [
+        "La clé privée du client et la signature CA",
+        "La clé publique, les infos sujet et une signature avec la clé privée du client",
+        "Uniquement le CN et le SAN",
+        "Le certificat signé et la chaîne de confiance"
+      ],
       "answer": 1,
       "explain": "Une CSR contient la clé publique du client, les informations du sujet (CN, O, etc.) et une signature réalisée avec la clé privée du client pour prouver la possession."
     },
     {
       "q": "Quel format regroupe le certificat ET la clé privée dans un seul fichier ?",
-      "choices": ["PEM", "DER", "PKCS7", "PKCS12"],
+      "choices": [
+        "PEM",
+        "DER",
+        "PKCS7",
+        "PKCS12"
+      ],
       "answer": 3,
       "explain": "Le format PKCS12 (extensions .p12 ou .pfx) regroupe le certificat et la clé privée dans un seul fichier protégé par mot de passe."
     },
     {
       "q": "Comment la CA crée-t-elle la signature d'un certificat ?",
-      "choices": ["Elle chiffre la clé publique avec son certificat racine", "Elle calcule un hash du certificat et le chiffre avec sa clé privée", "Elle envoie le CSR à la CA racine pour validation", "Elle copie la signature du certificat précédent"],
+      "choices": [
+        "Elle chiffre la clé publique avec son certificat racine",
+        "Elle calcule un hash du certificat et le chiffre avec sa clé privée",
+        "Elle envoie le CSR à la CA racine pour validation",
+        "Elle copie la signature du certificat précédent"
+      ],
       "answer": 1,
       "explain": "La CA calcule un hash du contenu du certificat puis chiffre ce hash avec sa clé privée. Le client vérifie en déchiffrant avec la clé publique de la CA."
     },
     {
       "q": "Quel type de validation de certificat effectue une vérification étendue renforcée ?",
-      "choices": ["DV (Domain Validation)", "OV (Organization Validation)", "EV (Extended Validation)", "SV (Server Validation)"],
+      "choices": [
+        "DV (Domain Validation)",
+        "OV (Organization Validation)",
+        "EV (Extended Validation)",
+        "SV (Server Validation)"
+      ],
       "answer": 2,
       "explain": "EV (Extended Validation) effectue une vérification étendue renforcée de l'organisation. Il affichait historiquement la barre verte dans les navigateurs."
     }

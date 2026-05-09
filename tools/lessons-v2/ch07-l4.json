@@ -3,7 +3,7 @@
   "module": "Certificate Operations",
   "title": "FortiGate comme CA et chaîne de confiance",
   "durationMin": 7,
-  "content": "## FortiGate comme CA locale\n\nFortiGate peut agir comme une **CA locale** (autorité de certification locale) pour signer des certificats internes. Cette capacité est utilisée principalement pour la Full SSL inspection et l'accès HTTPS à l'interface d'administration.\n\n## CA intégrées dans FortiGate\n\nFortiGate embarque plusieurs CA préconfigurées :\n\n| CA | Rôle |\n|---|---|\n| **Fortinet_CA_SSL** | CA valide utilisée pour la Full SSL inspection (deep inspection). Signe les certificats temporaires présentés aux clients. |\n| **Fortinet_CA_Untrusted** | Utilisée pour les certificats suspects ou non vérifiables. |\n| **Fortinet_Factory** | Certificat auto-signé d'usine, utilisé pour l'accès HTTPS initial à l'interface GUI avant remplacement. |\n\n> **Bonne pratique :** Remplacer Fortinet_Factory par un certificat valide en production pour éviter les alertes de sécurité lors de l'accès à l'interface d'administration.\n\n## Générer un certificat sur FortiGate\n\nVia l'interface GUI : **System > Certificates > Generate**\n\nDeux options disponibles :\n1. **Générer une CSR** (Certificate Signing Request) : crée une paire de clés et une demande à soumettre à une CA externe\n2. **Certificat auto-signé** : FortiGate signe lui-même le certificat — pratique pour les tests mais non reconnu par les clients sans configuration supplémentaire\n\nUne **CSR** générée sur FortiGate contient la clé publique et les informations du sujet. Elle est exportée puis envoyée à une CA externe pour obtenir un certificat signé.\n\n## Importer une CA tierce\n\nVia GUI : **System > Certificates > Import CA Certificate**\n\nFormats acceptés :\n- **PEM** : fichier texte base64\n- **PKCS12** : fichier binaire contenant certificat et clé privée\n\nLe **Remote CA store** de FortiGate stocke les CA tierces. Ces CA sont utilisées pour valider les chaînes de certificats des serveurs internes lors des inspections SSL.\n\n## Chaîne de certification incomplète\n\nSi la chaîne de certification d'un serveur est **incomplète** (CA intermédiaire manquante), FortiGate ne peut pas valider le certificat de ce serveur. Solution : s'assurer que toutes les **CA intermédiaires** sont importées dans le Remote CA store de FortiGate.\n\n## OCSP — Vérification de révocation en temps réel\n\n**OCSP** (Online Certificate Status Protocol) est un protocole permettant de vérifier en temps réel si un certificat est révoqué. FortiGate peut interroger le serveur OCSP de la CA pour chaque certificat à valider.\n\nOCSP est une alternative moderne à la **CRL** (Certificate Revocation List). La CRL est une liste complète téléchargée périodiquement, tandis qu'OCSP effectue une requête unitaire en temps réel pour un certificat donné.\n\n**Avantages d'OCSP :**\n- Vérification en temps réel\n- Moins de bande passante qu'une CRL complète\n- Réponse immédiate (valid / revoked / unknown)\n\n## Certificate Override\n\nLa fonction **Certificate override** permet de forcer la confiance en un certificat spécifique malgré un problème détecté (expiration, chaîne incomplète, certificat auto-signé). Cette option est à utiliser avec précaution car elle contourne les mécanismes de sécurité normaux.\n\n## Flux de certification FortiGate\n\nL'administrateur génère une CSR sur FortiGate → la CA signe la CSR → le certificat signé est importé sur FortiGate → FortiGate l'utilise pour Fortinet_CA_SSL ou l'interface HTTPS → le client fait confiance si la CA est dans son store de confiance.",
+  "content": "## FortiGate comme CA locale\n\nFortiGate peut agir comme une **CA locale** (autorité de certification locale) pour signer des certificats internes. Cette capacité est utilisée principalement pour la Full SSL inspection et l'accès HTTPS à l'interface d'administration.\n\n## CA intégrées dans FortiGate\n\nFortiGate embarque plusieurs CA préconfigurées :\n\n| CA | Rôle |\n|---|---|\n| **Fortinet_CA_SSL** | CA valide utilisée pour la Full SSL inspection (deep inspection). Signe les certificats temporaires présentés aux clients. |\n| **Fortinet_CA_Untrusted** | Utilisée pour les certificats suspects ou non vérifiables. |\n| **Fortinet_Factory** | Certificat auto-signé d'usine, utilisé pour l'accès HTTPS initial à l'interface GUI avant remplacement. |\n\n> **Bonne pratique :** Remplacer Fortinet_Factory par un certificat valide en production pour éviter les alertes de sécurité lors de l'accès à l'interface d'administration.\n\n\n![FortiGate CA flow : génération CSR → signature → distribution aux clients](diagram:0)\n\n## Générer un certificat sur FortiGate\n\nVia l'interface GUI : **System > Certificates > Generate**\n\nDeux options disponibles :\n1. **Générer une CSR** (Certificate Signing Request) : crée une paire de clés et une demande à soumettre à une CA externe\n2. **Certificat auto-signé** : FortiGate signe lui-même le certificat — pratique pour les tests mais non reconnu par les clients sans configuration supplémentaire\n\nUne **CSR** générée sur FortiGate contient la clé publique et les informations du sujet. Elle est exportée puis envoyée à une CA externe pour obtenir un certificat signé.\n\n## Importer une CA tierce\n\nVia GUI : **System > Certificates > Import CA Certificate**\n\nFormats acceptés :\n- **PEM** : fichier texte base64\n- **PKCS12** : fichier binaire contenant certificat et clé privée\n\nLe **Remote CA store** de FortiGate stocke les CA tierces. Ces CA sont utilisées pour valider les chaînes de certificats des serveurs internes lors des inspections SSL.\n\n## Chaîne de certification incomplète\n\nSi la chaîne de certification d'un serveur est **incomplète** (CA intermédiaire manquante), FortiGate ne peut pas valider le certificat de ce serveur. Solution : s'assurer que toutes les **CA intermédiaires** sont importées dans le Remote CA store de FortiGate.\n\n## OCSP — Vérification de révocation en temps réel\n\n**OCSP** (Online Certificate Status Protocol) est un protocole permettant de vérifier en temps réel si un certificat est révoqué. FortiGate peut interroger le serveur OCSP de la CA pour chaque certificat à valider.\n\nOCSP est une alternative moderne à la **CRL** (Certificate Revocation List). La CRL est une liste complète téléchargée périodiquement, tandis qu'OCSP effectue une requête unitaire en temps réel pour un certificat donné.\n\n**Avantages d'OCSP :**\n- Vérification en temps réel\n- Moins de bande passante qu'une CRL complète\n- Réponse immédiate (valid / revoked / unknown)\n\n## Certificate Override\n\nLa fonction **Certificate override** permet de forcer la confiance en un certificat spécifique malgré un problème détecté (expiration, chaîne incomplète, certificat auto-signé). Cette option est à utiliser avec précaution car elle contourne les mécanismes de sécurité normaux.\n\n## Flux de certification FortiGate\n\nL'administrateur génère une CSR sur FortiGate → la CA signe la CSR → le certificat signé est importé sur FortiGate → FortiGate l'utilise pour Fortinet_CA_SSL ou l'interface HTTPS → le client fait confiance si la CA est dans son store de confiance.",
   "diagrams": [
     {
       "caption": "FortiGate CA flow : génération CSR → signature → distribution aux clients",
@@ -14,91 +14,166 @@
   "questionPool": [
     {
       "q": "Quel est le rôle de Fortinet_CA_SSL sur FortiGate ?",
-      "choices": ["Certificat d'accès initial à l'interface GUI", "CA valide utilisée pour la Full SSL inspection — signe les certificats temporaires présentés aux clients", "CA dédiée aux certificats suspects", "Certificat auto-signé d'usine"],
+      "choices": [
+        "Certificat d'accès initial à l'interface GUI",
+        "CA valide utilisée pour la Full SSL inspection — signe les certificats temporaires présentés aux clients",
+        "CA dédiée aux certificats suspects",
+        "Certificat auto-signé d'usine"
+      ],
       "answer": 1,
       "explain": "Fortinet_CA_SSL est la CA valide intégrée à FortiGate utilisée pour la Full SSL inspection (deep inspection). Elle signe les certificats temporaires présentés aux clients lors du déchiffrement."
     },
     {
       "q": "Où importer une CA tierce sur FortiGate via l'interface GUI ?",
-      "choices": ["Network > Interfaces", "System > Certificates > Import CA Certificate", "Policy > SSL Inspection", "VPN > Certificates"],
+      "choices": [
+        "Network > Interfaces",
+        "System > Certificates > Import CA Certificate",
+        "Policy > SSL Inspection",
+        "VPN > Certificates"
+      ],
       "answer": 1,
       "explain": "Pour importer une CA tierce sur FortiGate, on accède à System > Certificates > Import CA Certificate. Les formats acceptés sont PEM et PKCS12."
     },
     {
       "q": "Que se passe-t-il si une CA intermédiaire manque dans la chaîne de certification d'un serveur ?",
-      "choices": ["FortiGate accepte le certificat sans vérification", "FortiGate ne peut pas valider la chaîne de certification du serveur", "FortiGate génère automatiquement la CA manquante", "Le certificat est marqué comme révoqué via OCSP"],
+      "choices": [
+        "FortiGate accepte le certificat sans vérification",
+        "FortiGate ne peut pas valider la chaîne de certification du serveur",
+        "FortiGate génère automatiquement la CA manquante",
+        "Le certificat est marqué comme révoqué via OCSP"
+      ],
       "answer": 1,
       "explain": "Si la chaîne de certification est incomplète (CA intermédiaire manquante), FortiGate ne peut pas valider le certificat du serveur. Il faut importer les CA intermédiaires dans le Remote CA store."
     },
     {
       "q": "Quel protocole permet de vérifier en temps réel si un certificat est révoqué ?",
-      "choices": ["CRL (Certificate Revocation List)", "OCSP (Online Certificate Status Protocol)", "LDAP", "SNMP"],
+      "choices": [
+        "CRL (Certificate Revocation List)",
+        "OCSP (Online Certificate Status Protocol)",
+        "LDAP",
+        "SNMP"
+      ],
       "answer": 1,
       "explain": "OCSP (Online Certificate Status Protocol) permet de vérifier en temps réel si un certificat est révoqué. C'est une alternative moderne à la CRL qui télécharge une liste complète."
     },
     {
       "q": "Quel est le rôle du certificat Fortinet_Factory ?",
-      "choices": ["Il signe les certificats des clients VPN", "C'est le certificat auto-signé d'usine utilisé pour l'accès HTTPS initial à l'interface GUI avant remplacement", "Il est utilisé pour la Full SSL inspection en production", "Il stocke la CA racine de Fortinet"],
+      "choices": [
+        "Il signe les certificats des clients VPN",
+        "C'est le certificat auto-signé d'usine utilisé pour l'accès HTTPS initial à l'interface GUI avant remplacement",
+        "Il est utilisé pour la Full SSL inspection en production",
+        "Il stocke la CA racine de Fortinet"
+      ],
       "answer": 1,
       "explain": "Fortinet_Factory est le certificat auto-signé d'usine utilisé pour l'accès HTTPS initial à l'interface GUI. Il doit être remplacé par un certificat valide en production."
     },
     {
       "q": "Quelle est la différence principale entre OCSP et CRL ?",
-      "choices": ["OCSP est plus ancien que CRL", "OCSP vérifie un certificat en temps réel via une requête unitaire, tandis que CRL est une liste complète téléchargée périodiquement", "CRL est plus rapide qu'OCSP", "OCSP ne peut vérifier que les certificats FortiGate"],
+      "choices": [
+        "OCSP est plus ancien que CRL",
+        "OCSP vérifie un certificat en temps réel via une requête unitaire, tandis que CRL est une liste complète téléchargée périodiquement",
+        "CRL est plus rapide qu'OCSP",
+        "OCSP ne peut vérifier que les certificats FortiGate"
+      ],
       "answer": 1,
       "explain": "OCSP effectue une requête unitaire en temps réel pour vérifier un certificat donné. La CRL (Certificate Revocation List) est une liste complète téléchargée périodiquement, plus lourde en bande passante."
     },
     {
       "q": "Quelle bonne pratique concerne le certificat Fortinet_Factory ?",
-      "choices": ["Le distribuer aux clients via GPO", "Le remplacer par un certificat valide en production pour éviter les alertes de sécurité", "L'utiliser pour la Full SSL inspection", "Le configurer comme CA racine du domaine"],
+      "choices": [
+        "Le distribuer aux clients via GPO",
+        "Le remplacer par un certificat valide en production pour éviter les alertes de sécurité",
+        "L'utiliser pour la Full SSL inspection",
+        "Le configurer comme CA racine du domaine"
+      ],
       "answer": 1,
       "explain": "La bonne pratique est de remplacer Fortinet_Factory par un certificat valide en production. Étant auto-signé, il génère des alertes de sécurité dans les navigateurs lors de l'accès à l'interface GUI."
     },
     {
       "q": "Que contient le Remote CA store de FortiGate ?",
-      "choices": ["Les certificats des clients VPN", "Les CA tierces importées, utilisées pour valider les chaînes de certificats des serveurs internes", "Les CSR en attente de signature", "Les certificats révoqués (CRL)"],
+      "choices": [
+        "Les certificats des clients VPN",
+        "Les CA tierces importées, utilisées pour valider les chaînes de certificats des serveurs internes",
+        "Les CSR en attente de signature",
+        "Les certificats révoqués (CRL)"
+      ],
       "answer": 1,
       "explain": "Le Remote CA store de FortiGate stocke les CA tierces importées. Ces CA sont utilisées pour valider les chaînes de certificats des serveurs lors des inspections SSL."
     },
     {
       "q": "Quel chemin GUI permet de générer une CSR ou un certificat auto-signé sur FortiGate ?",
-      "choices": ["VPN > IPsec Tunnels", "System > Certificates > Generate", "Network > DNS", "System > Admin > Administrators"],
+      "choices": [
+        "VPN > IPsec Tunnels",
+        "System > Certificates > Generate",
+        "Network > DNS",
+        "System > Admin > Administrators"
+      ],
       "answer": 1,
       "explain": "Pour générer une CSR ou un certificat auto-signé sur FortiGate, on accède à System > Certificates > Generate dans l'interface GUI."
     },
     {
       "q": "La fonction Certificate override sur FortiGate permet de faire quoi ?",
-      "choices": ["Mettre à jour automatiquement les certificats expirés", "Forcer la confiance en un certificat spécifique malgré un problème détecté", "Générer une nouvelle CSR pour un certificat expiré", "Bloquer tous les certificats auto-signés"],
+      "choices": [
+        "Mettre à jour automatiquement les certificats expirés",
+        "Forcer la confiance en un certificat spécifique malgré un problème détecté",
+        "Générer une nouvelle CSR pour un certificat expiré",
+        "Bloquer tous les certificats auto-signés"
+      ],
       "answer": 1,
       "explain": "Certificate override permet de forcer la confiance en un certificat spécifique malgré un problème (expiration, chaîne incomplète). Cette option est à utiliser avec précaution."
     },
     {
       "q": "Quel format est accepté pour importer un certificat avec sa clé privée sur FortiGate ?",
-      "choices": ["PEM uniquement", "DER uniquement", "PKCS12 (.p12 ou .pfx)", "PKCS7 (.p7b)"],
+      "choices": [
+        "PEM uniquement",
+        "DER uniquement",
+        "PKCS12 (.p12 ou .pfx)",
+        "PKCS7 (.p7b)"
+      ],
       "answer": 2,
       "explain": "Pour importer un certificat avec sa clé privée sur FortiGate, on utilise le format PKCS12 (extensions .p12 ou .pfx) qui regroupe certificat et clé privée dans un seul fichier."
     },
     {
       "q": "À quel rôle correspond Fortinet_CA_Untrusted ?",
-      "choices": ["CA utilisée pour la Full SSL inspection des sites reconnus", "CA utilisée pour les certificats suspects ou non vérifiables", "CA racine de l'infrastructure FortiGate", "CA dédiée aux tunnels IPsec"],
+      "choices": [
+        "CA utilisée pour la Full SSL inspection des sites reconnus",
+        "CA utilisée pour les certificats suspects ou non vérifiables",
+        "CA racine de l'infrastructure FortiGate",
+        "CA dédiée aux tunnels IPsec"
+      ],
       "answer": 1,
       "explain": "Fortinet_CA_Untrusted est la CA intégrée à FortiGate utilisée pour traiter les certificats suspects ou non vérifiables lors de l'inspection SSL."
     },
     {
       "q": "Une CSR générée sur FortiGate contient quels éléments ?",
-      "choices": ["La clé privée et le certificat auto-signé", "La clé publique et les informations du sujet, à envoyer à une CA externe pour signature", "Le certificat signé par Fortinet_CA_SSL", "La liste des CA de confiance"],
+      "choices": [
+        "La clé privée et le certificat auto-signé",
+        "La clé publique et les informations du sujet, à envoyer à une CA externe pour signature",
+        "Le certificat signé par Fortinet_CA_SSL",
+        "La liste des CA de confiance"
+      ],
       "answer": 1,
       "explain": "Une CSR (Certificate Signing Request) générée sur FortiGate contient la clé publique et les informations du sujet. Elle est envoyée à une CA externe qui la signe pour produire le certificat final."
     },
     {
       "q": "Quel format de fichier est accepté pour importer une CA tierce en texte base64 sur FortiGate ?",
-      "choices": ["PKCS12", "DER", "PEM", "PKCS7"],
+      "choices": [
+        "PKCS12",
+        "DER",
+        "PEM",
+        "PKCS7"
+      ],
       "answer": 2,
       "explain": "Le format PEM (encodage base64, fichier texte) est accepté pour importer une CA tierce sur FortiGate via System > Certificates > Import CA Certificate."
     },
     {
       "q": "Pourquoi importer les CA intermédiaires dans le Remote CA store de FortiGate ?",
-      "choices": ["Pour générer des CSR plus rapidement", "Pour permettre à FortiGate de valider les chaînes de certification des serveurs internes dont la chaîne serait incomplète", "Pour activer le Certificate override automatiquement", "Pour distribuer OCSP aux clients"],
+      "choices": [
+        "Pour générer des CSR plus rapidement",
+        "Pour permettre à FortiGate de valider les chaînes de certification des serveurs internes dont la chaîne serait incomplète",
+        "Pour activer le Certificate override automatiquement",
+        "Pour distribuer OCSP aux clients"
+      ],
       "answer": 1,
       "explain": "Si une chaîne de certification est incomplète (CA intermédiaire manquante), FortiGate ne peut pas valider le certificat du serveur. Importer les CA intermédiaires dans le Remote CA store résout ce problème."
     }
@@ -106,31 +181,56 @@
   "quiz": [
     {
       "q": "Quel est le rôle de Fortinet_CA_SSL sur FortiGate ?",
-      "choices": ["Certificat d'accès initial à l'interface GUI", "CA valide utilisée pour la Full SSL inspection — signe les certificats temporaires présentés aux clients", "CA dédiée aux certificats suspects", "Certificat auto-signé d'usine"],
+      "choices": [
+        "Certificat d'accès initial à l'interface GUI",
+        "CA valide utilisée pour la Full SSL inspection — signe les certificats temporaires présentés aux clients",
+        "CA dédiée aux certificats suspects",
+        "Certificat auto-signé d'usine"
+      ],
       "answer": 1,
       "explain": "Fortinet_CA_SSL est la CA valide intégrée à FortiGate utilisée pour la Full SSL inspection (deep inspection). Elle signe les certificats temporaires présentés aux clients lors du déchiffrement."
     },
     {
       "q": "Quel protocole permet de vérifier en temps réel si un certificat est révoqué ?",
-      "choices": ["CRL (Certificate Revocation List)", "OCSP (Online Certificate Status Protocol)", "LDAP", "SNMP"],
+      "choices": [
+        "CRL (Certificate Revocation List)",
+        "OCSP (Online Certificate Status Protocol)",
+        "LDAP",
+        "SNMP"
+      ],
       "answer": 1,
       "explain": "OCSP (Online Certificate Status Protocol) permet de vérifier en temps réel si un certificat est révoqué. C'est une alternative moderne à la CRL qui télécharge une liste complète."
     },
     {
       "q": "Que se passe-t-il si une CA intermédiaire manque dans la chaîne de certification d'un serveur ?",
-      "choices": ["FortiGate accepte le certificat sans vérification", "FortiGate ne peut pas valider la chaîne de certification du serveur", "FortiGate génère automatiquement la CA manquante", "Le certificat est marqué comme révoqué via OCSP"],
+      "choices": [
+        "FortiGate accepte le certificat sans vérification",
+        "FortiGate ne peut pas valider la chaîne de certification du serveur",
+        "FortiGate génère automatiquement la CA manquante",
+        "Le certificat est marqué comme révoqué via OCSP"
+      ],
       "answer": 1,
       "explain": "Si la chaîne de certification est incomplète (CA intermédiaire manquante), FortiGate ne peut pas valider le certificat du serveur. Il faut importer les CA intermédiaires dans le Remote CA store."
     },
     {
       "q": "Quel est le rôle du certificat Fortinet_Factory ?",
-      "choices": ["Il signe les certificats des clients VPN", "C'est le certificat auto-signé d'usine utilisé pour l'accès HTTPS initial à l'interface GUI avant remplacement", "Il est utilisé pour la Full SSL inspection en production", "Il stocke la CA racine de Fortinet"],
+      "choices": [
+        "Il signe les certificats des clients VPN",
+        "C'est le certificat auto-signé d'usine utilisé pour l'accès HTTPS initial à l'interface GUI avant remplacement",
+        "Il est utilisé pour la Full SSL inspection en production",
+        "Il stocke la CA racine de Fortinet"
+      ],
       "answer": 1,
       "explain": "Fortinet_Factory est le certificat auto-signé d'usine utilisé pour l'accès HTTPS initial à l'interface GUI. Il doit être remplacé par un certificat valide en production."
     },
     {
       "q": "Quel chemin GUI permet de générer une CSR ou un certificat auto-signé sur FortiGate ?",
-      "choices": ["VPN > IPsec Tunnels", "System > Certificates > Generate", "Network > DNS", "System > Admin > Administrators"],
+      "choices": [
+        "VPN > IPsec Tunnels",
+        "System > Certificates > Generate",
+        "Network > DNS",
+        "System > Admin > Administrators"
+      ],
       "answer": 1,
       "explain": "Pour générer une CSR ou un certificat auto-signé sur FortiGate, on accède à System > Certificates > Generate dans l'interface GUI."
     }
