@@ -1,0 +1,126 @@
+{
+  "id": "ch13-l5",
+  "module": "High Availability",
+  "title": "Surveiller et gérer le cluster",
+  "durationMin": 7,
+  "content": "## Surveiller le cluster depuis la GUI\n\nLa page **System > HA** offre un panorama de la santé du cluster. Pour chaque membre, on voit :\n\n- Statut de synchronisation\n- Rôle (primary / secondary)\n- Hostname et numéro de série\n- Priorité HA\n- HA uptime\n- Nombre de sessions actives\n\nOn peut également ajouter des colonnes (checksum, CPU, mémoire) et retirer un membre du cluster (il repasse en mode standalone).\n\nLe **widget HA Status** sur le dashboard offre un résumé rapide.\n\n## Surveiller le cluster depuis le CLI\n\n### Commande principale : `get system ha status`\n\n```\nget system ha status\n```\n\nAffiche :\n- Statut du cluster et mode HA en cours\n- HA uptime du cluster\n- Derniers événements d'élection (résultat + raison)\n- Statut de configuration de chaque membre\n- Stats système : nombre de sessions, CPU moyen, mémoire moyenne\n- Interfaces heartbeat, monitorées et remote link\n- Rôle, hostname, numéro de série, ID de chaque membre\n\n> Note : le champ `sessions` compte **toutes** les sessions traitées, pas uniquement celles distribuées en actif-actif.\n\n## Vérifier la synchronisation des configurations\n\n![Flux de vérification checksum](diagram:0)\n\n| Commande | Usage |\n|---|---|\n| `diagnose sys ha checksum cluster` | Interroge TOUS les membres via heartbeat — affiche leurs checksums |\n| `diagnose sys ha checksum show` | Affiche le checksum LOCAL uniquement |\n| `diagnose sys ha checksum recalculate` | Force un recalcul du checksum local |\n\n**Trois scopes** de hash sont calculés :\n- `global` — paramètres globaux, FortiGuard…\n- `root` — paramètres du VDOM root (+ chaque VDOM supplémentaire)\n- `all` — global + tous les VDOMs\n\nSi tous les membres ont les **mêmes valeurs de hash** pour chaque scope → configuration synchronisée.\n\n> Si `checksum cluster` ne montre que le checksum local (problème heartbeat), se connecter **individuellement** à chaque membre et lancer `diagnose sys ha checksum show`.\n\n## Administrer les membres secondaires\n\nAprès synchronisation, les secondaires partagent les mêmes IPs que le primaire mais **ne répondent pas directement** sur le réseau.\n\n### Option 1 — Tunnel CLI via le primaire\n\n```\nexecute ha manage <member-id> <admin-username>\n```\n\n- `member-id` : un `?` liste les IDs disponibles\n- Ouvre un tunnel CLI vers le secondaire\n- `exit` ramène au CLI du primaire\n\n### Option 2 — Interface de management dédiée\n\nDeux variantes :\n\n| Variante | Description |\n|---|---|\n| **Reserved HA management interface** | Interface out-of-band dédiée (jusqu'à 4), avec adresse IP unique par membre. Routes dans une table séparée (isolation data/management). |\n| **In-band HA management** | Adresse de management unique assignée à une interface utilisateur existante. |\n\n> ⚠️ La configuration de management **n'est PAS synchronisée** — chaque membre a ses propres IPs et routes de management.",
+  "diagrams": [
+    {
+      "caption": "Flux de vérification des checksums HA. Si checksum cluster ne montre qu'un résultat local, c'est signe de problème heartbeat.",
+      "height": 220,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 560 220'><rect x='20' y='20' width='150' height='44' rx='8' fill='#1e3a5f' stroke='#3b82f6' stroke-width='2'/><text x='95' y='40' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#93c5fd'>Primary</text><text x='95' y='57' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>diagnose sys ha checksum cluster</text><rect x='390' y='20' width='150' height='44' rx='8' fill='#1a2e1a' stroke='#22c55e' stroke-width='1.5'/><text x='465' y='40' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#86efac'>Standby</text><text x='465' y='57' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>checksum show (local)</text><line x1='170' y1='42' x2='390' y2='42' stroke='#3b82f6' stroke-width='2'/><polygon points='390,42 380,37 380,47' fill='#3b82f6'/><text x='280' y='35' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#93c5fd'>interroge via heartbeat</text><rect x='160' y='95' width='240' height='50' rx='8' fill='#1e1a1a' stroke='#f97316' stroke-width='1.5'/><text x='280' y='115' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#fdba74'>Checksums identiques ?</text><text x='280' y='135' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>global / root / all</text><line x1='95' y1='64' x2='95' y2='95' stroke='#6b7280' stroke-width='1.5'/><line x1='95' y1='95' x2='160' y2='120' stroke='#6b7280' stroke-width='1.5'/><rect x='20' y='165' width='160' height='40' rx='6' fill='#1a2e1a' stroke='#22c55e' stroke-width='1.5'/><text x='100' y='185' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#86efac'>✓ Synchronisés</text><text x='100' y='198' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>cluster en bonne santé</text><rect x='380' y='165' width='160' height='40' rx='6' fill='#3b1a0a' stroke='#f97316' stroke-width='1.5'/><text x='460' y='181' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#fdba74'>✗ Désynchronisés</text><text x='460' y='198' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>→ recalculate ou full sync</text><line x1='280' y1='145' x2='100' y2='165' stroke='#22c55e' stroke-width='1.5'/><text x='150' y='158' font-family='sans-serif' font-size='10' fill='#86efac'>OUI</text><line x1='280' y1='145' x2='460' y2='165' stroke='#f97316' stroke-width='1.5'/><text x='390' y='158' font-family='sans-serif' font-size='10' fill='#fdba74'>NON</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quelle commande CLI affiche le statut général du cluster HA ?",
+      "choices": ["diagnose sys ha status", "get system ha status", "show system ha", "execute ha info"],
+      "answer": 1,
+      "explain": "get system ha status affiche le mode HA, l'uptime, les membres, les interfaces, les stats CPU/mémoire/sessions."
+    },
+    {
+      "q": "Quelle commande compare les checksums entre TOUS les membres du cluster ?",
+      "choices": ["diagnose sys ha checksum show", "diagnose sys ha checksum cluster", "get system ha checksum", "diagnose sys ha checksum all"],
+      "answer": 1,
+      "explain": "diagnose sys ha checksum cluster interroge chaque membre via le heartbeat et affiche leurs checksums respectifs."
+    },
+    {
+      "q": "Comment accéder au CLI d'un secondaire depuis le primaire ?",
+      "choices": ["SSH direct vers l'IP du secondaire", "execute ha manage <id> <admin>", "diagnose sys ha connect <id>", "execute console <id>"],
+      "answer": 1,
+      "explain": "execute ha manage <member-id> <admin-username> ouvre un tunnel CLI vers le secondaire. Un '?' liste les IDs disponibles."
+    },
+    {
+      "q": "Quel type d'interface de management utilise une interface dédiée out-of-band ?",
+      "choices": ["In-band HA management", "Reserved HA management interface", "Loopback management", "VLAN management interface"],
+      "answer": 1,
+      "explain": "La reserved HA management interface est une interface out-of-band dédiée, avec IP unique par membre et routes dans une table séparée."
+    },
+    {
+      "q": "Si diagnose sys ha checksum cluster ne montre qu'un résultat local, que faire ?",
+      "choices": ["Attendre 60 secondes et réessayer", "Se connecter individuellement à chaque membre et lancer diagnose sys ha checksum show", "Redémarrer le processus HA", "Reboot le primaire"],
+      "answer": 1,
+      "explain": "Quand seul le checksum local apparaît, c'est souvent un problème heartbeat. Il faut se connecter directement à chaque membre pour lire son checksum local."
+    },
+    {
+      "q": "Combien de scopes de hash FortiGate calcule-t-il pour la synchro ?",
+      "choices": ["1 (all)", "2 (global + root)", "3 (global, root, all)", "4 (global, root, vdom, all)"],
+      "answer": 2,
+      "explain": "Trois scopes : global (params globaux), root (VDOM root + autres VDOMs), all (global + tous VDOMs)."
+    },
+    {
+      "q": "La configuration de management HA réservée est-elle synchronisée entre membres ?",
+      "choices": ["Oui, elle est synchronisée comme le reste", "Non, chaque membre a ses propres IPs et routes de management", "Oui, mais uniquement en mode actif-actif", "Non, mais elle l'est au premier join"],
+      "answer": 1,
+      "explain": "La configuration de management HA (reserved ou in-band) n'est PAS synchronisée — chaque membre a ses propres paramètres."
+    },
+    {
+      "q": "Que représente le champ 'sessions' dans get system ha status ?",
+      "choices": ["Uniquement les sessions distribuées en actif-actif", "Uniquement les sessions HTTPS", "Toutes les sessions traitées par le membre", "Les sessions synchronisées par session pickup"],
+      "answer": 2,
+      "explain": "Le champ sessions compte TOUTES les sessions traitées, pas uniquement celles distribuées en actif-actif."
+    },
+    {
+      "q": "Que se passe-t-il quand on retire un membre du cluster depuis la GUI (System > HA) ?",
+      "choices": ["Il est mis en maintenance et reste dans le cluster", "Il repasse en mode standalone", "Il est éteint à distance", "Il devient le primaire de secours"],
+      "answer": 1,
+      "explain": "Retirer un membre depuis System > HA le fait repasser en mode standalone — il sort du cluster."
+    },
+    {
+      "q": "Quelle est la différence entre reserved HA management et in-band HA management ?",
+      "choices": ["Reserved = dédié out-of-band avec routes séparées ; in-band = IP unique sur interface utilisateur existante", "Reserved = en mode actif-actif uniquement ; in-band = tous modes", "Reserved = via CLI uniquement ; in-band = via GUI", "Aucune différence fonctionnelle"],
+      "answer": 0,
+      "explain": "Reserved = interface dédiée out-of-band, table de routage séparée, jusqu'à 4 interfaces. In-band = adresse unique ajoutée à une interface utilisateur existante."
+    },
+    {
+      "q": "Que fait diagnose sys ha checksum recalculate ?",
+      "choices": ["Resynchronise la configuration depuis le primaire", "Force un recalcul du checksum local", "Redémarre le processus HA", "Compare les checksums avec le primaire"],
+      "answer": 1,
+      "explain": "recalculate force un recalcul des checksums locaux — utile quand les checksums semblent différer malgré une configuration identique."
+    },
+    {
+      "q": "Quelles informations affiche la page System > HA pour chaque membre ?",
+      "choices": ["Uniquement le rôle et le numéro de série", "Statut sync, rôle, hostname, SN, priorité, HA uptime, sessions actives", "CPU, mémoire, et statut uniquement", "Logs des 10 derniers failovers"],
+      "answer": 1,
+      "explain": "System > HA affiche pour chaque membre : statut de synchro, rôle, hostname, numéro de série, priorité HA, HA uptime, sessions actives."
+    },
+    {
+      "q": "Quelle commande permet de quitter le CLI d'un secondaire (atteint via execute ha manage) ?",
+      "choices": ["quit", "disconnect", "exit", "logout"],
+      "answer": 2,
+      "explain": "exit ramène au CLI du primaire après avoir administré un secondaire via execute ha manage."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quelle commande CLI affiche le statut général du cluster HA ?",
+      "choices": ["diagnose sys ha status", "get system ha status", "show system ha", "execute ha info"],
+      "answer": 1,
+      "explain": "get system ha status affiche le mode HA, l'uptime, les membres, les interfaces et les stats."
+    },
+    {
+      "q": "Quelle commande compare les checksums entre TOUS les membres du cluster ?",
+      "choices": ["diagnose sys ha checksum show", "diagnose sys ha checksum cluster", "get system ha checksum", "diagnose sys ha checksum all"],
+      "answer": 1,
+      "explain": "diagnose sys ha checksum cluster interroge chaque membre via le heartbeat."
+    },
+    {
+      "q": "Comment accéder au CLI d'un secondaire depuis le primaire ?",
+      "choices": ["SSH direct vers l'IP du secondaire", "execute ha manage <id> <admin>", "diagnose sys ha connect <id>", "execute console <id>"],
+      "answer": 1,
+      "explain": "execute ha manage <member-id> <admin-username> ouvre un tunnel CLI vers le secondaire."
+    },
+    {
+      "q": "Quel type d'interface de management utilise une interface dédiée out-of-band ?",
+      "choices": ["In-band HA management", "Reserved HA management interface", "Loopback management", "VLAN management"],
+      "answer": 1,
+      "explain": "La reserved HA management interface est out-of-band, avec IP unique par membre et table de routage séparée."
+    },
+    {
+      "q": "Si diagnose sys ha checksum cluster ne montre qu'un résultat local, que faire ?",
+      "choices": ["Attendre 60 secondes", "Se connecter individuellement à chaque membre et lancer diagnose sys ha checksum show", "Redémarrer le processus HA", "Reboot le primaire"],
+      "answer": 1,
+      "explain": "Quand seul le checksum local apparaît, c'est un problème heartbeat — se connecter directement à chaque membre."
+    }
+  ]
+}

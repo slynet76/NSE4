@@ -1,0 +1,126 @@
+{
+  "id": "ch13-l3",
+  "module": "High Availability",
+  "title": "Synchronisation du cluster",
+  "durationMin": 6,
+  "content": "## Deux modes de synchronisation\n\nUn cluster HA ne peut basculer proprement que si le secondaire dispose d'une configuration et de données opérationnelles à jour. FortiGate utilise deux mécanismes complémentaires.\n\n![Synchro complète vs incrémentale](diagram:0)\n\n### Synchronisation complète (full sync)\n\nDéclenchée quand **un nouveau membre rejoint le cluster**.\n\n1. Le primaire calcule son **checksum de configuration**.\n2. Il le compare avec celui du nouveau membre.\n3. Si les checksums diffèrent → le primaire envoie **l'intégralité de sa configuration** au secondaire qui l'écrase.\n\n### Synchronisation incrémentale (delta sync)\n\nDéclenchée **après chaque modification de configuration**.\n\n- Seul le **delta** (l'objet modifié) est propagé via le lien heartbeat.\n- Exemple : si vous créez une adresse objet, seul ce nouvel objet est envoyé, pas toute la config.\n- Fonctionne qu'on modifie depuis le primaire **ou** depuis un secondaire.\n\n> **Bonne pratique** : toujours modifier depuis le primaire. Si la synchro échoue temporairement et que la modification a été faite depuis un secondaire, elle pourrait être perdue au prochain full sync.\n\n## Données runtime synchronisées\n\nEn plus de la configuration, le primaire pousse en continu :\n\n| Données | Commentaire |\n|---|---|\n| Entrées FIB | Table de routage active |\n| Définitions FortiGuard | Signatures AV, IPS… |\n| Baux DHCP | Continuité après failover |\n| Table ARP | Résolution des adresses |\n| SA IPsec | Tunnels VPN actifs |\n| Sessions actives | Uniquement si **session pickup** est activé |\n\n### Session pickup\n\nSi activé, les sessions actives qualifiantes sont synchronisées. Après un failover, le nouveau primaire peut les **reprendre sans interruption visible** pour les utilisateurs.\n\n**Limitation** : les sessions **terminées sur le FortiGate lui-même** (SSL VPN, sessions proxy) ne peuvent pas être reprises — elles doivent être relancées par les clients.\n\n## Cycle de vérification de la synchronisation\n\n```\nToutes les 60 s → compare les checksums\nDésynchronisé détecté → re-check toutes les 15 s\n5 vérifications consécutives en désaccord → full resync\n```\n\nPour vérifier manuellement :\n\n```\ndiagnose sys ha checksum cluster  ← interroge tous les membres\ndiagnose sys ha checksum show      ← affiche le checksum local uniquement\ndiagnose sys ha checksum recalculate  ← force un recalcul\n```\n\n## Ce qui N'est PAS synchronisé\n\nCes éléments restent **propres à chaque membre** (à configurer manuellement) :\n\n- **Hostname**\n- **HA priority** et **HA override**\n- Interfaces de management HA réservées + leurs routes\n- Licences (sauf FortiToken)\n- Cache GUI / widgets dashboard\n- HA priority des ping servers (dead gateway detection)\n\n## Rôles du primaire et des secondaires\n\n| Tâche | Primaire | Secondaire |\n|---|---|---|\n| Envoyer/recevoir hello packets | ✓ | ✓ |\n| Synchroniser données opérationnelles | ✓ (source) | ✓ (destination) |\n| Traiter le trafic | ✓ | Actif-actif uniquement |\n| Distribuer les sessions | ✓ (actif-actif) | ✗ |",
+  "diagrams": [
+    {
+      "caption": "Full sync au premier join vs delta sync incrémentale pour chaque changement de config.",
+      "height": 200,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 560 200'><text x='140' y='18' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#e2e8f0'>Full Sync (join)</text><text x='420' y='18' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#e2e8f0'>Delta Sync (continu)</text><rect x='30' y='35' width='100' height='44' rx='8' fill='#1e3a5f' stroke='#3b82f6' stroke-width='2'/><text x='80' y='61' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#93c5fd'>Primary</text><rect x='170' y='35' width='100' height='44' rx='6' fill='#374151' stroke='#6b7280' stroke-width='1.5'/><text x='220' y='61' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#d1d5db'>New</text><line x1='130' y1='57' x2='170' y2='57' stroke='#3b82f6' stroke-width='3'/><polygon points='170,57 160,52 160,62' fill='#3b82f6'/><text x='150' y='48' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#93c5fd'>full config</text><rect x='30' y='105' width='100' height='36' rx='6' fill='#1e1a1a' stroke='#f97316' stroke-width='1.5'/><text x='80' y='117' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#fdba74'>config check</text><text x='80' y='131' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#fdba74'>checksum ≠</text><line x1='80' y1='79' x2='80' y2='105' stroke='#6b7280' stroke-width='1.5'/><polygon points='76,105 84,105 80,113' fill='#6b7280'/><text x='85' y='98' font-family='sans-serif' font-size='9' fill='#64748b'>compare</text><rect x='300' y='35' width='100' height='44' rx='8' fill='#1e3a5f' stroke='#3b82f6' stroke-width='2'/><text x='350' y='61' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#93c5fd'>Primary</text><rect x='450' y='35' width='100' height='44' rx='6' fill='#1a2e1a' stroke='#22c55e' stroke-width='1.5'/><text x='500' y='61' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#86efac'>Standby</text><line x1='400' y1='57' x2='450' y2='57' stroke='#22c55e' stroke-width='2.5'/><polygon points='450,57 440,52 440,62' fill='#22c55e'/><text x='425' y='48' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#86efac'>delta obj</text><rect x='300' y='105' width='250' height='36' rx='6' fill='#1e1a1a' stroke='#22c55e' stroke-width='1.5'/><text x='425' y='117' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#86efac'>Modification → seul l'objet modifié</text><text x='425' y='131' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#86efac'>est propagé via heartbeat</text><line x1='350' y1='79' x2='350' y2='105' stroke='#6b7280' stroke-width='1.5'/><polygon points='346,105 354,105 350,113' fill='#6b7280'/><text x='150' y='185' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#94a3b8'>✓ Privilégier les modifications depuis le primaire</text><text x='420' y='185' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#94a3b8'>✓ 60 s entre vérifs checksum</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quand un nouveau membre rejoint le cluster avec un checksum différent, que se passe-t-il ?",
+      "choices": ["Synchro incrémentale du delta seulement", "Synchro complète envoyée par le primaire", "Le nouveau membre est rejeté", "Le cluster se coupe en deux sous-clusters"],
+      "answer": 1,
+      "explain": "Si les checksums diffèrent au join, le primaire envoie l'intégralité de sa configuration (full sync) au nouveau membre qui l'écrase."
+    },
+    {
+      "q": "Quel paramètre N'EST PAS synchronisé entre membres HA ?",
+      "choices": ["FIB", "HA priority", "Définitions FortiGuard", "Baux DHCP"],
+      "answer": 1,
+      "explain": "HA priority, HA override et hostname ne sont pas synchronisés — à régler manuellement sur chaque membre."
+    },
+    {
+      "q": "Tous les combien de temps le cluster vérifie-t-il par défaut la synchronisation ?",
+      "choices": ["15 secondes", "30 secondes", "60 secondes", "5 minutes"],
+      "answer": 2,
+      "explain": "Par défaut, le cluster vérifie la synchro toutes les 60 secondes. En cas de désync détectée, la vérification passe à toutes les 15 secondes."
+    },
+    {
+      "q": "Quel type de session ne peut PAS être repris par session pickup après un failover ?",
+      "choices": ["Sessions HTTP", "Sessions SSL VPN terminant sur FortiGate", "Sessions FTP", "Sessions IPsec"],
+      "answer": 1,
+      "explain": "Les sessions terminées sur le FortiGate lui-même (SSL VPN, proxy) ne peuvent pas être reprises — elles doivent être relancées."
+    },
+    {
+      "q": "Quel type de synchronisation envoie uniquement le delta de configuration ?",
+      "choices": ["Full sync", "Synchro incrémentale", "Checksum sync", "Bootstrap sync"],
+      "answer": 1,
+      "explain": "La synchro incrémentale (delta sync) propage uniquement l'objet modifié via le heartbeat, pas toute la configuration."
+    },
+    {
+      "q": "Après combien de vérifications consécutives en désaccord FortiGate déclenche-t-il une re-synchro complète ?",
+      "choices": ["3", "5", "10", "1"],
+      "answer": 1,
+      "explain": "Après 5 vérifications consécutives en désaccord (espacées de 15 s), FortiGate effectue une re-synchro complète du membre désynchronisé."
+    },
+    {
+      "q": "Quelle commande vérifie les checksums de TOUS les membres à distance ?",
+      "choices": ["diagnose sys ha checksum show", "diagnose sys ha checksum cluster", "get system ha status", "diagnose sys ha checksum recalculate"],
+      "answer": 1,
+      "explain": "diagnose sys ha checksum cluster interroge chaque membre via le heartbeat et affiche leurs checksums respectifs."
+    },
+    {
+      "q": "Pourquoi est-il préférable de modifier la configuration depuis le primaire ?",
+      "choices": ["Les secondaires ne peuvent pas être modifiés", "En cas d'échec temporaire de la synchro, les modifs sur le secondaire peuvent être perdues au prochain full sync", "La GUI n'est accessible que sur le primaire", "La modification est propagée plus rapidement"],
+      "answer": 1,
+      "explain": "Si la synchro échoue et que la modif est sur un secondaire, un full sync ultérieur écraserait la config du secondaire avec celle du primaire."
+    },
+    {
+      "q": "Les SA IPsec sont-elles synchronisées dans un cluster HA ?",
+      "choices": ["Non, les tunnels VPN doivent être renégociés après failover", "Oui, les SA IPsec font partie des données runtime synchronisées", "Uniquement en mode actif-actif", "Uniquement si session pickup est activé"],
+      "answer": 1,
+      "explain": "Les SA IPsec sont synchronisées comme données runtime — les tunnels VPN survivent à un failover."
+    },
+    {
+      "q": "Si diagnose sys ha checksum cluster ne montre qu'un seul checksum (local), qu'est-ce que cela indique ?",
+      "choices": ["Tous les membres sont synchronisés", "Problème de heartbeat ou HA dysfonctionnelle", "Le cluster est en mode maintenance", "Les checksums sont identiques"],
+      "answer": 1,
+      "explain": "Si seul le checksum local apparaît, c'est souvent signe de problème heartbeat. Il faut se connecter individuellement à chaque membre et lancer diagnose sys ha checksum show."
+    },
+    {
+      "q": "Les baux DHCP sont-ils synchronisés entre membres du cluster ?",
+      "choices": ["Non, chaque membre gère ses propres baux", "Oui, ils font partie des données runtime synchronisées", "Uniquement si DHCP relay est configuré", "Uniquement en mode actif-actif"],
+      "answer": 1,
+      "explain": "Les baux DHCP sont synchronisés — les clients ne perdent pas leur IP après un failover."
+    },
+    {
+      "q": "Session pickup activé — que se passe-t-il pour les sessions après un failover ?",
+      "choices": ["Toutes les sessions sont interrompues", "Les sessions qualifiantes sont reprises transparentement par le nouveau primaire", "Seules les sessions HTTPS sont reprises", "Les sessions sont migrées manuellement par l'admin"],
+      "answer": 1,
+      "explain": "Session pickup permet au nouveau primaire de reprendre les sessions actives synchronisées sans interruption visible pour les utilisateurs."
+    },
+    {
+      "q": "Que fait diagnose sys ha checksum recalculate ?",
+      "choices": ["Resynchronise la configuration", "Force un recalcul des checksums locaux", "Redémarre le processus HA", "Compare les checksums avec le primaire"],
+      "answer": 1,
+      "explain": "Cette commande force un recalcul du checksum local — utile quand les checksums semblent différer alors que la configuration est en fait identique."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quand un nouveau membre rejoint le cluster avec un checksum différent, que se passe-t-il ?",
+      "choices": ["Synchro incrémentale du delta seulement", "Synchro complète envoyée par le primaire", "Le nouveau membre est rejeté", "Le cluster se coupe en deux"],
+      "answer": 1,
+      "explain": "Si les checksums diffèrent au join, le primaire envoie l'intégralité de sa configuration (full sync)."
+    },
+    {
+      "q": "Quel paramètre N'EST PAS synchronisé entre membres HA ?",
+      "choices": ["FIB", "HA priority", "Définitions FortiGuard", "Baux DHCP"],
+      "answer": 1,
+      "explain": "HA priority, HA override et hostname ne sont pas synchronisés."
+    },
+    {
+      "q": "Tous les combien de temps le cluster vérifie-t-il par défaut la synchronisation ?",
+      "choices": ["15 secondes", "30 secondes", "60 secondes", "5 minutes"],
+      "answer": 2,
+      "explain": "Par défaut, vérification toutes les 60 secondes."
+    },
+    {
+      "q": "Quel type de session ne peut PAS être repris par session pickup ?",
+      "choices": ["Sessions HTTP", "Sessions SSL VPN terminant sur FortiGate", "Sessions FTP", "Sessions IPsec"],
+      "answer": 1,
+      "explain": "Les sessions SSL VPN et proxy terminent sur le FortiGate — elles doivent être relancées par les clients."
+    },
+    {
+      "q": "Quelle commande vérifie les checksums de TOUS les membres à distance ?",
+      "choices": ["diagnose sys ha checksum show", "diagnose sys ha checksum cluster", "get system ha status", "diagnose sys ha checksum recalculate"],
+      "answer": 1,
+      "explain": "diagnose sys ha checksum cluster interroge tous les membres via le heartbeat."
+    }
+  ]
+}
