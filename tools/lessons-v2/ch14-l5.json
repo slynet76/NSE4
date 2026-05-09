@@ -1,0 +1,238 @@
+{
+  "id": "ch14-l5",
+  "module": "Diagnostics and Troubleshooting",
+  "title": "Memory conserve mode et fail-open",
+  "durationMin": 7,
+  "content": "## Le conserve mode FortiGate\n\nLe **conserve mode** est un mécanisme de protection automatique de FortiGate déclenché quand la mémoire libre descend sous un seuil critique appelé **red threshold**. Son objectif est d'éviter un crash du système en libérant des ressources mémoire.\n\n## Seuils mémoire FortiOS\n\nFortiOS définit trois zones de seuils mémoire :\n\n| Seuil | Condition | Comportement |\n|---|---|---|\n| Green threshold | Mémoire libre > 30% | Fonctionnement normal |\n| Red threshold | Mémoire libre < 15% | FortiGate entre en conserve mode |\n| Extreme threshold | Mémoire libre < 5% | Arrêt des nouvelles sessions |\n\n## Comportement en conserve mode\n\nEn conserve mode, certains scans AV (antivirus) et IPS peuvent passer en **fail-open** (trafic non inspecté) pour libérer des ressources mémoire. Le trafic continue de circuler mais sans être inspecté par les moteurs de sécurité concernés.\n\n## Fail-open vs fail-close\n\n**Fail-open** : si le moteur de scan est surchargé ou en conserve mode, le trafic passe **sans inspection**. Cela préserve la disponibilité du réseau mais réduit la sécurité. C'est le comportement configurable par défaut en conserve mode.\n\n**Fail-close** : si le moteur de scan est surchargé, le trafic est **bloqué**. C'est le comportement le plus sécurisé mais il impacte la disponibilité du réseau.\n\n> **Arbitrage sécurité/disponibilité** : le choix entre fail-open et fail-close dépend des exigences de l'organisation. Un environnement critique en termes de sécurité préférera fail-close, tandis qu'un environnement privilégiant la disponibilité préférera fail-open.\n\n## Commandes de diagnostic mémoire\n\n| Commande | Information |\n|---|---|\n| `diagnose hardware sysinfo memory` | État mémoire détaillé (total, used, free en KB) |\n| `diagnose sys conserve` | Indique si le FortiGate est actuellement en conserve mode |\n\n**`diagnose hardware sysinfo memory`** affiche en kilobytes les valeurs total, used, free et buffers de la mémoire système. Permet de calculer précisément le pourcentage de mémoire libre.\n\n**`diagnose sys conserve`** retourne directement le statut du conserve mode : actif ou non, et le seuil actuellement atteint.\n\n## Résolution d'un conserve mode\n\nProcédure de résolution :\n1. Identifier le processus gourmand en mémoire via `diagnose sys top` — rechercher `scanunit` ou `ipsengine`\n2. Réduire les profils de sécurité actifs dans les politiques (AV, IPS, Application Control)\n3. Réduire la taille maximale des fichiers scannés\n4. Si l'équipement est trop sollicité, envisager un upgrade matériel\n\n> **Attention** : si le FortiGate reste en conserve mode de façon persistante, cela indique un sous-dimensionnement ou une surcharge anormale (attaque, bug de processus).\n\n> Seuil **extreme threshold** (< 5% mémoire libre) : les nouvelles sessions sont **refusées** et **bloquées** — le FortiGate protège sa stabilité.",
+  "diagrams": [
+    {
+      "caption": "Zones de seuils mémoire FortiOS",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='20' y='30' width='500' height='40' rx='4' fill='#166534' stroke='#22c55e' stroke-width='2'/><text x='270' y='46' text-anchor='middle' fill='#22c55e' font-size='10' font-family='monospace' font-weight='bold'>GREEN threshold — Memoire libre &gt; 30%</text><text x='270' y='62' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>Fonctionnement normal — AV et IPS actifs</text><rect x='20' y='78' width='500' height='40' rx='4' fill='#7f1d1d' stroke='#ef4444' stroke-width='2'/><text x='270' y='94' text-anchor='middle' fill='#ef4444' font-size='10' font-family='monospace' font-weight='bold'>RED threshold — Memoire libre &lt; 15% — CONSERVE MODE</text><text x='270' y='110' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>AV/IPS peuvent passer en fail-open — trafic non inspecte</text><rect x='20' y='126' width='500' height='40' rx='4' fill='#450a0a' stroke='#ef4444' stroke-width='2' stroke-dasharray='4,2'/><text x='270' y='142' text-anchor='middle' fill='#ef4444' font-size='10' font-family='monospace' font-weight='bold'>EXTREME threshold — Memoire libre &lt; 5%</text><text x='270' y='158' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>Arret des nouvelles sessions</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "En dessous de quel seuil de mémoire libre le FortiGate entre-t-il en conserve mode ?",
+      "choices": [
+        "Mémoire libre < 30%",
+        "Mémoire libre < 15%",
+        "Mémoire libre < 5%",
+        "Mémoire libre < 50%"
+      ],
+      "answer": 1,
+      "explain": "Le FortiGate entre en conserve mode (red threshold) quand la mémoire libre descend sous 15%."
+    },
+    {
+      "q": "Que se passe-t-il quand la mémoire libre descend sous 5% (extreme threshold) ?",
+      "choices": [
+        "Le FortiGate redémarre automatiquement",
+        "Les nouvelles sessions sont refusées — seuil extreme threshold atteint",
+        "Le trafic passe sans inspection",
+        "Seul le trafic HTTPS est bloqué"
+      ],
+      "answer": 1,
+      "explain": "Quand la mémoire libre descend sous 5% (extreme threshold), le FortiGate arrête d'accepter de nouvelles sessions pour protéger le système."
+    },
+    {
+      "q": "Qu'est-ce que le fail-open sur FortiGate ?",
+      "choices": [
+        "Le trafic est bloqué si le moteur de scan est surchargé",
+        "Le trafic passe sans inspection si le moteur de scan est surchargé ou en conserve mode",
+        "Le FortiGate s'ouvre automatiquement aux connexions SSH",
+        "Les politiques firewall sont désactivées"
+      ],
+      "answer": 1,
+      "explain": "Le fail-open signifie que si le moteur de scan est surchargé ou en conserve mode, le trafic passe sans inspection. La disponibilité est préservée mais la sécurité réduite."
+    },
+    {
+      "q": "Quelle commande indique si le FortiGate est actuellement en conserve mode ?",
+      "choices": [
+        "diagnose hardware sysinfo memory",
+        "diagnose sys conserve",
+        "get system performance status",
+        "diagnose sys top"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose sys conserve' retourne directement le statut du conserve mode : actif ou non, et le seuil atteint."
+    },
+    {
+      "q": "Quelle est la différence entre fail-open et fail-close ?",
+      "choices": [
+        "Fail-open bloque le trafic, fail-close laisse passer le trafic",
+        "Fail-open laisse passer le trafic sans inspection, fail-close bloque le trafic si le moteur est surchargé",
+        "Fail-open et fail-close sont identiques",
+        "Fail-close concerne uniquement les VPN"
+      ],
+      "answer": 1,
+      "explain": "Fail-open laisse passer le trafic sans inspection (préserve la disponibilité), fail-close bloque le trafic si le moteur de scan est surchargé (plus sécurisé mais impacte la disponibilité)."
+    },
+    {
+      "q": "Quelle est la condition du green threshold dans FortiOS ?",
+      "choices": [
+        "Mémoire libre > 50%",
+        "Mémoire libre > 30%",
+        "Mémoire libre > 15%",
+        "Mémoire libre > 5%"
+      ],
+      "answer": 1,
+      "explain": "Le green threshold correspond à une mémoire libre supérieure à 30%, indiquant un fonctionnement normal du FortiGate."
+    },
+    {
+      "q": "Quelle commande affiche l'état mémoire détaillé en kilobytes (total, used, free, buffers) ?",
+      "choices": [
+        "diagnose sys conserve",
+        "get system performance status",
+        "diagnose hardware sysinfo memory",
+        "diagnose sys top"
+      ],
+      "answer": 2,
+      "explain": "La commande 'diagnose hardware sysinfo memory' affiche en kilobytes les valeurs total, used, free et buffers de la mémoire système."
+    },
+    {
+      "q": "Quelle est la première étape pour résoudre un conserve mode persistant ?",
+      "choices": [
+        "Redémarrer immédiatement le FortiGate",
+        "Identifier le processus gourmand en mémoire via diagnose sys top",
+        "Désactiver toutes les politiques firewall",
+        "Mettre à jour FortiOS vers la dernière version"
+      ],
+      "answer": 1,
+      "explain": "La première étape de résolution est d'identifier le processus consommateur de mémoire via 'diagnose sys top', en cherchant notamment scanunit ou ipsengine."
+    },
+    {
+      "q": "Quel comportement de scan AV est attendu en conserve mode ?",
+      "choices": [
+        "Le scan AV s'intensifie pour protéger le réseau",
+        "Le scan AV peut passer en fail-open (trafic non inspecté) pour libérer des ressources",
+        "Le scan AV se met en pause puis reprend",
+        "Le scan AV bascule automatiquement sur un FortiGate secondaire"
+      ],
+      "answer": 1,
+      "explain": "En conserve mode, certains scans AV peuvent passer en fail-open, laissant le trafic passer sans inspection pour libérer des ressources mémoire."
+    },
+    {
+      "q": "Quel comportement est le plus sécurisé entre fail-open et fail-close ?",
+      "choices": [
+        "Fail-open est plus sécurisé",
+        "Fail-close est plus sécurisé car il bloque le trafic non inspecté",
+        "Les deux sont équivalents en termes de sécurité",
+        "Cela dépend uniquement du type de trafic"
+      ],
+      "answer": 1,
+      "explain": "Fail-close est plus sécurisé car il bloque le trafic si le moteur de scan est surchargé. Fail-open préserve la disponibilité mais laisse passer du trafic non inspecté."
+    },
+    {
+      "q": "Quel processus FortiOS identifié dans diagnose sys top est le plus susceptible d'être responsable d'un conserve mode ?",
+      "choices": [
+        "sshd ou pyfcgid",
+        "forticron ou miglogd",
+        "scanunit ou ipsengine",
+        "dnsproxy ou forticron"
+      ],
+      "answer": 2,
+      "explain": "Les processus 'scanunit' (moteur antivirus) et 'ipsengine' (moteur IPS/AppCtrl) sont les plus susceptibles de consommer de grandes quantités de mémoire et provoquer un conserve mode."
+    },
+    {
+      "q": "Qu'indique un FortiGate en conserve mode persistant ?",
+      "choices": [
+        "Une mise à jour FortiOS est disponible",
+        "Un sous-dimensionnement ou une surcharge anormale (attaque, bug de processus)",
+        "Une configuration incorrecte des politiques firewall",
+        "Une panne d'un disque dur"
+      ],
+      "answer": 1,
+      "explain": "Un conserve mode persistant indique un sous-dimensionnement matériel ou une surcharge anormale, comme une attaque en cours ou un bug de processus consommant excessivement la mémoire."
+    },
+    {
+      "q": "Quel est le red threshold en termes de mémoire libre dans FortiOS ?",
+      "choices": [
+        "Mémoire libre < 30%",
+        "Mémoire libre < 15%",
+        "Mémoire libre < 5%",
+        "Mémoire libre < 1%"
+      ],
+      "answer": 1,
+      "explain": "Le red threshold FortiOS correspond à une mémoire libre inférieure à 15%. C'est à ce seuil que le FortiGate entre en conserve mode."
+    },
+    {
+      "q": "Pourquoi le fail-open impacte-t-il la sécurité réseau ?",
+      "choices": [
+        "Parce qu'il bloque tout le trafic entrant",
+        "Parce que le trafic passe sans inspection par les moteurs AV ou IPS",
+        "Parce qu'il désactive les politiques firewall",
+        "Parce qu'il empêche l'accès à l'interface de gestion"
+      ],
+      "answer": 1,
+      "explain": "Le fail-open laisse passer le trafic sans inspection par les moteurs AV ou IPS. Des menaces peuvent donc traverser le FortiGate sans être détectées ni bloquées."
+    },
+    {
+      "q": "Comment réduire la consommation mémoire liée aux profils de sécurité actifs ?",
+      "choices": [
+        "Augmenter le nombre de sessions autorisées",
+        "Réduire les profils de sécurité actifs dans les politiques (AV, IPS, Application Control)",
+        "Activer le conserve mode manuellement",
+        "Désactiver le logging"
+      ],
+      "answer": 1,
+      "explain": "Pour réduire la consommation mémoire, on réduit les profils de sécurité actifs dans les politiques (AV, IPS, Application Control), ce qui allège le travail des processus scanunit et ipsengine."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "En dessous de quel seuil de mémoire libre le FortiGate entre-t-il en conserve mode ?",
+      "choices": [
+        "Mémoire libre < 30%",
+        "Mémoire libre < 15%",
+        "Mémoire libre < 5%",
+        "Mémoire libre < 50%"
+      ],
+      "answer": 1,
+      "explain": "Le FortiGate entre en conserve mode (red threshold) quand la mémoire libre descend sous 15%."
+    },
+    {
+      "q": "Qu'est-ce que le fail-open sur FortiGate ?",
+      "choices": [
+        "Le trafic est bloqué si le moteur de scan est surchargé",
+        "Le trafic passe sans inspection si le moteur de scan est surchargé ou en conserve mode",
+        "Le FortiGate s'ouvre automatiquement aux connexions SSH",
+        "Les politiques firewall sont désactivées"
+      ],
+      "answer": 1,
+      "explain": "Le fail-open signifie que si le moteur de scan est surchargé ou en conserve mode, le trafic passe sans inspection. La disponibilité est préservée mais la sécurité réduite."
+    },
+    {
+      "q": "Quelle commande indique si le FortiGate est actuellement en conserve mode ?",
+      "choices": [
+        "diagnose hardware sysinfo memory",
+        "diagnose sys conserve",
+        "get system performance status",
+        "diagnose sys top"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose sys conserve' retourne directement le statut du conserve mode : actif ou non, et le seuil atteint."
+    },
+    {
+      "q": "Quelle est la condition du green threshold dans FortiOS ?",
+      "choices": [
+        "Mémoire libre > 50%",
+        "Mémoire libre > 30%",
+        "Mémoire libre > 15%",
+        "Mémoire libre > 5%"
+      ],
+      "answer": 1,
+      "explain": "Le green threshold correspond à une mémoire libre supérieure à 30%, indiquant un fonctionnement normal du FortiGate."
+    },
+    {
+      "q": "Quel comportement est le plus sécurisé entre fail-open et fail-close ?",
+      "choices": [
+        "Fail-open est plus sécurisé",
+        "Fail-close est plus sécurisé car il bloque le trafic non inspecté",
+        "Les deux sont équivalents en termes de sécurité",
+        "Cela dépend uniquement du type de trafic"
+      ],
+      "answer": 1,
+      "explain": "Fail-close est plus sécurisé car il bloque le trafic si le moteur de scan est surchargé. Fail-open préserve la disponibilité mais laisse passer du trafic non inspecté."
+    }
+  ]
+}

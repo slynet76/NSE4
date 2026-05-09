@@ -1,0 +1,138 @@
+{
+  "id": "ch09-l4",
+  "module": "Web Filtering",
+  "title": "URL filtering et ordre d'inspection",
+  "durationMin": 7,
+  "content": "## URL Filter (filtre URL statique)\n\nLe **URL filter** est une liste statique d'URLs, domaines ou expressions régulières configurée manuellement par l'administrateur. Chaque entrée a une action associée : Allow, Block, Monitor ou Exempt.\n\n### Types d'entrées URL filter\n\n| Type | Description | Exemple |\n|---|---|---|\n| **Simple** | Domaine exact | example.com |\n| **Wildcard** | Couvre tous les sous-domaines | *.example.com |\n| **Regular expression** | Regex pour correspondances complexes | ^.*\\.example\\.com$ |\n\n> Les expressions régulières (regex) ont priorité sur les wildcards dans le URL filter. Une entrée regex plus spécifique est évaluée avant une entrée wildcard.\n\n## Actions disponibles dans le URL filter\n\n- **Allow** : autoriser l'accès à l'URL, trafic autorisé sans vérification FortiGuard categories\n- **Block** : bloquer l'URL et afficher la page de blocage FortiGate à l'utilisateur\n- **Monitor** : autoriser et enregistrer dans les logs, sans blocage\n- **Exempt** : exempter l'URL du web filtering ET du scan antivirus — attention à ne pas exempter des URLs risquées\n\n## Ordre d'inspection (du plus prioritaire au moins prioritaire)\n\nL'ordre d'évaluation des règles de web filtering est fixe :\n\n1. **URL filter** (liste statique) — **priorité la plus haute**\n2. **FortiGuard Web Filter categories** (catégories dynamiques)\n3. **Web Rating Override** (écrasement manuel de catégorie)\n\nSi une URL correspond à une règle dans le **URL filter = Allow**, le trafic est autorisé immédiatement **sans vérification** des catégories FortiGuard. La vérification s'arrête à la première correspondance.\n\n### Importance de l'ordre\n\n- URL filter = **Allow** → autoriser sans vérifier FortiGuard categories\n- URL filter = **Block** → bloquer sans vérifier FortiGuard categories\n- Pas de correspondance URL filter → évaluation FortiGuard categories\n- Pas de correspondance FortiGuard → évaluation Web Rating Override\n\n## Web Rating Override\n\nLe **Web Rating Override** permet de changer manuellement la catégorie FortiGuard d'une URL ou d'un domaine spécifique. Par exemple, si FortiGuard classe un site en catégorie Games (bloquée), l'administrateur peut le reclasser en catégorie Business (autorisée) via un Rating Override.\n\n> Le Web Rating Override est évalué en dernière position, après le URL filter et les catégories FortiGuard.\n\n## Action Exempt : risques et usage\n\nL'action **Exempt** dans le URL filter exempte une URL de toutes les vérifications de web filtering ET du scan antivirus. C'est plus puissant que Allow car cela contourne également l'AV. Cette action ne doit être utilisée que pour des URLs absolument fiables — les URLs exemptées ne sont pas protégées contre les malwares.\n\n## Wildcards dans le URL filter\n\nUne entrée wildcard comme **\\*.example.com** couvre tous les sous-domaines : www.example.com, mail.example.com, etc. Cela simplifie la gestion par domaine.",
+  "diagrams": [
+    {
+      "caption": "Ordre d'inspection web filtering — URL filter → FortiGuard categories → Rating Override",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='10' y='10' width='80' height='30' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='50' y='29' text-anchor='middle' fill='#e2e8f0' font-size='10' font-family='monospace'>Requete</text><polygon points='93,25 103,20 103,30' fill='#3b82f6'/><rect x='105' y='5' width='95' height='40' rx='4' fill='#14532d' stroke='#22c55e' stroke-width='2'/><text x='152' y='20' text-anchor='middle' fill='#22c55e' font-size='10' font-family='monospace' font-weight='bold'>1. URL filter</text><text x='152' y='34' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>Liste statique</text><polygon points='203,25 213,20 213,30' fill='#22c55e'/><rect x='215' y='5' width='100' height='40' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='2'/><text x='265' y='20' text-anchor='middle' fill='#3b82f6' font-size='10' font-family='monospace' font-weight='bold'>2. FortiGuard</text><text x='265' y='34' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>Categories</text><polygon points='318,25 328,20 328,30' fill='#3b82f6'/><rect x='330' y='5' width='100' height='40' rx='4' fill='#1e293b' stroke='#f59e0b' stroke-width='2'/><text x='380' y='20' text-anchor='middle' fill='#f59e0b' font-size='10' font-family='monospace' font-weight='bold'>3. Rating</text><text x='380' y='34' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>Override</text><polygon points='433,25 443,20 443,30' fill='#f59e0b'/><rect x='445' y='5' width='85' height='40' rx='4' fill='#1e293b' stroke='#334155' stroke-width='1'/><text x='487' y='29' text-anchor='middle' fill='#e2e8f0' font-size='10' font-family='monospace'>Decision</text><line x1='152' y1='45' x2='152' y2='65' stroke='#22c55e' stroke-width='1.5'/><text x='10' y='80' fill='#94a3b8' font-size='10' font-family='monospace'>Correspondance URL filter :</text><rect x='10' y='85' width='150' height='20' rx='3' fill='#14532d'/><text x='15' y='99' fill='#22c55e' font-size='10' font-family='monospace'>Allow → autorise (arret)</text><rect x='165' y='85' width='150' height='20' rx='3' fill='#450a0a'/><text x='170' y='99' fill='#ef4444' font-size='10' font-family='monospace'>Block → bloque (arret)</text><rect x='320' y='85' width='210' height='20' rx='3' fill='#1e293b'/><text x='325' y='99' fill='#f59e0b' font-size='10' font-family='monospace'>Exempt → bypass AV + webfilter</text><line x1='10' y1='110' x2='530' y2='110' stroke='#334155' stroke-width='1'/><text x='10' y='127' fill='#94a3b8' font-size='10' font-family='monospace'>Types URL filter :</text><text x='10' y='144' fill='#e2e8f0' font-size='10' font-family='monospace'>Simple : example.com</text><text x='180' y='144' fill='#e2e8f0' font-size='10' font-family='monospace'>Wildcard : *.example.com</text><text x='360' y='144' fill='#e2e8f0' font-size='10' font-family='monospace'>Regex (priorite haute)</text><text x='10' y='165' fill='#94a3b8' font-size='9' font-family='monospace'>Priorite dans URL filter : regex > wildcard > simple  |  Web Rating Override = ecrasement manuel categorie FortiGuard</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel est l'ordre d'inspection correct dans le web filtering FortiGate (du plus prioritaire au moins) ?",
+      "choices": ["FortiGuard categories → URL filter → Rating Override", "URL filter → Rating Override → FortiGuard categories", "URL filter → FortiGuard categories → Rating Override", "Rating Override → URL filter → FortiGuard categories"],
+      "answer": 2,
+      "explain": "L'ordre d'inspection est : 1. URL filter (priorite haute), 2. FortiGuard categories, 3. Web Rating Override (moins prioritaire). La verification s'arrete a la premiere correspondance."
+    },
+    {
+      "q": "Quelle action du URL filter exempte l'URL du web filtering ET du scan antivirus ?",
+      "choices": ["Allow", "Monitor", "Block", "Exempt"],
+      "answer": 3,
+      "explain": "L'action Exempt exempte l'URL de toutes les verifications de web filtering ET du scan antivirus. Elle est plus puissante que Allow et ne doit etre utilisee que pour des URLs absolument fiables."
+    },
+    {
+      "q": "Que se passe-t-il quand une URL correspond a une entree URL filter = Allow ?",
+      "choices": ["L'URL est quand meme verifiee par FortiGuard categories", "L'URL est autorisee sans verification FortiGuard categories", "L'URL est enregistree dans les logs uniquement", "L'URL est envoyee a FortiSandbox"],
+      "answer": 1,
+      "explain": "Quand une URL correspond a URL filter = Allow, le trafic est autorise immediatement sans verification des categories FortiGuard. La verification s'arrete a la premiere correspondance."
+    },
+    {
+      "q": "Quel type d'entree URL filter couvre tous les sous-domaines d'un domaine ?",
+      "choices": ["Simple", "Regular expression", "Wildcard", "Exempt"],
+      "answer": 2,
+      "explain": "Le type Wildcard (ex: *.example.com) couvre tous les sous-domaines : www.example.com, mail.example.com, etc. Cela simplifie la gestion des regles par domaine."
+    },
+    {
+      "q": "Quel est l'objectif du Web Rating Override dans le web filtering FortiGate ?",
+      "choices": ["Creer une nouvelle liste de categories", "Changer manuellement la categorie FortiGuard d'une URL ou d'un domaine", "Forcer une mise a jour de FortiGuard", "Bloquer toutes les URLs non categorisees"],
+      "answer": 1,
+      "explain": "Le Web Rating Override permet a l'administrateur de changer manuellement la categorie FortiGuard d'une URL ou d'un domaine specifique, par exemple reclasser un site de Games en Business."
+    },
+    {
+      "q": "Dans l'ordre d'inspection web filtering, quel element a la priorite la plus haute ?",
+      "choices": ["FortiGuard categories", "Web Rating Override", "URL filter", "Safe Search"],
+      "answer": 2,
+      "explain": "Le URL filter (liste statique) a la priorite la plus haute dans l'ordre d'inspection web filtering. Il est evalue en premier, avant les categories FortiGuard et le Rating Override."
+    },
+    {
+      "q": "Quelle action du URL filter permet d'autoriser l'acces et d'enregistrer l'evenement dans les logs ?",
+      "choices": ["Allow", "Exempt", "Block", "Monitor"],
+      "answer": 3,
+      "explain": "L'action Monitor dans le URL filter autorise l'acces tout en enregistrant l'evenement dans les logs. Elle permet la surveillance sans impact sur la navigation."
+    },
+    {
+      "q": "Pourquoi faut-il etre prudent avec l'action Exempt dans le URL filter ?",
+      "choices": ["Elle bloque automatiquement les fichiers", "Elle exempte du web filtering ET du scan antivirus, laissant passer potentiellement des malwares", "Elle consomme beaucoup de ressources", "Elle necessite une authentification"],
+      "answer": 1,
+      "explain": "L'action Exempt est dangereuse car elle exempte l'URL du web filtering ET du scan antivirus. Les URLs exemptees ne sont pas protegees contre les malwares. A utiliser uniquement pour des URLs absolument fiables."
+    },
+    {
+      "q": "Comment s'ecrit une entree URL filter de type Wildcard pour couvrir tous les sous-domaines de example.com ?",
+      "choices": ["example.com/*", "*.example.com", "www.example.com", "example.*"],
+      "answer": 1,
+      "explain": "Une entree Wildcard de la forme *.example.com couvre tous les sous-domaines de example.com : www.example.com, mail.example.com, etc."
+    },
+    {
+      "q": "Dans le URL filter, quelle est la priorite des expressions regulieres (regex) par rapport aux wildcards ?",
+      "choices": ["Les wildcards ont priorite sur les regex", "Regex et wildcards ont la meme priorite", "Les regex ont priorite sur les wildcards", "La priorite depend de l'ordre dans la liste"],
+      "answer": 2,
+      "explain": "Dans le URL filter, les expressions regulieres (regex) ont priorite sur les wildcards. Une entree regex est evaluee avant une entree wildcard correspondante."
+    },
+    {
+      "q": "Quel element du web filtering est evalue en dernier dans l'ordre d'inspection ?",
+      "choices": ["URL filter", "FortiGuard categories", "Web Rating Override", "Safe Search"],
+      "answer": 2,
+      "explain": "Le Web Rating Override est evalue en dernier (troisieme position) dans l'ordre d'inspection web filtering, apres le URL filter et les categories FortiGuard."
+    },
+    {
+      "q": "Que se passe-t-il si une URL ne correspond a aucune entree du URL filter ?",
+      "choices": ["L'URL est automatiquement bloquee", "L'URL est evaluee par les categories FortiGuard", "L'URL est autorisee par defaut", "L'URL est envoyee a FortiSandbox"],
+      "answer": 1,
+      "explain": "Si une URL ne correspond a aucune entree du URL filter, l'evaluation passe a l'etape suivante : la verification des categories FortiGuard Web Filter."
+    },
+    {
+      "q": "Quelle action du URL filter affiche la page de blocage FortiGate a l'utilisateur ?",
+      "choices": ["Monitor", "Allow", "Block", "Exempt"],
+      "answer": 2,
+      "explain": "L'action Block dans le URL filter bloque l'acces et affiche la page de blocage FortiGate a l'utilisateur, indiquant que l'URL est bloquee par la politique de securite."
+    },
+    {
+      "q": "Un administrateur veut que FortiGate classe le site shopping.example.com comme categorie Business au lieu de Shopping. Quel outil doit-il utiliser ?",
+      "choices": ["URL filter avec action Allow", "Safe Search", "Web Rating Override", "Profil YouTube Education"],
+      "answer": 2,
+      "explain": "Le Web Rating Override permet de changer manuellement la categorie FortiGuard d'un domaine. L'administrateur peut reclasser shopping.example.com de Shopping a Business pour l'autoriser."
+    },
+    {
+      "q": "Le type d'entree Simple dans le URL filter correspond a quoi ?",
+      "choices": ["Tous les sous-domaines d'un domaine", "Un domaine exact", "Une expression reguliere simple", "Tous les domaines d'un TLD"],
+      "answer": 1,
+      "explain": "Le type d'entree Simple dans le URL filter correspond a un domaine exact. Par exemple, example.com correspond uniquement a ce domaine et pas a ses sous-domaines."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quel est l'ordre d'inspection correct dans le web filtering FortiGate (du plus prioritaire au moins) ?",
+      "choices": ["FortiGuard categories → URL filter → Rating Override", "URL filter → Rating Override → FortiGuard categories", "URL filter → FortiGuard categories → Rating Override", "Rating Override → URL filter → FortiGuard categories"],
+      "answer": 2,
+      "explain": "L'ordre d'inspection est : 1. URL filter (priorite haute), 2. FortiGuard categories, 3. Web Rating Override (moins prioritaire). La verification s'arrete a la premiere correspondance."
+    },
+    {
+      "q": "Quelle action du URL filter exempte l'URL du web filtering ET du scan antivirus ?",
+      "choices": ["Allow", "Monitor", "Block", "Exempt"],
+      "answer": 3,
+      "explain": "L'action Exempt exempte l'URL de toutes les verifications de web filtering ET du scan antivirus. Elle est plus puissante que Allow et ne doit etre utilisee que pour des URLs absolument fiables."
+    },
+    {
+      "q": "Que se passe-t-il quand une URL correspond a une entree URL filter = Allow ?",
+      "choices": ["L'URL est quand meme verifiee par FortiGuard categories", "L'URL est autorisee sans verification FortiGuard categories", "L'URL est enregistree dans les logs uniquement", "L'URL est envoyee a FortiSandbox"],
+      "answer": 1,
+      "explain": "Quand une URL correspond a URL filter = Allow, le trafic est autorise immediatement sans verification des categories FortiGuard. La verification s'arrete a la premiere correspondance."
+    },
+    {
+      "q": "Quel type d'entree URL filter couvre tous les sous-domaines d'un domaine ?",
+      "choices": ["Simple", "Regular expression", "Wildcard", "Exempt"],
+      "answer": 2,
+      "explain": "Le type Wildcard (ex: *.example.com) couvre tous les sous-domaines : www.example.com, mail.example.com, etc. Cela simplifie la gestion des regles par domaine."
+    },
+    {
+      "q": "Quel est l'objectif du Web Rating Override dans le web filtering FortiGate ?",
+      "choices": ["Creer une nouvelle liste de categories", "Changer manuellement la categorie FortiGuard d'une URL ou d'un domaine", "Forcer une mise a jour de FortiGuard", "Bloquer toutes les URLs non categorisees"],
+      "answer": 1,
+      "explain": "Le Web Rating Override permet a l'administrateur de changer manuellement la categorie FortiGuard d'une URL ou d'un domaine specifique, par exemple reclasser un site de Games en Business."
+    }
+  ]
+}

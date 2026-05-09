@@ -1,0 +1,238 @@
+{
+  "id": "ch10-l2",
+  "module": "Intrusion Prevention and Application Control",
+  "title": "Capteurs IPS et signatures",
+  "durationMin": 6,
+  "content": "## Capteur IPS\n\nUn **capteur IPS** (IPS Sensor) est un ensemble de filtres et de règles attaché à une politique firewall. Il définit quelles signatures sont actives, quels protocoles sont inspectés et quelles actions sont appliquées.\n\nSans capteur IPS attaché à une politique, aucune inspection IPS n'est effectuée sur le trafic correspondant.\n\n## Structure d'un capteur IPS\n\n![Structure d'un capteur IPS](diagram:0)\n\nUn capteur IPS est composé de deux couches :\n\n### 1. Filtre de base\n\nLe **filtre de base** permet de sélectionner un ensemble de signatures selon des critères :\n\n| Critère | Valeurs possibles |\n|---|---|\n| **Protocole** | HTTP, SMTP, FTP, IMAP, POP3, DNS, SMB |\n| **OS cible** | Windows, Linux, macOS |\n| **Sévérité** | Critical, High, Medium, Low, Info |\n| **Cible** | Client, Server |\n\nCinq niveaux de sévérité existent : Critical, High, Medium, Low et Info.\n\n### 2. Overrides\n\nLes **overrides** permettent de modifier l'action d'une signature spécifique dans un capteur, indépendamment du filtre de base. Utiles pour :\n- **Tester** une signature avant de la mettre en production\n- **Exempter** des signatures qui génèrent des faux positifs\n- Appliquer une action différente pour une signature particulière\n\n## Base de signatures FortiGuard\n\nLa **base de signatures IPS FortiGuard** contient les patterns de détection d'exploits et d'anomalies. Elle est mise à jour régulièrement par FortiGuard Labs.\n\n## Signatures classiques vs rate-based\n\n### Signatures classiques\n\nLes signatures **classiques** effectuent un **pattern matching** exact sur le contenu du paquet. Elles sont précises pour les exploits connus dont le contenu est prévisible.\n\n### Signatures rate-based\n\nLes signatures **rate-based** ciblent des comportements anormaux de volume, fréquence ou débit. Elles sont utiles pour détecter :\n- Les **scans de ports** (fort volume de connexions sur ports différents)\n- Les **attaques DoS** (débit anormal)\n- Les comportements répétitifs suspects\n\n> **Distinction clé** : les signatures classiques font du pattern matching sur le contenu ; les signatures rate-based analysent le volume, la fréquence ou le débit du trafic.\n\n## Protocoles supportés\n\nL'inspection IPS supporte les protocoles suivants : **HTTP**, **SMTP**, **FTP**, **IMAP**, **POP3**, **DNS**, **SMB**.\n\nChaque protocole dispose de décodeurs dédiés qui permettent une analyse approfondie du contenu échangé.",
+  "diagrams": [
+    {
+      "caption": "Structure d'un capteur IPS : filtre de base (catégorie, sévérité, OS) et couche d'overrides individuels.",
+      "height": 200,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 200'><rect width='540' height='200' fill='#0d1117'/><rect x='20' y='10' width='500' height='50' rx='8' fill='#1e293b' stroke='#3b82f6' stroke-width='2'/><text x='270' y='30' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#e2e8f0'>Capteur IPS</text><text x='270' y='50' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#94a3b8'>attaché à une politique firewall</text><rect x='20' y='80' width='230' height='60' rx='6' fill='#0f2235' stroke='#3b82f6' stroke-width='1.5'/><text x='135' y='100' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#93c5fd'>Filtre de base</text><text x='135' y='116' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#94a3b8'>Protocole / OS / Sévérité / Cible</text><text x='135' y='132' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>HTTP SMTP DNS SMB FTP...</text><rect x='290' y='80' width='230' height='60' rx='6' fill='#1a1f0a' stroke='#22c55e' stroke-width='1.5'/><text x='405' y='100' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#86efac'>Overrides individuels</text><text x='405' y='116' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#94a3b8'>Surcharge par signature spécifique</text><text x='405' y='132' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>Test / Exemption / Action custom</text><rect x='120' y='162' width='140' height='28' rx='4' fill='#2d1a00' stroke='#f97316' stroke-width='1'/><text x='190' y='180' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#fdba74'>Classiques (pattern matching)</text><rect x='280' y='162' width='140' height='28' rx='4' fill='#1a0a2d' stroke='#a855f7' stroke-width='1'/><text x='350' y='180' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#d8b4fe'>Rate-based (volume/fréquence)</text><line x1='270' y1='60' x2='135' y2='80' stroke='#3b82f6' stroke-width='1.5' stroke-dasharray='4,3'/><line x1='270' y1='60' x2='405' y2='80' stroke='#22c55e' stroke-width='1.5' stroke-dasharray='4,3'/></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Qu'est-ce qu'un capteur IPS dans FortiGate ?",
+      "choices": [
+        "Un module matériel dédié à la détection d'intrusions",
+        "Un ensemble de filtres et règles attaché à une politique firewall",
+        "Un profil antivirus appliqué au trafic web",
+        "Un capteur réseau passif sans action de blocage"
+      ],
+      "answer": 1,
+      "explain": "Un capteur IPS est un ensemble de filtres et de règles attaché à une politique firewall. Sans capteur IPS attaché, aucune inspection IPS n'est effectuée."
+    },
+    {
+      "q": "Quels sont les critères disponibles dans le filtre de base d'un capteur IPS ?",
+      "choices": [
+        "Adresse IP source, port destination, interface",
+        "Protocole, OS cible, sévérité, cible (client/server)",
+        "VLAN, zone, utilisateur FSSO",
+        "Heure, jour, réputation IP"
+      ],
+      "answer": 1,
+      "explain": "Le filtre de base permet de sélectionner des signatures par protocole, OS cible, sévérité et cible (client ou server)."
+    },
+    {
+      "q": "Combien de niveaux de sévérité existent dans les signatures IPS FortiGuard ?",
+      "choices": [
+        "3 (Low, Medium, High)",
+        "4 (Info, Low, Medium, High)",
+        "5 (Critical, High, Medium, Low, Info)",
+        "6 (None, Info, Low, Medium, High, Critical)"
+      ],
+      "answer": 2,
+      "explain": "Il existe 5 niveaux de sévérité : Critical, High, Medium, Low et Info."
+    },
+    {
+      "q": "À quoi servent les overrides dans un capteur IPS ?",
+      "choices": [
+        "À remplacer complètement le filtre de base",
+        "À modifier l'action d'une signature spécifique dans le capteur",
+        "À désactiver temporairement tout le capteur IPS",
+        "À créer des signatures IPS personnalisées"
+      ],
+      "answer": 1,
+      "explain": "Les overrides permettent de modifier l'action d'une signature spécifique dans un capteur — utiles pour tester ou exempter des signatures problématiques."
+    },
+    {
+      "q": "Quels protocoles sont supportés pour l'inspection IPS dans FortiGate ?",
+      "choices": [
+        "HTTP, HTTPS, SSH, RDP uniquement",
+        "HTTP, SMTP, FTP, IMAP, POP3, DNS, SMB",
+        "TCP, UDP, ICMP, GRE",
+        "HTTP, FTP, TFTP, NFS"
+      ],
+      "answer": 1,
+      "explain": "Les protocoles supportés pour l'inspection IPS incluent : HTTP, SMTP, FTP, IMAP, POP3, DNS et SMB."
+    },
+    {
+      "q": "Quelle est la différence entre les signatures classiques et les signatures rate-based ?",
+      "choices": [
+        "Les signatures classiques s'appliquent au trafic UDP ; les rate-based au trafic TCP",
+        "Les signatures classiques font du pattern matching sur le contenu ; les rate-based analysent le volume, la fréquence ou le débit",
+        "Les signatures classiques nécessitent FortiGuard ; les rate-based sont locales",
+        "Il n'y a pas de différence fonctionnelle entre les deux types"
+      ],
+      "answer": 1,
+      "explain": "Les signatures classiques font du pattern matching exact sur le contenu du paquet. Les signatures rate-based ciblent des comportements anormaux de volume, fréquence ou débit."
+    },
+    {
+      "q": "Pour quoi les signatures rate-based sont-elles particulièrement utiles ?",
+      "choices": [
+        "Pour détecter des exploits précis dans les paquets HTTP",
+        "Pour détecter des scans de ports et des attaques DoS",
+        "Pour inspecter le contenu des fichiers téléchargés",
+        "Pour analyser les certificats SSL invalides"
+      ],
+      "answer": 1,
+      "explain": "Les signatures rate-based sont utiles pour détecter les scans de ports et les attaques DoS — elles analysent le volume, la fréquence ou le débit du trafic."
+    },
+    {
+      "q": "Que contient la base de signatures IPS FortiGuard ?",
+      "choices": [
+        "Les règles firewall prédéfinies FortiGuard",
+        "Les patterns de détection d'exploits et d'anomalies",
+        "Les certificats SSL de confiance",
+        "Les adresses IP des serveurs FortiGuard"
+      ],
+      "answer": 1,
+      "explain": "La base de signatures IPS FortiGuard contient les patterns de détection d'exploits et d'anomalies. Elle est mise à jour régulièrement par FortiGuard Labs."
+    },
+    {
+      "q": "Si aucun capteur IPS n'est attaché à une politique firewall, que se passe-t-il ?",
+      "choices": [
+        "FortiGate applique un capteur IPS par défaut",
+        "Aucune inspection IPS n'est effectuée sur le trafic correspondant",
+        "Le trafic est bloqué par défaut",
+        "FortiGate log le trafic sans l'inspecter"
+      ],
+      "answer": 1,
+      "explain": "Sans capteur IPS attaché à une politique, aucune inspection IPS n'est effectuée sur le trafic correspondant à cette politique."
+    },
+    {
+      "q": "Dans quel cas utilise-t-on un override sur une signature IPS ?",
+      "choices": [
+        "Uniquement pour activer des signatures désactivées par défaut",
+        "Pour tester une signature ou exempter une signature qui génère des faux positifs",
+        "Pour créer une nouvelle signature dans la base FortiGuard",
+        "Pour changer le protocole d'inspection d'une signature"
+      ],
+      "answer": 1,
+      "explain": "Les overrides sont utiles pour tester une signature avant production ou pour exempter une signature qui génère des faux positifs sur une application interne."
+    },
+    {
+      "q": "Quel OS cible peut être sélectionné dans le filtre de base d'un capteur IPS ?",
+      "choices": [
+        "Android, iOS, ChromeOS",
+        "Windows, Linux, macOS",
+        "Solaris, FreeBSD, OpenBSD",
+        "ESXi, Hyper-V, KVM"
+      ],
+      "answer": 1,
+      "explain": "Les OS cibles disponibles dans le filtre de base d'un capteur IPS sont Windows, Linux et macOS."
+    },
+    {
+      "q": "Comment les signatures classiques détectent-elles les exploits ?",
+      "choices": [
+        "En analysant le volume et la fréquence du trafic",
+        "Par pattern matching exact sur le contenu du paquet",
+        "En comparant les adresses IP avec une liste noire",
+        "En analysant les certificats des connexions TLS"
+      ],
+      "answer": 1,
+      "explain": "Les signatures classiques effectuent un pattern matching exact sur le contenu du paquet — elles sont précises pour les exploits connus dont le contenu est prévisible."
+    },
+    {
+      "q": "Quelle valeur de sévérité est la plus critique dans les signatures IPS ?",
+      "choices": [
+        "High",
+        "Critical",
+        "Emergency",
+        "Fatal"
+      ],
+      "answer": 1,
+      "explain": "Le niveau de sévérité le plus élevé est Critical, suivi de High, Medium, Low et Info."
+    },
+    {
+      "q": "Quel protocole de messagerie est supporté pour l'inspection IPS parmi les suivants ?",
+      "choices": [
+        "XMPP",
+        "SMTP",
+        "IRC",
+        "LDAP"
+      ],
+      "answer": 1,
+      "explain": "SMTP est l'un des protocoles supportés pour l'inspection IPS, avec HTTP, FTP, IMAP, POP3, DNS et SMB."
+    },
+    {
+      "q": "Quelle option du filtre de base permet de cibler uniquement les signatures affectant les serveurs ?",
+      "choices": [
+        "Le critère de protocole (ex: HTTP)",
+        "Le critère de cible : Server",
+        "Le critère de sévérité : Critical",
+        "Le critère d'OS cible : Windows"
+      ],
+      "answer": 1,
+      "explain": "Le critère Cible dans le filtre de base permet de sélectionner uniquement les signatures visant les serveurs (Server) ou les clients (Client)."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Qu'est-ce qu'un capteur IPS dans FortiGate ?",
+      "choices": [
+        "Un module matériel dédié à la détection d'intrusions",
+        "Un ensemble de filtres et règles attaché à une politique firewall",
+        "Un profil antivirus appliqué au trafic web",
+        "Un capteur réseau passif sans action de blocage"
+      ],
+      "answer": 1,
+      "explain": "Un capteur IPS est un ensemble de filtres et de règles attaché à une politique firewall. Sans capteur IPS attaché, aucune inspection IPS n'est effectuée."
+    },
+    {
+      "q": "Quels sont les critères disponibles dans le filtre de base d'un capteur IPS ?",
+      "choices": [
+        "Adresse IP source, port destination, interface",
+        "Protocole, OS cible, sévérité, cible (client/server)",
+        "VLAN, zone, utilisateur FSSO",
+        "Heure, jour, réputation IP"
+      ],
+      "answer": 1,
+      "explain": "Le filtre de base permet de sélectionner des signatures par protocole, OS cible, sévérité et cible (client ou server)."
+    },
+    {
+      "q": "Quelle est la différence entre les signatures classiques et les signatures rate-based ?",
+      "choices": [
+        "Les signatures classiques s'appliquent au trafic UDP ; les rate-based au trafic TCP",
+        "Les signatures classiques font du pattern matching sur le contenu ; les rate-based analysent le volume, la fréquence ou le débit",
+        "Les signatures classiques nécessitent FortiGuard ; les rate-based sont locales",
+        "Il n'y a pas de différence fonctionnelle entre les deux types"
+      ],
+      "answer": 1,
+      "explain": "Les signatures classiques font du pattern matching exact sur le contenu du paquet. Les signatures rate-based ciblent des comportements anormaux de volume, fréquence ou débit."
+    },
+    {
+      "q": "Combien de niveaux de sévérité existent dans les signatures IPS FortiGuard ?",
+      "choices": [
+        "3 (Low, Medium, High)",
+        "4 (Info, Low, Medium, High)",
+        "5 (Critical, High, Medium, Low, Info)",
+        "6 (None, Info, Low, Medium, High, Critical)"
+      ],
+      "answer": 2,
+      "explain": "Il existe 5 niveaux de sévérité : Critical, High, Medium, Low et Info."
+    },
+    {
+      "q": "Pour quoi les signatures rate-based sont-elles particulièrement utiles ?",
+      "choices": [
+        "Pour détecter des exploits précis dans les paquets HTTP",
+        "Pour détecter des scans de ports et des attaques DoS",
+        "Pour inspecter le contenu des fichiers téléchargés",
+        "Pour analyser les certificats SSL invalides"
+      ],
+      "answer": 1,
+      "explain": "Les signatures rate-based sont utiles pour détecter les scans de ports et les attaques DoS — elles analysent le volume, la fréquence ou le débit du trafic."
+    }
+  ]
+}

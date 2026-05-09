@@ -1,0 +1,238 @@
+{
+  "id": "ch15-l3",
+  "module": "FortiGate in the Cloud",
+  "title": "FortiGate CNF : Firewall-as-a-Service",
+  "durationMin": 7,
+  "content": "## Qu'est-ce que FortiGate CNF ?\n\n**FortiGate CNF** (Cloud-Native Firewall) est la solution **FWaaS** (Firewall-as-a-Service) de Fortinet pour les clouds publics. Contrairement à FortiGate VM, il n'y a **pas de VM à déployer ni à maintenir** : Fortinet gère l'intégralité de l'infrastructure sous-jacente.\n\nFortiGate CNF est disponible sur :\n- **AWS** via le mécanisme **AWS GWLB** (AWS Gateway Load Balancer)\n- **Azure** via Azure Gateway Load Balancer\n\n## Avantages CNF vs FortiGate VM\n\n| Critère | FortiGate VM | FortiGate CNF |\n|---|---|---|\n| Gestion des VMs | Client | Fortinet |\n| Patching FortiOS | Client | Fortinet (automatique) |\n| Haute disponibilité | Client (FGCP/auto-scaling) | Fortinet (automatique) |\n| Scalabilité | Manuelle ou auto-scaling | Automatique sans intervention |\n| Modèle de consommation | Licence BYOL ou PAYG | Pay-per-use |\n\n## AWS GWLB (Gateway Load Balancer)\n\nL'**AWS GWLB** (Gateway Load Balancer) est le mécanisme AWS qui permet à FortiGate CNF de fonctionner de façon transparente. Il redirige le trafic vers FortiGate CNF via des **endpoints GWLB** (GWLBE) placés dans chaque VPC à protéger.\n\nLe trafic est redirigé de façon **transparente** sans modification des adresses IP, ce qui simplifie l'intégration dans des architectures existantes.\n\n## Architecture CNF\n\nDans une architecture CNF :\n1. Les **endpoints GWLB** (GWLBE) sont déployés dans chaque VPC client\n2. Les **route tables** des VPCs sont modifiées pour diriger le trafic vers les GWLBE\n3. Les GWLBE redirigent le trafic vers l'infrastructure FortiGate CNF gérée par Fortinet\n4. FortiGate CNF applique les politiques et retourne le trafic inspecté\n\n> FortiGate CNF est adapté pour l'**inspection du trafic inter-VPC** et la **protection des workloads cloud** sans nécessiter de déploiement de VMs FortiGate.\n\n## Gestion des politiques CNF\n\nLes politiques CNF sont gérées via :\n- Le **portail CNF** de Fortinet (interface web dédiée)\n- **FortiManager Cloud** : console centralisée pour gérer les politiques de plusieurs instances CNF\n\n## Cas d'usage CNF\n\n- Inspection du trafic inter-VPC (east-west)\n- Protection des workloads cloud sans déploiement de VMs FortiGate\n- Environnements nécessitant une scalabilité automatique sans gestion d'infrastructure\n- Mises à jour FortiOS gérées automatiquement par Fortinet — les patches FortiOS sont appliqués de façon transparente\n\n> Avantage CNF vs FortiGate VM : pas de gestion de **HA** (High Availability), de patching, ni de scaling — tout est géré par Fortinet.",
+  "diagrams": [
+    {
+      "caption": "Architecture FortiGate CNF avec AWS GWLB",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='8' y='30' width='110' height='55' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='63' y='48' text-anchor='middle' fill='#3b82f6' font-size='9' font-family='monospace' font-weight='bold'>VPC 1</text><text x='63' y='62' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>Workloads</text><text x='63' y='75' text-anchor='middle' fill='#22c55e' font-size='7' font-family='monospace'>GWLB endpoint</text><rect x='8' y='95' width='110' height='55' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='63' y='113' text-anchor='middle' fill='#3b82f6' font-size='9' font-family='monospace' font-weight='bold'>VPC 2</text><text x='63' y='127' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>Workloads</text><text x='63' y='140' text-anchor='middle' fill='#22c55e' font-size='7' font-family='monospace'>GWLB endpoint</text><polygon points='119,60 131,56 131,64' fill='#22c55e'/><line x1='118' y1='60' x2='131' y2='60' stroke='#22c55e' stroke-width='1.5'/><polygon points='119,122 131,118 131,126' fill='#22c55e'/><line x1='118' y1='122' x2='131' y2='122' stroke='#22c55e' stroke-width='1.5'/><rect x='133' y='50' width='90' height='80' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='2'/><text x='178' y='72' text-anchor='middle' fill='#22c55e' font-size='9' font-family='monospace' font-weight='bold'>AWS GWLB</text><text x='178' y='86' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>Gateway</text><text x='178' y='99' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>Load</text><text x='178' y='112' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>Balancer</text><polygon points='224,90 236,86 236,94' fill='#22c55e'/><line x1='223' y1='90' x2='236' y2='90' stroke='#22c55e' stroke-width='1.5'/><rect x='237' y='55' width='130' height='70' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='2'/><text x='302' y='75' text-anchor='middle' fill='#22c55e' font-size='9' font-family='monospace' font-weight='bold'>FortiGate CNF</text><text x='302' y='89' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>Gere par Fortinet</text><text x='302' y='103' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='monospace'>FWaaS</text><text x='302' y='116' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='monospace'>Policies CNF Portal</text><polygon points='368,90 380,86 380,94' fill='#3b82f6'/><line x1='367' y1='90' x2='380' y2='90' stroke='#3b82f6' stroke-width='1.5'/><rect x='381' y='65' width='145' height='50' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='453' y='83' text-anchor='middle' fill='#3b82f6' font-size='9' font-family='monospace'>Portail CNF Fortinet</text><text x='453' y='97' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>ou FortiManager Cloud</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Que signifie CNF dans FortiGate CNF ?",
+      "choices": [
+        "Cloud Network Firewall",
+        "Cloud-Native Firewall",
+        "Central Network Function",
+        "Cloud Node Filtering"
+      ],
+      "answer": 1,
+      "explain": "CNF signifie Cloud-Native Firewall. FortiGate CNF est la solution FWaaS (Firewall-as-a-Service) de Fortinet pour les clouds publics."
+    },
+    {
+      "q": "Quel mécanisme AWS FortiGate CNF utilise-t-il pour intercepter le trafic de façon transparente ?",
+      "choices": [
+        "AWS NAT Gateway",
+        "AWS Transit Gateway",
+        "AWS GWLB (Gateway Load Balancer)",
+        "AWS Network Firewall"
+      ],
+      "answer": 2,
+      "explain": "FortiGate CNF sur AWS utilise l'AWS GWLB (Gateway Load Balancer) pour rediriger le trafic vers FortiGate CNF via des endpoints GWLB dans chaque VPC."
+    },
+    {
+      "q": "Quel est l'avantage principal de FortiGate CNF sur FortiGate VM ?",
+      "choices": [
+        "FortiGate CNF supporte plus de protocoles réseau",
+        "Pas de gestion des VMs (patching, HA, scaling) — géré par Fortinet",
+        "FortiGate CNF est moins cher que FortiGate VM",
+        "FortiGate CNF supporte plus de fonctionnalités FortiOS"
+      ],
+      "answer": 1,
+      "explain": "L'avantage principal de FortiGate CNF est que Fortinet gère l'intégralité de l'infrastructure (patching, HA, scaling), sans que le client ait à déployer ou maintenir des VMs."
+    },
+    {
+      "q": "Via quel outil peut-on gérer les politiques de plusieurs instances FortiGate CNF de façon centralisée ?",
+      "choices": [
+        "FortiClient Cloud",
+        "FortiAnalyzer Cloud",
+        "FortiManager Cloud",
+        "FortiPortal"
+      ],
+      "answer": 2,
+      "explain": "FortiManager Cloud est la console centralisée qui permet de gérer les politiques de plusieurs instances FortiGate CNF."
+    },
+    {
+      "q": "Qu'est-ce qu'un GWLBE (Gateway Load Balancer Endpoint) dans l'architecture CNF AWS ?",
+      "choices": [
+        "Un équipement physique dans le datacenter AWS",
+        "Un endpoint déployé dans chaque VPC pour rediriger le trafic vers FortiGate CNF",
+        "Une interface de gestion FortiGate",
+        "Un certificat SSL pour le chiffrement du trafic CNF"
+      ],
+      "answer": 1,
+      "explain": "Un GWLBE est un endpoint GWLB déployé dans chaque VPC à protéger. Il redirige le trafic de façon transparente vers FortiGate CNF via l'AWS GWLB."
+    },
+    {
+      "q": "Comment les mises à jour FortiOS sont-elles gérées sur FortiGate CNF ?",
+      "choices": [
+        "Le client doit appliquer manuellement les patches",
+        "Les patches FortiOS sont appliqués automatiquement et de façon transparente par Fortinet",
+        "Les mises à jour ne sont pas disponibles pour FortiGate CNF",
+        "Les mises à jour nécessitent une interruption de service planifiée"
+      ],
+      "answer": 1,
+      "explain": "Sur FortiGate CNF, les mises à jour FortiOS sont gérées automatiquement par Fortinet. Les patches FortiOS sont appliqués de façon transparente sans intervention du client."
+    },
+    {
+      "q": "Sur quels clouds FortiGate CNF est-il disponible ?",
+      "choices": [
+        "Uniquement AWS",
+        "Uniquement Azure",
+        "AWS et Azure",
+        "AWS, Azure et GCP"
+      ],
+      "answer": 2,
+      "explain": "FortiGate CNF est disponible sur AWS (via AWS GWLB) et Azure (via Azure Gateway Load Balancer)."
+    },
+    {
+      "q": "Quel est le modèle de consommation de FortiGate CNF ?",
+      "choices": [
+        "BYOL uniquement",
+        "Licence annuelle fixe",
+        "Pay-per-use (consommation à la demande)",
+        "Abonnement mensuel forfaitaire"
+      ],
+      "answer": 2,
+      "explain": "FortiGate CNF utilise un modèle de consommation pay-per-use, c'est-à-dire facturation à la demande selon l'utilisation réelle."
+    },
+    {
+      "q": "Quel cas d'usage est particulièrement adapté à FortiGate CNF ?",
+      "choices": [
+        "Les déploiements nécessitant toutes les fonctionnalités FortiOS avancées",
+        "L'inspection du trafic inter-VPC sans déploiement de VMs FortiGate",
+        "Les environnements on-premises uniquement",
+        "Les connexions VPN site-à-site entre deux datacenters physiques"
+      ],
+      "answer": 1,
+      "explain": "FortiGate CNF est particulièrement adapté à l'inspection du trafic inter-VPC (east-west) et à la protection des workloads cloud sans nécessiter de déploiement de VMs FortiGate."
+    },
+    {
+      "q": "Quelle limitation existe pour FortiGate CNF par rapport à FortiGate VM ?",
+      "choices": [
+        "FortiGate CNF ne peut pas inspecter le trafic HTTPS",
+        "Certaines fonctionnalités FortiOS avancées ne sont pas disponibles dans CNF",
+        "FortiGate CNF ne supporte pas les politiques firewall",
+        "FortiGate CNF ne peut fonctionner que dans un seul VPC"
+      ],
+      "answer": 1,
+      "explain": "FortiGate CNF offre moins de flexibilité que FortiGate VM — certaines fonctionnalités FortiOS avancées ne sont pas disponibles dans la solution CNF managée."
+    },
+    {
+      "q": "Via quelle interface les politiques CNF peuvent-elles être configurées ?",
+      "choices": [
+        "Via la CLI FortiGate uniquement",
+        "Via le portail CNF de Fortinet ou FortiManager Cloud",
+        "Via l'interface AWS Console directement",
+        "Via SSH sur le FortiGate CNF"
+      ],
+      "answer": 1,
+      "explain": "Les politiques CNF sont gérées via le portail CNF de Fortinet (interface web dédiée) ou via FortiManager Cloud pour une gestion centralisée multi-instances."
+    },
+    {
+      "q": "Que signifie FWaaS dans le contexte de FortiGate CNF ?",
+      "choices": [
+        "FortiWall as a Security",
+        "Firewall as a Service",
+        "FortiWAN as a Solution",
+        "Filtered Web as a Service"
+      ],
+      "answer": 1,
+      "explain": "FWaaS signifie Firewall as a Service. FortiGate CNF est la solution FWaaS de Fortinet, où Fortinet gère l'infrastructure firewall en tant que service cloud."
+    },
+    {
+      "q": "Comment la scalabilité est-elle gérée dans FortiGate CNF ?",
+      "choices": [
+        "Le client doit ajouter manuellement des instances VM",
+        "La scalabilité est automatique sans intervention de l'administrateur",
+        "La scalabilité est limitée à 2 instances maximum",
+        "Le client configure des groupes d'auto-scaling AWS"
+      ],
+      "answer": 1,
+      "explain": "Dans FortiGate CNF, la scalabilité est automatique sans intervention de l'administrateur. Fortinet gère l'ensemble de la montée en charge."
+    },
+    {
+      "q": "Quel élément doit-on modifier dans chaque VPC pour rediriger le trafic vers les GWLBE ?",
+      "choices": [
+        "Les security groups AWS",
+        "Les ACL réseau",
+        "Les route tables du VPC",
+        "Les paramètres DHCP"
+      ],
+      "answer": 2,
+      "explain": "Pour intégrer FortiGate CNF, on modifie les route tables du VPC pour diriger le trafic vers les GWLBE (Gateway Load Balancer Endpoints)."
+    },
+    {
+      "q": "Dans l'architecture CNF, qui gère la haute disponibilité de FortiGate CNF ?",
+      "choices": [
+        "Le client en configurant FGCP",
+        "AWS nativement via Route 53",
+        "Fortinet automatiquement",
+        "Le client en configurant des groupes d'auto-scaling"
+      ],
+      "answer": 2,
+      "explain": "Dans FortiGate CNF, la haute disponibilité est gérée automatiquement par Fortinet. Le client n'a pas à configurer FGCP ni des groupes d'auto-scaling."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quel mécanisme AWS FortiGate CNF utilise-t-il pour intercepter le trafic de façon transparente ?",
+      "choices": [
+        "AWS NAT Gateway",
+        "AWS Transit Gateway",
+        "AWS GWLB (Gateway Load Balancer)",
+        "AWS Network Firewall"
+      ],
+      "answer": 2,
+      "explain": "FortiGate CNF sur AWS utilise l'AWS GWLB (Gateway Load Balancer) pour rediriger le trafic vers FortiGate CNF via des endpoints GWLB dans chaque VPC."
+    },
+    {
+      "q": "Quel est l'avantage principal de FortiGate CNF sur FortiGate VM ?",
+      "choices": [
+        "FortiGate CNF supporte plus de protocoles réseau",
+        "Pas de gestion des VMs (patching, HA, scaling) — géré par Fortinet",
+        "FortiGate CNF est moins cher que FortiGate VM",
+        "FortiGate CNF supporte plus de fonctionnalités FortiOS"
+      ],
+      "answer": 1,
+      "explain": "L'avantage principal de FortiGate CNF est que Fortinet gère l'intégralité de l'infrastructure (patching, HA, scaling), sans que le client ait à déployer ou maintenir des VMs."
+    },
+    {
+      "q": "Via quel outil peut-on gérer les politiques de plusieurs instances FortiGate CNF de façon centralisée ?",
+      "choices": [
+        "FortiClient Cloud",
+        "FortiAnalyzer Cloud",
+        "FortiManager Cloud",
+        "FortiPortal"
+      ],
+      "answer": 2,
+      "explain": "FortiManager Cloud est la console centralisée qui permet de gérer les politiques de plusieurs instances FortiGate CNF."
+    },
+    {
+      "q": "Comment les mises à jour FortiOS sont-elles gérées sur FortiGate CNF ?",
+      "choices": [
+        "Le client doit appliquer manuellement les patches",
+        "Les patches FortiOS sont appliqués automatiquement et de façon transparente par Fortinet",
+        "Les mises à jour ne sont pas disponibles pour FortiGate CNF",
+        "Les mises à jour nécessitent une interruption de service planifiée"
+      ],
+      "answer": 1,
+      "explain": "Sur FortiGate CNF, les mises à jour FortiOS sont gérées automatiquement par Fortinet. Les patches FortiOS sont appliqués de façon transparente sans intervention du client."
+    },
+    {
+      "q": "Quelle limitation existe pour FortiGate CNF par rapport à FortiGate VM ?",
+      "choices": [
+        "FortiGate CNF ne peut pas inspecter le trafic HTTPS",
+        "Moins de flexibilité — certaines fonctionnalités FortiOS avancées ne sont pas disponibles",
+        "FortiGate CNF ne supporte pas les politiques firewall",
+        "FortiGate CNF ne peut fonctionner que dans un seul VPC"
+      ],
+      "answer": 1,
+      "explain": "FortiGate CNF offre moins de flexibilité que FortiGate VM — certaines fonctionnalités FortiOS avancées ne sont pas disponibles dans la solution CNF managée."
+    }
+  ]
+}

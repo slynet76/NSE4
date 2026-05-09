@@ -1,0 +1,138 @@
+{
+  "id": "ch09-l2",
+  "module": "Web Filtering",
+  "title": "Modes d'inspection flow vs proxy (web filter)",
+  "durationMin": 7,
+  "content": "## Web filtering flow-based\n\nEn mode **flow-based**, FortiGate évalue l'URL et la catégorie FortiGuard pendant le flux en temps réel, sans bufferiser la requête HTTP. Le traitement est rapide et la latence est faible.\n\nAvantages du web filtering flow-based :\n- Traitement rapide, faible latence\n- Compatible avec le mode **NGFW** (policy-based)\n- Consomme moins de ressources RAM\n\nLimites du web filtering flow-based :\n- Pas de **Safe Search** enforcement (filtrage des résultats explicites dans Google, Bing, YouTube)\n- Pas de page de blocage personnalisée avancée\n- Fonctionnalités limitées par rapport au proxy-based\n\n## Web filtering proxy-based\n\nEn mode **proxy-based**, FortiGate bufferise la requête HTTP complète avant d'évaluer — plus de latence mais davantage de fonctionnalités disponibles.\n\n### Safe Search\n\n**Safe Search** force les moteurs de recherche (Google, Bing, YouTube) à filtrer les contenus explicites des résultats. Cette fonction est **disponible uniquement en proxy-based**. Elle s'applique automatiquement en modifiant les paramètres de requête vers les moteurs de recherche.\n\n### Page de blocage personnalisée\n\nEn proxy-based, FortiGate peut afficher une page de blocage riche avec message personnalisé, logo et bouton de demande d'accès. La manipulation des headers HTTP est également possible.\n\n### Profils YouTube Education\n\nLes profils **YouTube Education** permettent de restreindre YouTube aux contenus éducatifs approuvés — **disponible uniquement en proxy-based**. L'accès aux contenus de divertissement est bloque, seules les chaines educatives sont autorisees.\n\n### Override de categorie\n\nUn utilisateur peut demander un accès temporaire à une catégorie bloquée via une **authentification**. L'administrateur peut configurer la durée de cet override. Cette fonctionnalité est disponible en proxy-based.\n\n## Ordre d'évaluation en proxy-based\n\nL'ordre d'inspection des règles en mode proxy-based est le suivant :\n\n1. **URL filter statique** — vérification de la liste d'URLs configurées manuellement\n2. **FortiGuard category** — classification dynamique de l'URL par FortiGuard\n3. **Rating override** — écrasement manuel de catégorie configuré par l'administrateur\n\n> Le profil web filter est attaché à la politique firewall sous Security Profiles, comme le profil AV.\n\n## Tableau comparatif\n\n| Fonctionnalité | Flow-based | Proxy-based |\n|---|---|---|\n| Safe Search | Non | Oui |\n| Page de blocage avancée | Limitée | Complète |\n| YouTube Education | Non | Oui |\n| Override de catégorie | Non | Oui |\n| Compatibilité NGFW | Oui | Non |\n| Latence | Faible | Élevée |",
+  "diagrams": [
+    {
+      "caption": "Comparaison des fonctionnalites flow-based vs proxy-based pour le web filtering",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='10' y='8' width='520' height='22' rx='3' fill='#1e293b'/><text x='200' y='23' fill='#94a3b8' font-size='11' font-family='monospace' font-weight='bold'>Fonctionnalite</text><text x='350' y='23' text-anchor='middle' fill='#3b82f6' font-size='11' font-family='monospace' font-weight='bold'>Flow-based</text><text x='470' y='23' text-anchor='middle' fill='#f59e0b' font-size='11' font-family='monospace' font-weight='bold'>Proxy-based</text><rect x='10' y='32' width='520' height='20' rx='2' fill='#0f172a'/><text x='15' y='46' fill='#e2e8f0' font-size='10' font-family='monospace'>Safe Search (Google, Bing, YouTube)</text><text x='350' y='46' text-anchor='middle' fill='#ef4444' font-size='11' font-family='monospace'>Non</text><text x='470' y='46' text-anchor='middle' fill='#22c55e' font-size='11' font-family='monospace'>Oui</text><rect x='10' y='54' width='520' height='20' rx='2' fill='#1e293b'/><text x='15' y='68' fill='#e2e8f0' font-size='10' font-family='monospace'>Page de blocage avancee</text><text x='350' y='68' text-anchor='middle' fill='#f59e0b' font-size='11' font-family='monospace'>Limitee</text><text x='470' y='68' text-anchor='middle' fill='#22c55e' font-size='11' font-family='monospace'>Complete</text><rect x='10' y='76' width='520' height='20' rx='2' fill='#0f172a'/><text x='15' y='90' fill='#e2e8f0' font-size='10' font-family='monospace'>YouTube Education</text><text x='350' y='90' text-anchor='middle' fill='#ef4444' font-size='11' font-family='monospace'>Non</text><text x='470' y='90' text-anchor='middle' fill='#22c55e' font-size='11' font-family='monospace'>Oui</text><rect x='10' y='98' width='520' height='20' rx='2' fill='#1e293b'/><text x='15' y='112' fill='#e2e8f0' font-size='10' font-family='monospace'>Override de categorie (avec auth)</text><text x='350' y='112' text-anchor='middle' fill='#ef4444' font-size='11' font-family='monospace'>Non</text><text x='470' y='112' text-anchor='middle' fill='#22c55e' font-size='11' font-family='monospace'>Oui</text><rect x='10' y='120' width='520' height='20' rx='2' fill='#0f172a'/><text x='15' y='134' fill='#e2e8f0' font-size='10' font-family='monospace'>Compatibilite NGFW (policy-based)</text><text x='350' y='134' text-anchor='middle' fill='#22c55e' font-size='11' font-family='monospace'>Oui</text><text x='470' y='134' text-anchor='middle' fill='#ef4444' font-size='11' font-family='monospace'>Non</text><rect x='10' y='142' width='520' height='20' rx='2' fill='#1e293b'/><text x='15' y='156' fill='#e2e8f0' font-size='10' font-family='monospace'>Latence</text><text x='350' y='156' text-anchor='middle' fill='#22c55e' font-size='11' font-family='monospace'>Faible</text><text x='470' y='156' text-anchor='middle' fill='#ef4444' font-size='11' font-family='monospace'>Elevee</text><line x1='320' y1='8' x2='320' y2='172' stroke='#334155' stroke-width='1'/><line x1='410' y1='8' x2='410' y2='172' stroke='#334155' stroke-width='1'/></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quelle fonctionnalite de web filtering est disponible uniquement en mode proxy-based ?",
+      "choices": ["Categorisation FortiGuard", "Safe Search enforcement", "Compatibilite NGFW", "Faible latence"],
+      "answer": 1,
+      "explain": "Safe Search (enforcement des filtres Google, Bing, YouTube) est disponible uniquement en mode proxy-based. Le mode flow-based ne supporte pas Safe Search."
+    },
+    {
+      "q": "Quel mode de web filtering est compatible avec le mode NGFW (policy-based) de FortiGate ?",
+      "choices": ["Proxy-based uniquement", "Les deux modes", "Flow-based uniquement", "Aucun des deux"],
+      "answer": 2,
+      "explain": "Le mode flow-based est compatible avec le mode NGFW (policy-based). Le mode proxy-based n'est pas compatible avec le mode NGFW."
+    },
+    {
+      "q": "Que permet la fonction Safe Search dans le web filtering proxy-based FortiGate ?",
+      "choices": ["Bloquer tous les moteurs de recherche", "Forcer Google, Bing et YouTube a filtrer les contenus explicites", "Scanner les resultats de recherche avec l'AV", "Enregistrer les recherches des utilisateurs"],
+      "answer": 1,
+      "explain": "Safe Search force les moteurs de recherche Google, Bing et YouTube a filtrer les contenus explicites des resultats. Cette fonction est disponible uniquement en proxy-based."
+    },
+    {
+      "q": "Quel est l'ordre d'evaluation en proxy-based web filtering (du plus prioritaire au moins prioritaire) ?",
+      "choices": ["FortiGuard category → URL filter → Rating override", "Rating override → URL filter → FortiGuard category", "URL filter → FortiGuard category → Rating override", "URL filter → Rating override → FortiGuard category"],
+      "answer": 2,
+      "explain": "L'ordre d'inspection en proxy-based est : 1. URL filter statique (plus haute priorite), 2. FortiGuard category, 3. Rating override."
+    },
+    {
+      "q": "Les profils YouTube Education en web filtering FortiGate sont disponibles dans quel mode ?",
+      "choices": ["Flow-based uniquement", "Proxy-based uniquement", "Les deux modes", "NGFW uniquement"],
+      "answer": 1,
+      "explain": "Les profils YouTube Education pour restreindre YouTube aux contenus educatifs approuves sont disponibles uniquement en mode proxy-based."
+    },
+    {
+      "q": "Qu'est-ce que l'override de categorie en web filtering proxy-based ?",
+      "choices": ["Un blocage permanent d'une categorie", "Un acces temporaire a une categorie bloquee apres authentification", "Une modification de la base FortiGuard", "Un bypass complet du web filtering"],
+      "answer": 1,
+      "explain": "L'override de categorie permet a un utilisateur de demander un acces temporaire a une categorie bloquee via authentification. L'administrateur configure la duree de cet override."
+    },
+    {
+      "q": "Pourquoi le mode flow-based web filtering a-t-il une latence plus faible que le proxy-based ?",
+      "choices": ["Il utilise moins de regles", "Il n'evalue pas FortiGuard", "Il evalue l'URL en temps reel sans bufferiser la requete HTTP complete", "Il n'affiche pas de page de blocage"],
+      "answer": 2,
+      "explain": "Le mode flow-based evalue l'URL et la categorie FortiGuard en temps reel pendant le flux sans bufferiser la requete HTTP complete, ce qui reduit la latence."
+    },
+    {
+      "q": "Ou est attache le profil web filter pour etre actif sur un flux de trafic ?",
+      "choices": ["Dans les parametres FortiGuard", "Dans une politique firewall sous Security Profiles", "Dans la configuration DNS", "Dans les parametres systeme"],
+      "answer": 1,
+      "explain": "Le profil web filter est attache a une politique firewall sous Security Profiles, de la meme maniere que les profils AV et IPS."
+    },
+    {
+      "q": "Quelle limitation du mode flow-based concerne la personnalisation de la page de blocage ?",
+      "choices": ["La page de blocage n'est pas supportee du tout", "La page de blocage est limitee en mode flow-based", "La page de blocage necessite FortiAnalyzer", "La page de blocage n'est disponible qu'en NGFW"],
+      "answer": 1,
+      "explain": "En mode flow-based, la page de blocage est limitee. Le mode proxy-based offre une page de blocage complete avec message personnalise, logo et bouton de demande d'acces."
+    },
+    {
+      "q": "Safe Search en proxy-based affecte quels moteurs de recherche ?",
+      "choices": ["Google uniquement", "Google, Bing et Yahoo", "Google, Bing et YouTube", "Tous les moteurs de recherche"],
+      "answer": 2,
+      "explain": "En proxy-based, Safe Search force Google, Bing et YouTube a filtrer les contenus explicites des resultats de recherche."
+    },
+    {
+      "q": "Quelle est la principale raison de choisir le mode proxy-based pour le web filtering ?",
+      "choices": ["Meilleures performances et faible latence", "Acces a des fonctionnalites avancees comme Safe Search, YouTube Education et Override", "Compatibilite avec le mode NGFW", "Moins de consommation RAM"],
+      "answer": 1,
+      "explain": "Le mode proxy-based est choisi pour ses fonctionnalites avancees : Safe Search, profils YouTube Education, override de categorie avec authentification, et page de blocage personnalisee riche."
+    },
+    {
+      "q": "Quel element est evalue en troisieme position dans l'ordre d'inspection proxy-based web filtering ?",
+      "choices": ["URL filter statique", "FortiGuard category", "Rating override", "Safe Search"],
+      "answer": 2,
+      "explain": "Dans l'ordre d'evaluation proxy-based, le Rating override (ecrasement manuel de categorie) est evalue en troisieme position, apres le URL filter et les categories FortiGuard."
+    },
+    {
+      "q": "Les profils YouTube Education en proxy-based permettent quoi specifiquement ?",
+      "choices": ["Bloquer totalement YouTube", "Restreindre YouTube aux contenus educatifs approuves", "Enregistrer les videos regardees", "Limiter la bande passante YouTube"],
+      "answer": 1,
+      "explain": "Les profils YouTube Education en proxy-based permettent de restreindre YouTube aux contenus educatifs approuves, bloquant les contenus de divertissement tout en autorisant les chaines educatives."
+    },
+    {
+      "q": "Comment FortiGate implemente Safe Search en proxy-based ?",
+      "choices": ["En bloquant les images dans les resultats", "En modifiant les parametres de requete vers les moteurs de recherche", "En analysant le contenu des pages de resultats", "En redirigeant vers une page de recherche securisee"],
+      "answer": 1,
+      "explain": "FortiGate implemente Safe Search en modifiant automatiquement les parametres de requete HTTP vers les moteurs de recherche (ajout des parametres safe=active pour Google, etc.)."
+    },
+    {
+      "q": "Quelle est la principale difference de latence entre flow-based et proxy-based web filtering ?",
+      "choices": ["Aucune difference significative", "Flow-based a une faible latence, proxy-based a une latence elevee due au buffering", "Proxy-based est plus rapide car il utilise le cache", "Flow-based est plus lent car il analyse plus de donnees"],
+      "answer": 1,
+      "explain": "Le mode flow-based a une faible latence car il evalue l'URL en temps reel. Le mode proxy-based a une latence elevee car il bufferise la requete HTTP complete avant d'evaluer."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quelle fonctionnalite de web filtering est disponible uniquement en mode proxy-based ?",
+      "choices": ["Categorisation FortiGuard", "Safe Search enforcement", "Compatibilite NGFW", "Faible latence"],
+      "answer": 1,
+      "explain": "Safe Search (enforcement des filtres Google, Bing, YouTube) est disponible uniquement en mode proxy-based. Le mode flow-based ne supporte pas Safe Search."
+    },
+    {
+      "q": "Quel mode de web filtering est compatible avec le mode NGFW (policy-based) de FortiGate ?",
+      "choices": ["Proxy-based uniquement", "Les deux modes", "Flow-based uniquement", "Aucun des deux"],
+      "answer": 2,
+      "explain": "Le mode flow-based est compatible avec le mode NGFW (policy-based). Le mode proxy-based n'est pas compatible avec le mode NGFW."
+    },
+    {
+      "q": "Quel est l'ordre d'evaluation en proxy-based web filtering (du plus prioritaire au moins prioritaire) ?",
+      "choices": ["FortiGuard category → URL filter → Rating override", "Rating override → URL filter → FortiGuard category", "URL filter → FortiGuard category → Rating override", "URL filter → Rating override → FortiGuard category"],
+      "answer": 2,
+      "explain": "L'ordre d'inspection en proxy-based est : 1. URL filter statique (plus haute priorite), 2. FortiGuard category, 3. Rating override."
+    },
+    {
+      "q": "Que permet la fonction Safe Search dans le web filtering proxy-based FortiGate ?",
+      "choices": ["Bloquer tous les moteurs de recherche", "Forcer Google, Bing et YouTube a filtrer les contenus explicites", "Scanner les resultats de recherche avec l'AV", "Enregistrer les recherches des utilisateurs"],
+      "answer": 1,
+      "explain": "Safe Search force les moteurs de recherche Google, Bing et YouTube a filtrer les contenus explicites des resultats. Cette fonction est disponible uniquement en proxy-based."
+    },
+    {
+      "q": "Les profils YouTube Education en web filtering FortiGate sont disponibles dans quel mode ?",
+      "choices": ["Flow-based uniquement", "Proxy-based uniquement", "Les deux modes", "NGFW uniquement"],
+      "answer": 1,
+      "explain": "Les profils YouTube Education pour restreindre YouTube aux contenus educatifs approuves sont disponibles uniquement en mode proxy-based."
+    }
+  ]
+}

@@ -1,0 +1,238 @@
+{
+  "id": "ch15-l2",
+  "module": "FortiGate in the Cloud",
+  "title": "FortiGate VM dans le cloud",
+  "durationMin": 7,
+  "content": "## Qu'est-ce que FortiGate VM ?\n\n**FortiGate VM** est le même logiciel FortiOS qu'une appliance physique, packagé comme image de machine virtuelle pour être déployé dans les clouds publics. Toutes les fonctionnalités FortiOS sont disponibles : firewall, IPS, AV, Application Control, Web Filter, VPN.\n\n## Clouds supportés\n\nFortiGate VM est disponible sur les principaux clouds publics :\n\n| Cloud | Format |\n|---|---|\n| **AWS** | AMI (Amazon Machine Image) |\n| **Azure** | Image via Azure Marketplace |\n| **GCP** (Google Cloud Platform) | Image via GCP Marketplace |\n| **OCI** (Oracle Cloud Infrastructure) | Image via OCI Marketplace |\n\n## Modèles de licence FortiGate VM\n\nDeux modèles de licence sont disponibles pour FortiGate VM :\n\n**BYOL** (Bring Your Own License) :\n- Licence Fortinet achetée séparément auprès de Fortinet\n- Importée dans la VM lors du déploiement\n- Flexible et portable entre les différents clouds\n- Adapté aux organisations ayant déjà un contrat Fortinet\n\n**PAYG** (Pay-As-You-Go) :\n- Facturation à l'usage via le marketplace cloud (AWS Marketplace, Azure Marketplace)\n- Pas de licence Fortinet séparée à acheter\n- Facturation à l'heure d'utilisation de la VM\n- Adapté aux déploiements temporaires ou aux tests\n\n## Architecture typique FortiGate VM\n\nDans une architecture typique, FortiGate VM est placé entre l'internet gateway du VPC et les workloads, assurant l'**inspection du trafic North-South** :\n\n- **Interface WAN** : connectée vers l'internet gateway du VPC\n- **Interface LAN** : connectée vers les workloads (instances EC2, VMs)\n- **Interface MGMT** (optionnelle) : dédiée au management FortiGate\n\n## Haute disponibilité en cloud\n\nFortinet propose deux approches pour la HA de FortiGate VM :\n- **FGCP** (FortiGate Clustering Protocol) : protocole propriétaire Fortinet, similaire au HA physique\n- **Auto-scaling** : groupes d'auto-scaling selon les mécanismes natifs du cloud provider (AWS Auto Scaling Groups, Azure Scale Sets)\n\n## Services FortiGuard en VM\n\nLes services FortiGuard (mises à jour AV, IPS, Web Filter, App Control) fonctionnent **identiquement** en VM et en appliance physique. FortiGate VM contacte les serveurs FortiGuard via internet pour télécharger les mises à jour de signatures.",
+  "diagrams": [
+    {
+      "caption": "Architecture FortiGate VM dans un VPC AWS",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='8' y='70' width='70' height='40' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='43' y='87' text-anchor='middle' fill='#3b82f6' font-size='9' font-family='monospace'>Internet</text><text x='43' y='101' text-anchor='middle' fill='#94a3b8' font-size='8' font-family='monospace'>North</text><polygon points='79,90 91,86 91,94' fill='#3b82f6'/><line x1='78' y1='90' x2='91' y2='90' stroke='#3b82f6' stroke-width='1.5'/><rect x='92' y='65' width='75' height='50' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='1.5'/><text x='129' y='82' text-anchor='middle' fill='#22c55e' font-size='8' font-family='monospace'>Internet</text><text x='129' y='95' text-anchor='middle' fill='#22c55e' font-size='8' font-family='monospace'>Gateway</text><text x='129' y='108' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='monospace'>VPC IGW</text><polygon points='168,90 180,86 180,94' fill='#3b82f6'/><line x1='167' y1='90' x2='180' y2='90' stroke='#3b82f6' stroke-width='1.5'/><rect x='181' y='55' width='110' height='70' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='2'/><text x='236' y='73' text-anchor='middle' fill='#22c55e' font-size='9' font-family='monospace' font-weight='bold'>FortiGate VM</text><text x='236' y='87' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>WAN — LAN — MGMT</text><text x='236' y='100' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='monospace'>AMI AWS</text><text x='236' y='113' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='monospace'>BYOL ou PAYG</text><polygon points='292,90 304,86 304,94' fill='#3b82f6'/><line x1='291' y1='90' x2='304' y2='90' stroke='#3b82f6' stroke-width='1.5'/><rect x='305' y='60' width='90' height='60' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='350' y='78' text-anchor='middle' fill='#3b82f6' font-size='9' font-family='monospace'>Private</text><text x='350' y='91' text-anchor='middle' fill='#3b82f6' font-size='9' font-family='monospace'>Subnet</text><text x='350' y='107' text-anchor='middle' fill='#94a3b8' font-size='8' font-family='monospace'>LAN interface</text><polygon points='396,90 408,86 408,94' fill='#3b82f6'/><line x1='395' y1='90' x2='408' y2='90' stroke='#3b82f6' stroke-width='1.5'/><rect x='409' y='65' width='120' height='50' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='469' y='83' text-anchor='middle' fill='#3b82f6' font-size='9' font-family='monospace'>Workloads</text><text x='469' y='97' text-anchor='middle' fill='#94a3b8' font-size='8' font-family='monospace'>EC2, VMs</text><text x='270' y='155' text-anchor='middle' fill='#94a3b8' font-size='8' font-family='monospace'>Inspection North-South — FortiGuard AV/IPS/WebFilter identique appliance physique</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Qu'est-ce que FortiGate VM par rapport à une appliance physique FortiGate ?",
+      "choices": [
+        "Un produit complètement différent avec un logiciel distinct",
+        "Le même logiciel FortiOS packagé comme image de machine virtuelle",
+        "Une version réduite de FortiOS sans les fonctionnalités avancées",
+        "Un conteneur Docker FortiOS"
+      ],
+      "answer": 1,
+      "explain": "FortiGate VM est le même logiciel FortiOS qu'une appliance physique, packagé comme image de machine virtuelle pour les clouds publics."
+    },
+    {
+      "q": "Quel est le format de FortiGate VM sur AWS ?",
+      "choices": [
+        "OVA (Open Virtual Appliance)",
+        "AMI (Amazon Machine Image)",
+        "VHD (Virtual Hard Disk)",
+        "VMDK (VMware Disk)"
+      ],
+      "answer": 1,
+      "explain": "Sur AWS, FortiGate VM se déploie via une AMI (Amazon Machine Image) disponible sur l'AWS Marketplace."
+    },
+    {
+      "q": "Quelle est la caractéristique du modèle BYOL pour FortiGate VM ?",
+      "choices": [
+        "Facturation à l'heure via le marketplace cloud",
+        "Licence Fortinet achetée séparément et importée dans la VM",
+        "Licence gratuite pour les tests",
+        "Facturation mensuelle automatique"
+      ],
+      "answer": 1,
+      "explain": "BYOL (Bring Your Own License) signifie que la licence Fortinet est achetée séparément auprès de Fortinet et importée dans la VM lors du déploiement. Elle est flexible et portable entre clouds."
+    },
+    {
+      "q": "Quelle est la caractéristique du modèle PAYG pour FortiGate VM ?",
+      "choices": [
+        "Licence Fortinet achetée une seule fois pour toujours",
+        "Facturation à l'usage via le marketplace cloud, à l'heure d'utilisation",
+        "Licence transférable entre différents clouds",
+        "Pas de facturation, modèle open source"
+      ],
+      "answer": 1,
+      "explain": "PAYG (Pay-As-You-Go) se facture à l'usage via le marketplace cloud, à l'heure d'utilisation de la VM. Il n'y a pas de licence Fortinet séparée à acheter."
+    },
+    {
+      "q": "Dans une architecture FortiGate VM typique, quelle interface est connectée vers l'internet gateway du VPC ?",
+      "choices": [
+        "Interface LAN",
+        "Interface MGMT",
+        "Interface WAN",
+        "Interface DMZ"
+      ],
+      "answer": 2,
+      "explain": "Dans une architecture FortiGate VM typique, l'interface WAN est connectée vers l'internet gateway du VPC, et l'interface LAN vers les workloads."
+    },
+    {
+      "q": "Sur quel cloud FortiGate VM est disponible sous forme de GCP image ?",
+      "choices": [
+        "AWS",
+        "Azure",
+        "GCP (Google Cloud Platform)",
+        "IBM Cloud"
+      ],
+      "answer": 2,
+      "explain": "FortiGate VM est disponible sur GCP (Google Cloud Platform) via le GCP Marketplace sous forme d'image."
+    },
+    {
+      "q": "Comment fonctionnent les services FortiGuard (AV, IPS, Web Filter) sur FortiGate VM ?",
+      "choices": [
+        "Ils ne fonctionnent pas sur FortiGate VM",
+        "Ils fonctionnent de façon limitée par rapport à une appliance physique",
+        "Ils fonctionnent identiquement à une appliance physique",
+        "Ils nécessitent un abonnement spécial cloud"
+      ],
+      "answer": 2,
+      "explain": "Les services FortiGuard (AV, IPS, Web Filter, App Control) fonctionnent identiquement en VM et en appliance physique. FortiGate VM contacte les serveurs FortiGuard pour les mises à jour."
+    },
+    {
+      "q": "Quel protocole Fortinet est utilisé pour la haute disponibilité entre deux FortiGate VM ?",
+      "choices": [
+        "VRRP (Virtual Router Redundancy Protocol)",
+        "FGCP (FortiGate Clustering Protocol)",
+        "HSRP (Hot Standby Router Protocol)",
+        "STP (Spanning Tree Protocol)"
+      ],
+      "answer": 1,
+      "explain": "FGCP (FortiGate Clustering Protocol) est le protocole propriétaire Fortinet pour la haute disponibilité entre FortiGate VM, similaire au HA sur appliances physiques."
+    },
+    {
+      "q": "Quel modèle de licence FortiGate VM est le plus adapté aux déploiements temporaires ou aux tests ?",
+      "choices": [
+        "BYOL",
+        "PAYG",
+        "Les deux sont équivalents",
+        "Licence perpétuelle"
+      ],
+      "answer": 1,
+      "explain": "PAYG (Pay-As-You-Go) est le plus adapté aux déploiements temporaires ou aux tests car il est facturé à l'heure d'utilisation sans engagement ni achat de licence préalable."
+    },
+    {
+      "q": "Quel type de trafic FortiGate VM inspecte principalement dans son architecture typique ?",
+      "choices": [
+        "Le trafic east-west uniquement",
+        "Le trafic de management uniquement",
+        "Le trafic north-south entre internet et les workloads",
+        "Le trafic entre workloads du même subnet"
+      ],
+      "answer": 2,
+      "explain": "Dans son architecture typique, FortiGate VM est positionné pour inspecter le trafic north-south entre internet (via l'internet gateway) et les workloads du VPC."
+    },
+    {
+      "q": "Quel avantage le modèle BYOL offre-t-il par rapport au PAYG ?",
+      "choices": [
+        "Il est moins cher par heure d'utilisation",
+        "Il est flexible et portable entre différents clouds",
+        "Il ne nécessite pas de compte fournisseur cloud",
+        "Il inclut automatiquement tous les services FortiGuard"
+      ],
+      "answer": 1,
+      "explain": "Le modèle BYOL est flexible et portable entre les différents clouds. La licence Fortinet achetée peut être utilisée sur AWS, Azure, GCP selon les besoins."
+    },
+    {
+      "q": "Sur quel cloud FortiGate VM se déploie via l'OCI Marketplace ?",
+      "choices": [
+        "AWS",
+        "Azure",
+        "GCP",
+        "OCI (Oracle Cloud Infrastructure)"
+      ],
+      "answer": 3,
+      "explain": "FortiGate VM est disponible sur OCI (Oracle Cloud Infrastructure) via l'OCI Marketplace."
+    },
+    {
+      "q": "Quelle interface FortiGate VM est optionnelle et dédiée au management ?",
+      "choices": [
+        "Interface WAN",
+        "Interface LAN",
+        "Interface MGMT",
+        "Interface DMZ"
+      ],
+      "answer": 2,
+      "explain": "L'interface MGMT est optionnelle sur FortiGate VM et est dédiée au management de l'équipement, séparant le trafic de gestion du trafic de données."
+    },
+    {
+      "q": "Quelle alternative au FGCP peut être utilisée pour la HA de FortiGate VM dans le cloud ?",
+      "choices": [
+        "Les groupes d'auto-scaling selon les mécanismes natifs du cloud provider",
+        "Le VRRP avec des VIPs flottantes",
+        "La synchronisation de configuration uniquement",
+        "Le DNS round-robin"
+      ],
+      "answer": 0,
+      "explain": "En alternative au FGCP, des groupes d'auto-scaling selon les mécanismes natifs du cloud provider (AWS Auto Scaling Groups, Azure Scale Sets) peuvent être utilisés pour la HA de FortiGate VM."
+    },
+    {
+      "q": "Où FortiGate VM contacte-t-il les serveurs FortiGuard pour les mises à jour de signatures ?",
+      "choices": [
+        "Via un serveur FortiGuard local dans le VPC",
+        "Via internet depuis le VPC",
+        "Via le support Fortinet par ticket",
+        "Les mises à jour ne sont pas disponibles en VM"
+      ],
+      "answer": 1,
+      "explain": "FortiGate VM contacte les serveurs FortiGuard via internet depuis le VPC pour télécharger les mises à jour de signatures AV, IPS, Web Filter et App Control."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quel est le format de FortiGate VM sur AWS ?",
+      "choices": [
+        "OVA (Open Virtual Appliance)",
+        "AMI (Amazon Machine Image)",
+        "VHD (Virtual Hard Disk)",
+        "VMDK (VMware Disk)"
+      ],
+      "answer": 1,
+      "explain": "Sur AWS, FortiGate VM se déploie via une AMI (Amazon Machine Image) disponible sur l'AWS Marketplace."
+    },
+    {
+      "q": "Quelle est la caractéristique du modèle BYOL pour FortiGate VM ?",
+      "choices": [
+        "Facturation à l'heure via le marketplace cloud",
+        "Licence Fortinet achetée séparément et importée dans la VM",
+        "Licence gratuite pour les tests",
+        "Facturation mensuelle automatique"
+      ],
+      "answer": 1,
+      "explain": "BYOL (Bring Your Own License) signifie que la licence Fortinet est achetée séparément auprès de Fortinet et importée dans la VM lors du déploiement. Elle est flexible et portable entre clouds."
+    },
+    {
+      "q": "Quelle est la caractéristique du modèle PAYG pour FortiGate VM ?",
+      "choices": [
+        "Licence Fortinet achetée une seule fois pour toujours",
+        "Facturation à l'usage via le marketplace cloud, à l'heure d'utilisation",
+        "Licence transférable entre différents clouds",
+        "Pas de facturation, modèle open source"
+      ],
+      "answer": 1,
+      "explain": "PAYG (Pay-As-You-Go) se facture à l'usage via le marketplace cloud, à l'heure d'utilisation de la VM. Il n'y a pas de licence Fortinet séparée à acheter."
+    },
+    {
+      "q": "Comment fonctionnent les services FortiGuard (AV, IPS, Web Filter) sur FortiGate VM ?",
+      "choices": [
+        "Ils ne fonctionnent pas sur FortiGate VM",
+        "Ils fonctionnent de façon limitée par rapport à une appliance physique",
+        "Ils fonctionnent identiquement à une appliance physique",
+        "Ils nécessitent un abonnement spécial cloud"
+      ],
+      "answer": 2,
+      "explain": "Les services FortiGuard (AV, IPS, Web Filter, App Control) fonctionnent identiquement en VM et en appliance physique. FortiGate VM contacte les serveurs FortiGuard pour les mises à jour."
+    },
+    {
+      "q": "Dans une architecture FortiGate VM typique, quelle interface est connectée vers l'internet gateway du VPC ?",
+      "choices": [
+        "Interface LAN",
+        "Interface MGMT",
+        "Interface WAN",
+        "Interface DMZ"
+      ],
+      "answer": 2,
+      "explain": "Dans une architecture FortiGate VM typique, l'interface WAN est connectée vers l'internet gateway du VPC, et l'interface LAN vers les workloads."
+    }
+  ]
+}

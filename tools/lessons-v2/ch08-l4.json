@@ -1,0 +1,238 @@
+{
+  "id": "ch08-l4",
+  "module": "Antivirus",
+  "title": "Profils AV et options de protocole",
+  "durationMin": 7,
+  "content": "## Profil AV (Antivirus Profile)\n\nUn **profil AV** (Antivirus Profile) regroupe la configuration antivirus appliquée à un flux de trafic. Le profil AV est attaché à une politique firewall sous la section **Security Profiles**. Un profil AV définit les protocoles à scanner et les actions à appliquer.\n\nPour que l'AV soit actif sur un flux, il faut :\n1. Créer un profil AV\n2. Attacher ce profil à une politique firewall dans Security Profiles\n\n## Protocoles configurables par profil\n\nDans un profil AV, les protocoles suivants sont configurables individuellement : **HTTP**, **FTP**, **IMAP**, **POP3**, **SMTP**, **MAPI**, **CIFS**, **SSH**. Pour chaque protocole, une action distincte peut être définie.\n\n> Pour scanner le contenu HTTPS avec l'AV, la full SSL inspection doit être activée dans la politique firewall.\n\n## Actions sur détection virale\n\nLes actions disponibles par protocole dans un profil AV :\n\n| Action | Comportement |\n|---|---|\n| **Block** | Bloquer le fichier infecté et afficher une notification à l'utilisateur |\n| **Monitor** | Logger l'événement sans bloquer — surveillance uniquement |\n| **Pass** | Ne pas scanner ce protocole — aucune inspection AV |\n\n## Gestion des fichiers oversized\n\nQuand un fichier dépasse la taille limite configurée (oversized limit), FortiGate applique une action configurable séparément du scan normal :\n- **Pass** : laisser passer le fichier sans scanner\n- **Block** : bloquer le fichier oversized\n\nCette option évite que les très gros fichiers ne saturent les ressources du FortiGate.\n\n## Scan des archives ZIP et RAR\n\nLe profil AV permet de configurer le scan des archives **ZIP** et **RAR** :\n- **archive-block-level** : profondeur de décompression de 1 à 5 niveaux — définit combien de niveaux d'archives imbriquées sont analysés\n- **Archives chiffrées** : si une archive est chiffrée, FortiGate ne peut pas la décompresser ; il est possible de configurer le blocage automatique des archives chiffrées\n\n## Intégration FortiSandbox\n\nLe profil AV peut inclure l'intégration **FortiSandbox** pour envoyer les fichiers inconnus à FortiSandbox pour une analyse en sandbox. Le verdict (block ou allow) est renvoyé au FortiGate. Cette intégration permet de détecter les menaces zero-day inconnues de la base de signatures.\n\n## Exemptions AV\n\nIl est possible d'exempter certaines sources du scan AV :\n- Adresses IP spécifiques exemptées de l'inspection AV\n- URLs spécifiques exemptées du scan\n\n> Attention : exempter des URLs ou adresses IP du scan AV réduit la protection. N'exempter que des sources fiables et connues.",
+  "diagrams": [
+    {
+      "caption": "Structure d'un profil AV — politique → profil AV → protocoles et actions",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='10' y='10' width='110' height='40' rx='6' fill='#1e293b' stroke='#3b82f6' stroke-width='2'/><text x='65' y='28' text-anchor='middle' fill='#3b82f6' font-size='11' font-family='monospace' font-weight='bold'>Politique</text><text x='65' y='43' text-anchor='middle' fill='#e2e8f0' font-size='10' font-family='monospace'>Firewall Policy</text><polygon points='123,30 133,25 133,35' fill='#3b82f6'/><rect x='135' y='10' width='120' height='40' rx='6' fill='#1e293b' stroke='#22c55e' stroke-width='2'/><text x='195' y='28' text-anchor='middle' fill='#22c55e' font-size='11' font-family='monospace' font-weight='bold'>Profil AV</text><text x='195' y='43' text-anchor='middle' fill='#e2e8f0' font-size='10' font-family='monospace'>Security Profiles</text><polygon points='258,30 268,25 268,35' fill='#22c55e'/><rect x='270' y='5' width='260' height='170' rx='6' fill='#0f172a' stroke='#334155' stroke-width='1'/><text x='400' y='22' text-anchor='middle' fill='#94a3b8' font-size='10' font-family='monospace' font-weight='bold'>Options du profil AV</text><rect x='280' y='28' width='240' height='22' rx='3' fill='#1e293b'/><text x='290' y='43' fill='#e2e8f0' font-size='10' font-family='monospace'>Protocoles : HTTP FTP IMAP POP3 SMTP MAPI CIFS SSH</text><rect x='280' y='55' width='110' height='18' rx='3' fill='#14532d'/><text x='285' y='68' fill='#22c55e' font-size='10' font-family='monospace'>Block — bloquer</text><rect x='395' y='55' width='120' height='18' rx='3' fill='#1e293b'/><text x='400' y='68' fill='#f59e0b' font-size='10' font-family='monospace'>Monitor — logger</text><rect x='280' y='78' width='100' height='18' rx='3' fill='#1e293b'/><text x='285' y='91' fill='#94a3b8' font-size='10' font-family='monospace'>Pass — ignorer</text><line x1='280' y1='102' x2='520' y2='102' stroke='#334155' stroke-width='1'/><text x='285' y='116' fill='#e2e8f0' font-size='10' font-family='monospace'>Oversized : Pass ou Block</text><text x='285' y='132' fill='#e2e8f0' font-size='10' font-family='monospace'>Archives ZIP RAR : depth 1-5 niveaux</text><text x='285' y='148' fill='#e2e8f0' font-size='10' font-family='monospace'>FortiSandbox : fichiers inconnus</text><text x='285' y='164' fill='#e2e8f0' font-size='10' font-family='monospace'>Exemptions : IP ou URL</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Ou doit etre attache un profil AV pour etre actif sur un flux de trafic FortiGate ?",
+      "choices": [
+        "Dans les parametres systeme",
+        "Dans une politique firewall sous Security Profiles",
+        "Dans la configuration FortiGuard",
+        "Dans les parametres VPN"
+      ],
+      "answer": 1,
+      "explain": "Un profil AV doit etre attache a une politique firewall sous la section Security Profiles pour etre actif sur le flux de trafic correspondant."
+    },
+    {
+      "q": "Quelle action AV bloque le fichier infecte et affiche une notification a l'utilisateur ?",
+      "choices": [
+        "Monitor",
+        "Pass",
+        "Block",
+        "Quarantine"
+      ],
+      "answer": 2,
+      "explain": "L'action Block bloque le fichier infecte et affiche une notification a l'utilisateur. Monitor logue sans bloquer et Pass ignore le protocole sans inspection."
+    },
+    {
+      "q": "Quelle action AV logue l'evenement sans bloquer le fichier ?",
+      "choices": [
+        "Block",
+        "Pass",
+        "Monitor",
+        "Allow"
+      ],
+      "answer": 2,
+      "explain": "L'action Monitor logue l'evenement de detection virale sans bloquer le fichier. Elle est utilisee pour la surveillance sans impact sur le trafic."
+    },
+    {
+      "q": "Que signifie l'action Pass dans un profil AV par protocole ?",
+      "choices": [
+        "Bloquer le protocole",
+        "Ne pas scanner ce protocole, aucune inspection AV",
+        "Envoyer a FortiSandbox",
+        "Mettre en quarantaine"
+      ],
+      "answer": 1,
+      "explain": "L'action Pass signifie que le protocole ne sera pas inspecte par le moteur AV. Aucune analyse antivirus ne sera effectuee sur ce trafic."
+    },
+    {
+      "q": "Quel parametre definit le nombre de niveaux d'archives imbriquees a analyser dans un profil AV ?",
+      "choices": [
+        "oversized-limit",
+        "archive-block-level",
+        "scan-depth",
+        "zip-level"
+      ],
+      "answer": 1,
+      "explain": "Le parametre archive-block-level definit la profondeur de decompression de 1 a 5 niveaux, soit le nombre de niveaux d'archives ZIP ou RAR imbriquees que FortiGate analysera."
+    },
+    {
+      "q": "Que se passe-t-il quand un fichier depasse l'oversized limit dans un profil AV ?",
+      "choices": [
+        "Il est toujours bloque",
+        "Il est toujours envoye a FortiSandbox",
+        "L'action Pass ou Block est appliquee selon la configuration",
+        "Il est mis en quarantaine"
+      ],
+      "answer": 2,
+      "explain": "Quand un fichier depasse l'oversized limit, FortiGate applique l'action configuree separement : Pass (laisser passer sans scanner) ou Block (bloquer le fichier)."
+    },
+    {
+      "q": "Pourquoi FortiGate peut-il bloquer automatiquement les archives chiffrees dans un profil AV ?",
+      "choices": [
+        "Parce qu'elles sont toujours malveillantes",
+        "FortiGate ne peut pas décompresser les archives chiffrées pour analyser le contenu",
+        "Parce qu'elles consomment trop de RAM",
+        "Parce qu'elles sont incompatibles avec FortiGuard"
+      ],
+      "answer": 1,
+      "explain": "FortiGate peut bloquer les archives chiffrees ZIP et RAR car il ne peut pas les decompresser pour les analyser. Sans acces au contenu, le scan AV est impossible."
+    },
+    {
+      "q": "Quel est l'objectif de l'integration FortiSandbox dans un profil AV ?",
+      "choices": [
+        "Accelerer le scan des fichiers connus",
+        "Analyser les fichiers inconnus pour detecter les menaces zero-day",
+        "Remplacer la base de signatures FortiGuard",
+        "Scanner les archives chiffrees"
+      ],
+      "answer": 1,
+      "explain": "L'integration FortiSandbox permet d'envoyer les fichiers inconnus a FortiSandbox pour une analyse dynamique, permettant de detecter les menaces zero-day inconnues de la base de signatures."
+    },
+    {
+      "q": "Quelle precaution est importante lors de la configuration des exemptions AV par adresse IP ou URL ?",
+      "choices": [
+        "Les exemptions accelerent toujours le scan",
+        "N'exempter que des sources fiables car les exemptions reduisent la protection",
+        "Les exemptions sont obligatoires pour HTTPS",
+        "Les exemptions s'appliquent aussi au filtrage web"
+      ],
+      "answer": 1,
+      "explain": "Les exemptions AV reduisent la protection. Il est important de n'exempter que des adresses IP ou URLs de sources fiables et connues pour eviter de laisser passer du contenu malveillant."
+    },
+    {
+      "q": "Lequel des protocoles suivants est configurable dans un profil AV FortiGate ?",
+      "choices": [
+        "RDP",
+        "LDAP",
+        "MAPI",
+        "BGP"
+      ],
+      "answer": 2,
+      "explain": "MAPI est l'un des protocoles configurables dans un profil AV FortiGate, avec HTTP, FTP, IMAP, POP3, SMTP, CIFS et SSH."
+    },
+    {
+      "q": "Pour scanner le trafic HTTPS avec un profil AV, quelle condition doit etre remplie ?",
+      "choices": [
+        "Activer le mode proxy-based uniquement",
+        "Activer la full SSL inspection dans la politique firewall",
+        "Ajouter HTTPS manuellement au profil AV",
+        "Activer FortiSandbox"
+      ],
+      "answer": 1,
+      "explain": "Pour que l'AV scanne le contenu HTTPS, la full SSL inspection doit etre activee dans la politique firewall. Sans elle, le contenu chiffre TLS ne peut pas etre inspecte."
+    },
+    {
+      "q": "Quel protocole de messagerie electronique sortante est configurable dans un profil AV FortiGate ?",
+      "choices": [
+        "SMTP",
+        "DNS",
+        "SNMP",
+        "NTP"
+      ],
+      "answer": 0,
+      "explain": "SMTP (protocole d'envoi d'emails) est configurable dans un profil AV FortiGate pour scanner les emails sortants a la recherche de virus et pieces jointes malveillantes."
+    },
+    {
+      "q": "Lequel des protocoles suivants est configurable dans un profil AV FortiGate ?",
+      "choices": [
+        "NFS",
+        "CIFS",
+        "AFP",
+        "iSCSI"
+      ],
+      "answer": 1,
+      "explain": "CIFS (Common Internet File System) est l'un des protocoles configurables dans un profil AV FortiGate pour scanner les partages de fichiers reseau Windows."
+    },
+    {
+      "q": "Quelle est la plage de valeurs possible pour l'archive-block-level dans un profil AV ?",
+      "choices": [
+        "1 a 3",
+        "1 a 5",
+        "1 a 10",
+        "0 a 5"
+      ],
+      "answer": 1,
+      "explain": "L'archive-block-level peut etre configure de 1 a 5 niveaux, definissant la profondeur de decompression des archives ZIP et RAR imbriquees."
+    },
+    {
+      "q": "Quel protocole de messagerie de reception (Microsoft Exchange) est configurable dans un profil AV ?",
+      "choices": [
+        "POP3",
+        "MAPI",
+        "SMTP",
+        "IMAP"
+      ],
+      "answer": 1,
+      "explain": "MAPI est le protocole de messagerie Microsoft Exchange configurable dans un profil AV FortiGate pour scanner les emails recus via Exchange."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Ou doit etre attache un profil AV pour etre actif sur un flux de trafic FortiGate ?",
+      "choices": [
+        "Dans les parametres systeme",
+        "Dans une politique firewall sous Security Profiles",
+        "Dans la configuration FortiGuard",
+        "Dans les parametres VPN"
+      ],
+      "answer": 1,
+      "explain": "Un profil AV doit etre attache a une politique firewall sous la section Security Profiles pour etre actif sur le flux de trafic correspondant."
+    },
+    {
+      "q": "Quelle action AV logue l'evenement sans bloquer le fichier ?",
+      "choices": [
+        "Block",
+        "Pass",
+        "Monitor",
+        "Allow"
+      ],
+      "answer": 2,
+      "explain": "L'action Monitor logue l'evenement de detection virale sans bloquer le fichier. Elle est utilisee pour la surveillance sans impact sur le trafic."
+    },
+    {
+      "q": "Quel parametre definit le nombre de niveaux d'archives imbriquees a analyser dans un profil AV ?",
+      "choices": [
+        "oversized-limit",
+        "archive-block-level",
+        "scan-depth",
+        "zip-level"
+      ],
+      "answer": 1,
+      "explain": "Le parametre archive-block-level definit la profondeur de decompression de 1 a 5 niveaux, soit le nombre de niveaux d'archives ZIP ou RAR imbriquees que FortiGate analysera."
+    },
+    {
+      "q": "Quel est l'objectif de l'integration FortiSandbox dans un profil AV ?",
+      "choices": [
+        "Accelerer le scan des fichiers connus",
+        "Analyser les fichiers inconnus pour detecter les menaces zero-day",
+        "Remplacer la base de signatures FortiGuard",
+        "Scanner les archives chiffrees"
+      ],
+      "answer": 1,
+      "explain": "L'integration FortiSandbox permet d'envoyer les fichiers inconnus a FortiSandbox pour une analyse dynamique, permettant de detecter les menaces zero-day inconnues de la base de signatures."
+    },
+    {
+      "q": "Pour scanner le trafic HTTPS avec un profil AV, quelle condition doit etre remplie ?",
+      "choices": [
+        "Activer le mode proxy-based uniquement",
+        "Activer la full SSL inspection dans la politique firewall",
+        "Ajouter HTTPS manuellement au profil AV",
+        "Activer FortiSandbox"
+      ],
+      "answer": 1,
+      "explain": "Pour que l'AV scanne le contenu HTTPS, la full SSL inspection doit etre activee dans la politique firewall. Sans elle, le contenu chiffre TLS ne peut pas etre inspecte."
+    }
+  ]
+}

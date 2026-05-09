@@ -1,0 +1,238 @@
+{
+  "id": "ch14-l2",
+  "module": "Diagnostics and Troubleshooting",
+  "title": "Sniffer et capture de paquets",
+  "durationMin": 7,
+  "content": "## Le sniffer FortiGate\n\nLe sniffer FortiGate permet de capturer le trafic réseau directement depuis la CLI. La commande de base est :\n\n```\ndiagnose sniffer packet <interface> '<filtre>' <verbosité> <count>\n```\n\n## Paramètres du sniffer\n\n**Interface** : nom d'interface (ex: port1, wan1) ou `any` pour capturer sur toutes les interfaces simultanément.\n\n**Filtre** : syntaxe BPF (Berkeley Packet Filter), identique à tcpdump. Exemples courants :\n- `host 192.168.1.1` : trafic vers ou depuis une IP\n- `port 80` : trafic sur le port 80\n- `src host 10.0.0.1` : trafic dont la source est une IP précise\n- `not port 443` : exclure le trafic HTTPS\n\n**Niveaux de verbosité** :\n\n| Niveau | Informations affichées |\n|---|---|\n| 1 | Headers IP et port uniquement |\n| 2 | Headers + contenu hexadécimal |\n| 3 | Headers + contenu ASCII |\n| 4 | Niveau 3 + nom de l'interface |\n| 5 | Niveau 4 + adresse MAC |\n| 6 | Niveau 5 + adresse IP source complète |\n\n**Count** : nombre de paquets à capturer. La valeur `0` signifie capture infinie — utiliser `Ctrl+C` pour arrêter.\n\n## Exemple pratique\n\n```\ndiagnose sniffer packet port1 'host 8.8.8.8' 1 10\n```\nCette commande capture **10 paquets** vers ou depuis l'adresse **8.8.8.8** sur l'interface **port1**, avec verbosité niveau 1 (headers IP et port uniquement).\n\n## Position dans le pipeline FortiGate\n\nLe sniffer capture le trafic **avant le traitement FortiGate**, c'est-à-dire avant les politiques firewall. Cela permet de confirmer que les paquets arrivent physiquement sur l'interface, indépendamment de toute politique de sécurité.\n\n> **Important** : si le sniffer ne voit pas de paquets, le problème est physique (câble, VLAN, routage en amont). Si le sniffer voit les paquets mais qu'ils ne passent pas, le problème est dans les politiques FortiGate.\n\n## Packet capture via GUI\n\nL'interface graphique propose également la capture de paquets via **Network > Packet Capture**. Cette interface graphique permet de configurer les filtres visuellement et d'**exporter au format PCAP** pour analyse avec Wireshark ou d'autres analyseurs réseau.\n\nLe format **PCAP** est le format standard de capture de paquets, compatible avec Wireshark et tous les analyseurs réseau du marché.\n\n## Différence avec debug flow\n\nLe sniffer réalise une capture brute des paquets L2/L3 au niveau de l'interface réseau. Il est distinct du debug flow qui, lui, suit le chemin logique d'un paquet dans le moteur FortiOS (politiques, NAT, routage).",
+  "diagrams": [
+    {
+      "caption": "Position du sniffer dans le pipeline FortiGate",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='10' y='70' width='70' height='40' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='45' y='86' text-anchor='middle' fill='#3b82f6' font-size='9' font-family='monospace'>Ingress</text><text x='45' y='100' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>NIC</text><line x1='80' y1='90' x2='110' y2='90' stroke='#3b82f6' stroke-width='1.5'/><polygon points='107,85 120,90 107,95' fill='#3b82f6'/><rect x='115' y='60' width='80' height='60' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='2'/><text x='155' y='80' text-anchor='middle' fill='#22c55e' font-size='9' font-family='monospace' font-weight='bold'>SNIFFER</text><text x='155' y='94' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>capture ici</text><text x='155' y='108' text-anchor='middle' fill='#94a3b8' font-size='8' font-family='monospace'>avant policy</text><line x1='195' y1='90' x2='225' y2='90' stroke='#3b82f6' stroke-width='1.5'/><polygon points='222,85 235,90 222,95' fill='#3b82f6'/><rect x='230' y='65' width='80' height='50' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='270' y='83' text-anchor='middle' fill='#3b82f6' font-size='9' font-family='monospace'>Policy</text><text x='270' y='97' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>Check</text><line x1='310' y1='90' x2='340' y2='90' stroke='#3b82f6' stroke-width='1.5'/><polygon points='337,85 350,90 337,95' fill='#3b82f6'/><rect x='345' y='65' width='80' height='50' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='385' y='83' text-anchor='middle' fill='#3b82f6' font-size='9' font-family='monospace'>Routing</text><text x='385' y='97' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>NAT</text><line x1='425' y1='90' x2='455' y2='90' stroke='#3b82f6' stroke-width='1.5'/><polygon points='452,85 465,90 452,95' fill='#3b82f6'/><rect x='460' y='70' width='70' height='40' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='495' y='86' text-anchor='middle' fill='#3b82f6' font-size='9' font-family='monospace'>Egress</text><text x='495' y='100' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>NIC</text><text x='155' y='145' text-anchor='middle' fill='#22c55e' font-size='8' font-family='monospace'>diagnose sniffer packet</text><line x1='155' y1='120' x2='155' y2='135' stroke='#22c55e' stroke-width='1' stroke-dasharray='3,2'/></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quelle est la syntaxe correcte de la commande sniffer FortiGate ?",
+      "choices": [
+        "diagnose sniffer packet <interface> '<filtre>' <verbosité> <count>",
+        "debug sniffer packet <interface> '<filtre>' <count>",
+        "get sniffer packet <interface> <filtre> <verbosité>",
+        "diagnose capture packet <interface> '<filtre>' <verbosité>"
+      ],
+      "answer": 0,
+      "explain": "La syntaxe correcte est 'diagnose sniffer packet <interface> <filtre> <verbosité> <count>'. Les autres formes ne sont pas valides sur FortiGate."
+    },
+    {
+      "q": "Que capture-t-on avec le niveau de verbosité 1 du sniffer ?",
+      "choices": [
+        "Headers IP et port uniquement",
+        "Headers + contenu hexadécimal",
+        "Headers + adresse MAC",
+        "Headers + contenu ASCII"
+      ],
+      "answer": 0,
+      "explain": "Le niveau de verbosité 1 affiche uniquement les headers IP et port. Pour voir le contenu hexadécimal, il faut utiliser le niveau 2."
+    },
+    {
+      "q": "Que signifie la valeur count=0 dans la commande sniffer ?",
+      "choices": [
+        "Capturer 0 paquet, arrêt immédiat",
+        "Capturer uniquement les paquets en erreur",
+        "Capture infinie jusqu'à Ctrl+C",
+        "Capturer 1000 paquets par défaut"
+      ],
+      "answer": 2,
+      "explain": "Une valeur count=0 signifie une capture infinie. On utilise Ctrl+C pour arrêter la capture manuellement."
+    },
+    {
+      "q": "Quelle interface utiliser pour capturer le trafic sur toutes les interfaces simultanément ?",
+      "choices": [
+        "port0",
+        "any",
+        "all",
+        "mgmt"
+      ],
+      "answer": 1,
+      "explain": "L'interface 'any' permet de capturer le trafic sur toutes les interfaces du FortiGate simultanément."
+    },
+    {
+      "q": "La commande 'diagnose sniffer packet port1 \"host 8.8.8.8\" 1 10' capture combien de paquets ?",
+      "choices": [
+        "1 paquet",
+        "8 paquets",
+        "10 paquets",
+        "Capture infinie"
+      ],
+      "answer": 2,
+      "explain": "La commande capture 10 paquets (valeur count=10) vers ou depuis 8.8.8.8 sur port1, avec verbosité 1."
+    },
+    {
+      "q": "Quel est le format d'export standard pour l'analyse des captures avec Wireshark ?",
+      "choices": [
+        "Format CSV",
+        "Format XML",
+        "Format PCAP",
+        "Format JSON"
+      ],
+      "answer": 2,
+      "explain": "Le format PCAP est le format standard de capture de paquets, compatible avec Wireshark et tous les analyseurs réseau du marché."
+    },
+    {
+      "q": "Où se trouve le sniffer dans le pipeline de traitement FortiGate ?",
+      "choices": [
+        "Après les politiques firewall",
+        "Avant le traitement FortiGate, avant les politiques firewall",
+        "Après le NAT",
+        "Après le routage"
+      ],
+      "answer": 1,
+      "explain": "Le sniffer capture le trafic avant le traitement FortiGate, avant les politiques firewall. Cela permet de vérifier si les paquets arrivent physiquement sur l'interface."
+    },
+    {
+      "q": "Quel filtre BPF utiliser pour capturer uniquement le trafic HTTP (port 80) ?",
+      "choices": [
+        "src 80",
+        "port 80",
+        "filter http",
+        "protocol 80"
+      ],
+      "answer": 1,
+      "explain": "Le filtre BPF 'port 80' capture le trafic sur le port 80 (HTTP). La syntaxe BPF du sniffer FortiGate est identique à tcpdump."
+    },
+    {
+      "q": "Via quelle section de l'interface graphique peut-on effectuer une capture de paquets ?",
+      "choices": [
+        "System > Diagnostics",
+        "Network > Packet Capture",
+        "Log > Packet Capture",
+        "Monitor > Traffic"
+      ],
+      "answer": 1,
+      "explain": "La capture de paquets via l'interface graphique se trouve dans Network > Packet Capture. Elle permet d'exporter les captures au format PCAP."
+    },
+    {
+      "q": "Quel niveau de verbosité affiche les adresses MAC en plus des headers IP ?",
+      "choices": [
+        "Niveau 3",
+        "Niveau 4",
+        "Niveau 5",
+        "Niveau 6"
+      ],
+      "answer": 2,
+      "explain": "Le niveau de verbosité 5 affiche les headers IP, le nom de l'interface, et les adresses MAC. Le niveau 4 ajoute uniquement le nom de l'interface."
+    },
+    {
+      "q": "Si le sniffer ne voit aucun paquet sur une interface, quel est le problème probable ?",
+      "choices": [
+        "Une politique firewall bloque le trafic",
+        "Le NAT est mal configuré",
+        "Un problème physique (câble, VLAN, routage en amont)",
+        "Le debug flow n'est pas activé"
+      ],
+      "answer": 2,
+      "explain": "Si le sniffer ne voit pas de paquets, cela indique un problème physique (câble, VLAN, routage en amont) car le sniffer capture avant toute politique."
+    },
+    {
+      "q": "Quelle est la différence principale entre le sniffer et le debug flow ?",
+      "choices": [
+        "Le sniffer est plus lent que le debug flow",
+        "Le sniffer effectue une capture brute L2/L3, le debug flow suit le chemin logique dans le moteur FortiOS",
+        "Le debug flow capture les paquets, le sniffer analyse les politiques",
+        "Il n'y a aucune différence entre les deux outils"
+      ],
+      "answer": 1,
+      "explain": "Le sniffer réalise une capture brute des paquets L2/L3. Le debug flow suit le chemin logique d'un paquet dans le moteur FortiOS (politiques, NAT, routage)."
+    },
+    {
+      "q": "Quelle syntaxe de filtre BPF exclut le trafic HTTPS ?",
+      "choices": [
+        "exclude port 443",
+        "not port 443",
+        "deny port 443",
+        "filter not https"
+      ],
+      "answer": 1,
+      "explain": "La syntaxe BPF 'not port 443' exclut le trafic HTTPS (port 443) de la capture. La syntaxe BPF du sniffer FortiGate est identique à tcpdump."
+    },
+    {
+      "q": "Que signifie la verbosité niveau 3 dans le sniffer FortiGate ?",
+      "choices": [
+        "Headers IP et port uniquement",
+        "Headers + contenu hexadécimal",
+        "Headers + contenu ASCII",
+        "Headers + adresse MAC"
+      ],
+      "answer": 2,
+      "explain": "Le niveau de verbosité 3 affiche les headers IP/port ainsi que le contenu des paquets en format ASCII."
+    },
+    {
+      "q": "Quelle commande capture 10 paquets vers/depuis 8.8.8.8 sur port1 avec verbosité minimale ?",
+      "choices": [
+        "diagnose sniffer packet port1 'host 8.8.8.8' 1 10",
+        "diagnose sniffer packet any 'port 8.8.8.8' 1 10",
+        "diagnose capture port1 'host 8.8.8.8' 1 10",
+        "get sniffer packet port1 'host 8.8.8.8' 1 10"
+      ],
+      "answer": 0,
+      "explain": "La commande 'diagnose sniffer packet port1 'host 8.8.8.8' 1 10' capture 10 paquets vers ou depuis 8.8.8.8 sur port1, avec verbosité niveau 1."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quelle est la syntaxe correcte de la commande sniffer FortiGate ?",
+      "choices": [
+        "diagnose sniffer packet <interface> '<filtre>' <verbosité> <count>",
+        "debug sniffer packet <interface> '<filtre>' <count>",
+        "get sniffer packet <interface> <filtre> <verbosité>",
+        "diagnose capture packet <interface> '<filtre>' <verbosité>"
+      ],
+      "answer": 0,
+      "explain": "La syntaxe correcte est 'diagnose sniffer packet <interface> <filtre> <verbosité> <count>'. Les autres formes ne sont pas valides sur FortiGate."
+    },
+    {
+      "q": "Où se trouve le sniffer dans le pipeline de traitement FortiGate ?",
+      "choices": [
+        "Après les politiques firewall",
+        "Avant le traitement FortiGate, avant les politiques firewall",
+        "Après le NAT",
+        "Après le routage"
+      ],
+      "answer": 1,
+      "explain": "Le sniffer capture le trafic avant le traitement FortiGate, avant les politiques firewall. Cela permet de vérifier si les paquets arrivent physiquement sur l'interface."
+    },
+    {
+      "q": "Quel est le format d'export standard pour l'analyse des captures avec Wireshark ?",
+      "choices": [
+        "Format CSV",
+        "Format XML",
+        "Format PCAP",
+        "Format JSON"
+      ],
+      "answer": 2,
+      "explain": "Le format PCAP est le format standard de capture de paquets, compatible avec Wireshark et tous les analyseurs réseau du marché."
+    },
+    {
+      "q": "Que signifie la valeur count=0 dans la commande sniffer ?",
+      "choices": [
+        "Capturer 0 paquet, arrêt immédiat",
+        "Capturer uniquement les paquets en erreur",
+        "Capture infinie jusqu'à Ctrl+C",
+        "Capturer 1000 paquets par défaut"
+      ],
+      "answer": 2,
+      "explain": "Une valeur count=0 signifie une capture infinie. On utilise Ctrl+C pour arrêter la capture manuellement."
+    },
+    {
+      "q": "Quel niveau de verbosité affiche les adresses MAC en plus des headers IP ?",
+      "choices": [
+        "Niveau 3",
+        "Niveau 4",
+        "Niveau 5",
+        "Niveau 6"
+      ],
+      "answer": 2,
+      "explain": "Le niveau de verbosité 5 affiche les headers IP, le nom de l'interface, et les adresses MAC. Le niveau 4 ajoute uniquement le nom de l'interface."
+    }
+  ]
+}

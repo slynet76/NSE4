@@ -1,0 +1,238 @@
+{
+  "id": "ch11-l5",
+  "module": "IPsec VPN",
+  "title": "Phase 2 : tunnel et selectors",
+  "durationMin": 7,
+  "content": "## Phase 2 — Quick Mode et Child SA\n\nLa **Phase 2** (aussi appelée Quick Mode ou Child SA) s'établit après la Phase 1 IKE. Son rôle est de négocier les **IPsec SAs** (Security Associations) qui protègent le trafic réel transitant dans le tunnel VPN.\n\nContrairement à la Phase 1 qui sécurise le canal de contrôle IKE, la Phase 2 définit les paramètres de protection du trafic de données : algorithme de chiffrement, intégrité, durée de vie, et les réseaux concernés.\n\n## Proxy IDs — les selectors\n\nLes **proxy IDs** (aussi appelés **selectors**) définissent précisément quel trafic est protégé par le tunnel IPsec. Ils spécifient :\n- **Source network** : réseau local à tunneliser\n- **Destination network** : réseau distant à atteindre via le tunnel\n- **Protocole** : optionnel (TCP, UDP, etc.)\n\nLes proxy IDs doivent correspondre exactement entre les deux extrémités du tunnel. Un mismatch de proxy IDs entraîne l'échec de la Phase 2.\n\n## Mode route-based (interface mode)\n\nEn **mode route-based**, FortiGate crée une **interface virtuelle IPsec** (interface tunnel, par exemple `tunnel.1`). Le routage est géré par les routes statiques ou dynamiques pointant vers cette interface. Les proxy IDs en mode route-based sont par défaut **0.0.0.0/0 ↔ 0.0.0.0/0**, ce qui signifie que tout le trafic routé vers l'interface tunnel est protégé.\n\n**Avantages du mode route-based :**\n- Routage dynamique possible (OSPF, BGP via le tunnel)\n- Plus flexible et plus facile à déboguer\n- L'interface tunnel apparaît dans la liste des interfaces\n\n## Mode policy-based\n\nEn **mode policy-based**, les politiques firewall définissent directement le trafic à tunneliser avec l'action IPsec. Les **proxy IDs sont extraits des politiques** : les réseaux source et destination de la politique deviennent les selectors Phase 2.\n\n**Cas d'usage :** déploiements simples avec peu de réseaux, compatibilité avec des équipements tiers.\n\n## Paramètres de négociation Phase 2\n\n| Paramètre | Options courantes |\n|---|---|\n| **Chiffrement** | AES-128, AES-256, 3DES |\n| **Intégrité** | SHA1, SHA256, SHA384 |\n| **DH group** | Optionnel, pour PFS |\n| **Lifetime** | En secondes (ex: 3600s) ou kilo-octets |\n\n## PFS — Perfect Forward Secrecy\n\n**PFS** (Perfect Forward Secrecy) est un mécanisme qui régénère les clés de session à chaque renouvellement Phase 2, en effectuant un nouvel échange Diffie-Hellman (DH). Même si la clé maître de Phase 1 est compromise ultérieurement, les sessions passées restent sécurisées car chaque Phase 2 a ses propres clés indépendantes.\n\nActivé via la configuration d'un **DH group** dans la Phase 2. Si PFS est activé sur une extrémité, il doit l'être sur les deux.\n\n## DPD — Dead Peer Detection\n\n**DPD** (Dead Peer Detection) est un mécanisme pour détecter si le pair distant est toujours joignable. Périodiquement, FortiGate envoie des messages DPD. Si le pair ne répond pas, le tunnel est considéré mort et peut être relancé automatiquement. DPD évite les **tunnels fantômes** (zombie tunnels) — des tunnels apparemment actifs mais dont le pair distant est injoignable.\n\n> Phase 2 permet de **garantir** que les données IPsec ne sont pas **modifiées** pendant le **transit** — grâce à l'intégrité HMAC, toute altération est détectée.",
+  "diagrams": [
+    {
+      "caption": "Négociation Phase 2 : proxy IDs, algorithmes, PFS et durée de vie",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='10' y='15' width='120' height='50' rx='6' fill='#1e293b' stroke='#22c55e' stroke-width='2'/><text x='70' y='35' fill='#22c55e' font-family='monospace' font-size='10' text-anchor='middle' font-weight='bold'>FortiGate A</text><text x='70' y='50' fill='#e2e8f0' font-family='monospace' font-size='9' text-anchor='middle'>192.168.1.0/24</text><text x='70' y='62' fill='#94a3b8' font-family='monospace' font-size='8' text-anchor='middle'>Proxy ID local</text><rect x='410' y='15' width='120' height='50' rx='6' fill='#1e293b' stroke='#22c55e' stroke-width='2'/><text x='470' y='35' fill='#22c55e' font-family='monospace' font-size='10' text-anchor='middle' font-weight='bold'>FortiGate B</text><text x='470' y='50' fill='#e2e8f0' font-family='monospace' font-size='9' text-anchor='middle'>10.0.0.0/24</text><text x='470' y='62' fill='#94a3b8' font-family='monospace' font-size='8' text-anchor='middle'>Proxy ID distant</text><rect x='165' y='10' width='210' height='60' rx='8' fill='#0f2237' stroke='#3b82f6' stroke-width='2'/><text x='270' y='28' fill='#3b82f6' font-family='monospace' font-size='10' text-anchor='middle' font-weight='bold'>Phase 2 — Négociation</text><text x='270' y='42' fill='#e2e8f0' font-family='monospace' font-size='9' text-anchor='middle'>Chiffrement: AES-256</text><text x='270' y='54' fill='#e2e8f0' font-family='monospace' font-size='9' text-anchor='middle'>Intégrité: SHA256 | DH: PFS</text><text x='270' y='66' fill='#94a3b8' font-family='monospace' font-size='8' text-anchor='middle'>Lifetime: 3600s</text><line x1='130' y1='40' x2='165' y2='40' stroke='#3b82f6' stroke-width='1.5'/><line x1='375' y1='40' x2='410' y2='40' stroke='#3b82f6' stroke-width='1.5'/><rect x='60' y='100' width='160' height='28' rx='4' fill='#1e2d1e' stroke='#22c55e' stroke-width='1'/><text x='140' y='118' fill='#22c55e' font-family='monospace' font-size='9' text-anchor='middle'>Route-based: 0.0.0.0/0 ↔ 0.0.0.0/0</text><rect x='240' y='100' width='140' height='28' rx='4' fill='#2d1e1e' stroke='#ef4444' stroke-width='1'/><text x='310' y='112' fill='#ef4444' font-family='monospace' font-size='9' text-anchor='middle'>Policy-based: proxy IDs</text><text x='310' y='124' fill='#94a3b8' font-family='monospace' font-size='8' text-anchor='middle'>extraits des politiques</text><rect x='400' y='100' width='130' height='28' rx='4' fill='#1e1e2d' stroke='#3b82f6' stroke-width='1'/><text x='465' y='112' fill='#3b82f6' font-family='monospace' font-size='9' text-anchor='middle'>PFS: nouvelles clés</text><text x='465' y='124' fill='#94a3b8' font-family='monospace' font-size='8' text-anchor='middle'>à chaque renouvellement</text><rect x='60' y='145' width='420' height='24' rx='4' fill='#1e293b'/><text x='270' y='161' fill='#94a3b8' font-family='monospace' font-size='9' text-anchor='middle'>DPD (Dead Peer Detection) : détecte les tunnels fantômes (zombie tunnels)</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel est le rôle de la Phase 2 (Quick Mode) dans un tunnel IPsec ?",
+      "choices": [
+        "Authentifier les deux extrémités et créer le canal IKE sécurisé",
+        "Négocier les IPsec SAs utilisées pour protéger le trafic réel du tunnel",
+        "Distribuer les certificats SSL aux clients VPN",
+        "Établir le routage dynamique via le tunnel"
+      ],
+      "answer": 1,
+      "explain": "La Phase 2 (Quick Mode) négocie les IPsec SAs (Security Associations) qui protègent le trafic réel transitant dans le tunnel VPN, après que la Phase 1 a établi le canal de contrôle IKE."
+    },
+    {
+      "q": "Que sont les proxy IDs (selectors) dans une Phase 2 IPsec ?",
+      "choices": [
+        "Les adresses IP des passerelles VPN",
+        "Les paramètres définissant quel trafic est protégé : réseau source, réseau destination et protocole optionnel",
+        "Les algorithmes de chiffrement Phase 2",
+        "Les paramètres de durée de vie des SA"
+      ],
+      "answer": 1,
+      "explain": "Les proxy IDs (selectors) définissent précisément quel trafic est protégé par le tunnel IPsec : réseau source (local), réseau destination (distant) et protocole optionnel."
+    },
+    {
+      "q": "Quels sont les proxy IDs par défaut en mode route-based sur FortiGate ?",
+      "choices": [
+        "Les réseaux configurés dans les politiques firewall",
+        "0.0.0.0/0 ↔ 0.0.0.0/0 — tout le trafic routé vers l'interface tunnel",
+        "Uniquement les réseaux RFC 1918",
+        "Les sous-réseaux des interfaces LAN et WAN"
+      ],
+      "answer": 1,
+      "explain": "En mode route-based, les proxy IDs sont par défaut 0.0.0.0/0 ↔ 0.0.0.0/0. Tout le trafic routé vers l'interface virtuelle IPsec est protégé par le tunnel."
+    },
+    {
+      "q": "Qu'est-ce que PFS (Perfect Forward Secrecy) apporte à la Phase 2 ?",
+      "choices": [
+        "Il accélère la négociation Phase 2",
+        "Il régénère les clés de session à chaque renouvellement Phase 2, protégeant les sessions passées même si la clé maître est compromise",
+        "Il empêche les attaques DDoS sur le tunnel",
+        "Il active le déchiffrement SSL sur le tunnel IPsec"
+      ],
+      "answer": 1,
+      "explain": "PFS (Perfect Forward Secrecy) régénère les clés de session à chaque renouvellement Phase 2 via un nouvel échange DH. Même si la clé maître Phase 1 est compromise, les sessions passées restent sécurisées."
+    },
+    {
+      "q": "Quel mécanisme permet de détecter si le pair VPN distant est toujours joignable ?",
+      "choices": [
+        "PFS (Perfect Forward Secrecy)",
+        "DPD (Dead Peer Detection)",
+        "NAT-T (NAT Traversal)",
+        "IKE keepalive"
+      ],
+      "answer": 1,
+      "explain": "DPD (Dead Peer Detection) envoie des messages périodiques pour vérifier que le pair distant est joignable. Si le pair ne répond pas, le tunnel est considéré mort et peut être relancé."
+    },
+    {
+      "q": "En mode route-based, quelle interface FortiGate crée-t-il pour le tunnel IPsec ?",
+      "choices": [
+        "Une interface VLAN dédiée",
+        "Une interface virtuelle IPsec (interface tunnel, ex: tunnel.1) apparaissant dans la liste des interfaces",
+        "Une sous-interface sur le port WAN",
+        "Une interface loopback"
+      ],
+      "answer": 1,
+      "explain": "En mode route-based, FortiGate crée une interface virtuelle IPsec (interface tunnel, par exemple tunnel.1). Cette interface apparaît dans la liste des interfaces et peut être utilisée dans les routes et politiques."
+    },
+    {
+      "q": "En mode policy-based, comment sont déterminés les proxy IDs Phase 2 ?",
+      "choices": [
+        "Ils sont configurés manuellement en dehors des politiques",
+        "Ils sont extraits des politiques firewall ayant l'action IPsec",
+        "Ils sont toujours 0.0.0.0/0 ↔ 0.0.0.0/0",
+        "Ils sont calculés automatiquement depuis les routes statiques"
+      ],
+      "answer": 1,
+      "explain": "En mode policy-based, les proxy IDs Phase 2 sont extraits des politiques firewall. Les réseaux source et destination de la politique avec action IPsec deviennent les selectors."
+    },
+    {
+      "q": "Que se passe-t-il si les proxy IDs Phase 2 ne correspondent pas entre les deux extrémités du tunnel ?",
+      "choices": [
+        "La Phase 2 s'établit avec des paramètres par défaut",
+        "La Phase 2 échoue — mismatch de proxy IDs",
+        "FortiGate adapte automatiquement ses proxy IDs",
+        "Le tunnel bascule en mode route-based"
+      ],
+      "answer": 1,
+      "explain": "Les proxy IDs doivent correspondre exactement entre les deux extrémités. Un mismatch de proxy IDs entraîne l'échec de la négociation Phase 2."
+    },
+    {
+      "q": "Quel algorithme de chiffrement est disponible en Phase 2 sur FortiGate ?",
+      "choices": [
+        "RSA-2048",
+        "AES-256",
+        "MD5",
+        "DES uniquement"
+      ],
+      "answer": 1,
+      "explain": "AES-256 est un algorithme de chiffrement disponible pour la Phase 2. D'autres options incluent AES-128 et 3DES. RSA est utilisé pour les signatures, pas le chiffrement des données."
+    },
+    {
+      "q": "Comment PFS est-il activé dans la configuration Phase 2 sur FortiGate ?",
+      "choices": [
+        "En sélectionnant l'option PFS dans les paramètres Phase 1",
+        "En configurant un DH group dans la Phase 2",
+        "En activant NAT-T dans le profil Phase 2",
+        "En choisissant SHA256 comme algorithme d'intégrité"
+      ],
+      "answer": 1,
+      "explain": "PFS est activé en Phase 2 en configurant un DH group (groupe Diffie-Hellman). Cela force un nouvel échange DH à chaque renouvellement Phase 2, générant des clés indépendantes."
+    },
+    {
+      "q": "Quel avantage principal a le mode route-based sur le mode policy-based ?",
+      "choices": [
+        "Il génère moins de trafic réseau",
+        "Il est plus flexible, supporte le routage dynamique (OSPF, BGP) et est plus facile à déboguer",
+        "Il consomme moins de ressources CPU",
+        "Il n'a pas besoin de Phase 1"
+      ],
+      "answer": 1,
+      "explain": "Le mode route-based est plus flexible car il supporte le routage dynamique (OSPF, BGP via le tunnel) et est plus facile à déboguer. L'interface tunnel apparaît comme une interface normale."
+    },
+    {
+      "q": "Que signifie tunnel fantôme (zombie tunnel) dans le contexte IPsec ?",
+      "choices": [
+        "Un tunnel chiffré avec un algorithme obsolète",
+        "Un tunnel apparemment actif mais dont le pair distant est injoignable — détecté par DPD",
+        "Un tunnel sans Phase 1 établie",
+        "Un tunnel en mode policy-based sans politiques associées"
+      ],
+      "answer": 1,
+      "explain": "Un tunnel fantôme (zombie tunnel) est un tunnel qui semble actif localement mais dont le pair distant est en réalité injoignable. DPD (Dead Peer Detection) permet de les détecter et de relancer le tunnel."
+    },
+    {
+      "q": "La durée de vie (lifetime) d'une SA Phase 2 peut être exprimée en quelles unités ?",
+      "choices": [
+        "Uniquement en secondes",
+        "En secondes ou en kilo-octets",
+        "En heures et minutes uniquement",
+        "En nombre de paquets transmis"
+      ],
+      "answer": 1,
+      "explain": "La durée de vie (lifetime) d'une SA Phase 2 peut être exprimée en secondes (ex: 3600s) ou en kilo-octets (volume de données chiffrées). À expiration, la SA est renouvelée."
+    },
+    {
+      "q": "Si PFS est activé sur FortiGate en Phase 2, quelle configuration est requise sur le pair distant ?",
+      "choices": [
+        "PFS peut être désactivé sur le pair distant sans impact",
+        "PFS doit également être activé sur le pair distant, avec le même DH group",
+        "Le pair distant doit utiliser IKEv2 obligatoirement",
+        "Le pair distant doit avoir la même durée de vie Phase 2"
+      ],
+      "answer": 1,
+      "explain": "Si PFS est activé sur une extrémité, il doit être activé sur les deux extrémités avec le même DH group. Un mismatch PFS provoque l'échec de la Phase 2."
+    },
+    {
+      "q": "Quel est le rôle de l'algorithme d'intégrité (SHA256) en Phase 2 IPsec ?",
+      "choices": [
+        "Chiffrer les données du tunnel",
+        "Garantir que les données IPsec ne sont pas modifiées pendant le transit",
+        "Authentifier les certificats des pairs",
+        "Générer les clés de session via DH"
+      ],
+      "answer": 1,
+      "explain": "L'algorithme d'intégrité (SHA256, SHA1) en Phase 2 garantit l'intégrité des paquets IPsec en calculant un HMAC. Cela permet de vérifier que les paquets n'ont pas été modifiés en transit."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quel est le rôle de la Phase 2 (Quick Mode) dans un tunnel IPsec ?",
+      "choices": [
+        "Authentifier les deux extrémités et créer le canal IKE sécurisé",
+        "Négocier les IPsec SAs utilisées pour protéger le trafic réel du tunnel",
+        "Distribuer les certificats SSL aux clients VPN",
+        "Établir le routage dynamique via le tunnel"
+      ],
+      "answer": 1,
+      "explain": "La Phase 2 (Quick Mode) négocie les IPsec SAs (Security Associations) qui protègent le trafic réel transitant dans le tunnel VPN, après que la Phase 1 a établi le canal de contrôle IKE."
+    },
+    {
+      "q": "Qu'est-ce que PFS (Perfect Forward Secrecy) apporte à la Phase 2 ?",
+      "choices": [
+        "Il accélère la négociation Phase 2",
+        "Il régénère les clés de session à chaque renouvellement Phase 2, protégeant les sessions passées même si la clé maître est compromise",
+        "Il empêche les attaques DDoS sur le tunnel",
+        "Il active le déchiffrement SSL sur le tunnel IPsec"
+      ],
+      "answer": 1,
+      "explain": "PFS (Perfect Forward Secrecy) régénère les clés de session à chaque renouvellement Phase 2 via un nouvel échange DH. Même si la clé maître Phase 1 est compromise, les sessions passées restent sécurisées."
+    },
+    {
+      "q": "Quel mécanisme permet de détecter si le pair VPN distant est toujours joignable ?",
+      "choices": [
+        "PFS (Perfect Forward Secrecy)",
+        "DPD (Dead Peer Detection)",
+        "NAT-T (NAT Traversal)",
+        "IKE keepalive"
+      ],
+      "answer": 1,
+      "explain": "DPD (Dead Peer Detection) envoie des messages périodiques pour vérifier que le pair distant est joignable. Si le pair ne répond pas, le tunnel est considéré mort et peut être relancé."
+    },
+    {
+      "q": "Quels sont les proxy IDs par défaut en mode route-based sur FortiGate ?",
+      "choices": [
+        "Les réseaux configurés dans les politiques firewall",
+        "0.0.0.0/0 ↔ 0.0.0.0/0 — tout le trafic routé vers l'interface tunnel",
+        "Uniquement les réseaux RFC 1918",
+        "Les sous-réseaux des interfaces LAN et WAN"
+      ],
+      "answer": 1,
+      "explain": "En mode route-based, les proxy IDs sont par défaut 0.0.0.0/0 ↔ 0.0.0.0/0. Tout le trafic routé vers l'interface virtuelle IPsec est protégé par le tunnel."
+    },
+    {
+      "q": "Que se passe-t-il si les proxy IDs Phase 2 ne correspondent pas entre les deux extrémités du tunnel ?",
+      "choices": [
+        "La Phase 2 s'établit avec des paramètres par défaut",
+        "La Phase 2 échoue — mismatch de proxy IDs",
+        "FortiGate adapte automatiquement ses proxy IDs",
+        "Le tunnel bascule en mode route-based"
+      ],
+      "answer": 1,
+      "explain": "Les proxy IDs doivent correspondre exactement entre les deux extrémités. Un mismatch de proxy IDs entraîne l'échec de la négociation Phase 2."
+    }
+  ]
+}

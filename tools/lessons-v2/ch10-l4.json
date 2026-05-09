@@ -1,0 +1,238 @@
+{
+  "id": "ch10-l4",
+  "module": "Intrusion Prevention and Application Control",
+  "title": "Monitoring et fail-open IPS",
+  "durationMin": 7,
+  "content": "## Logs IPS\n\nLes événements IPS sont consultables dans **Log & Report > Security Events > Intrusion Prevention**. Chaque entrée de log IPS contient les champs suivants :\n\n| Champ | Description |\n|---|---|\n| **Timestamp** | Date et heure de l'événement |\n| **Src IP** | Adresse IP source du trafic |\n| **Dst IP** | Adresse IP destination du trafic |\n| **Protocole** | Protocole réseau (HTTP, SMTP, DNS, etc.) |\n| **Signature** | Nom de la signature IPS déclenchée |\n| **Sévérité** | Niveau de sévérité (Critical, High, Medium, Low, Info) |\n| **Action** | Action appliquée (Block, Monitor, Reset, etc.) |\n| **Interface** | Interface réseau sur laquelle le trafic a été capturé |\n\n## Commandes de diagnostic IPS\n\n![Architecture IPS : monitoring et performances](diagram:0)\n\nFortiGate dispose de plusieurs commandes CLI pour diagnostiquer l'IPS :\n\n```\ndiagnose ips signature list\n```\nListe toutes les signatures IPS chargées dans le moteur.\n\n```\ndiagnose ips anomaly list\n```\nListe les anomalies de taux (rate-based) configurées dans les capteurs.\n\n```\ndiagnose debug application ipsmonitor -1\n```\nActive le debug du processus **ipsmonitor** — utile pour diagnostiquer les problèmes de mise à jour ou de communication avec FortiGuard.\n\n```\ndiagnose autoupdate versions\n```\nAffiche les versions courantes des bases de signatures (IPS, AV, App Control, etc.).\n\n```\ndiagnose ips session stat\n```\nAffiche les statistiques de sessions IPS en temps réel : nombre de sessions inspectées, paquets analysés, signatures déclenchées.\n\n## Fail-open et fail-close IPS\n\nCes modes définissent le comportement de FortiGate si le moteur **ipsengine** rencontre une défaillance :\n\n- **Fail-open IPS** : configurable par capteur IPS — si le moteur ipsengine est surchargé ou en crash, le trafic passe sans inspection. Priorité à la disponibilité.\n- **Fail-close IPS** : si le moteur ipsengine est en crash, le trafic est bloqué. Plus sécurisé mais interruptif pour les utilisateurs.\n\n> **Processus ipsengine** : visible dans `diagnose sys top`, le processus ipsengine consomme du CPU lors des inspections IPS. Une charge élevée peut indiquer un volume de trafic important ou des signatures coûteuses en calcul.\n\n## NTurbo : accélération matérielle IPS\n\n**NTurbo** est une fonctionnalité d'accélération hardware du traitement IPS. Elle utilise les puces **NP** (Network Processor) pour accélérer le traitement des sessions autorisées après inspection initiale.\n\nAvantages de NTurbo :\n- Améliore les performances IPS sans dégrader la sécurité\n- Les sessions autorisées sont traitées par les puces NP\n- Réduit la charge CPU du processus ipsengine\n- Disponible uniquement sur les FortiGate équipés de puces NP\n\nNTurbo ne remplace pas l'inspection IPS initiale — il accélère uniquement les sessions déjà inspectées et autorisées.",
+  "diagrams": [
+    {
+      "caption": "Architecture de monitoring IPS : flux de trafic, moteur ipsengine, offload NTurbo vers puces NP, et commandes de diagnostic.",
+      "height": 200,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 200'><rect width='540' height='200' fill='#0d1117'/><rect x='10' y='80' width='70' height='36' rx='5' fill='#1e293b' stroke='#64748b' stroke-width='1.5'/><text x='45' y='102' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#e2e8f0'>Trafic</text><line x1='80' y1='98' x2='120' y2='98' stroke='#3b82f6' stroke-width='1.5'/><polygon points='120,98 112,94 112,102' fill='#3b82f6'/><rect x='120' y='72' width='120' height='52' rx='6' fill='#0f2235' stroke='#3b82f6' stroke-width='2'/><text x='180' y='93' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#93c5fd'>ipsengine</text><text x='180' y='109' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>CPU — diagnose sys top</text><text x='180' y='122' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>diagnose ips session stat</text><line x1='240' y1='88' x2='280' y2='65' stroke='#22c55e' stroke-width='1.5'/><polygon points='280,65 273,68 275,58' fill='#22c55e'/><rect x='280' y='45' width='110' height='36' rx='5' fill='#1a1f0a' stroke='#22c55e' stroke-width='1.5'/><text x='335' y='63' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#86efac'>NTurbo (NP)</text><text x='335' y='77' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>Sessions autorisées</text><line x1='240' y1='108' x2='280' y2='125' stroke='#f97316' stroke-width='1.5'/><polygon points='280,125 272,118 274,128' fill='#f97316'/><rect x='280' y='112' width='110' height='36' rx='5' fill='#2d1a00' stroke='#f97316' stroke-width='1.5'/><text x='335' y='130' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='700' fill='#fdba74'>Logs IPS</text><text x='335' y='144' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>Security Events</text><rect x='400' y='112' width='130' height='36' rx='5' fill='#1e293b' stroke='#475569' stroke-width='1'/><text x='465' y='126' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>diagnose ips signature list</text><text x='465' y='140' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>diagnose autoupdate versions</text><line x1='390' y1='130' x2='400' y2='130' stroke='#475569' stroke-width='1'/><rect x='120' y='155' width='120' height='28' rx='4' fill='#1a0020' stroke='#a855f7' stroke-width='1'/><text x='180' y='173' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#d8b4fe'>Fail-open / Fail-close</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Où consulter les logs IPS dans l'interface FortiGate ?",
+      "choices": [
+        "Dashboard > Widgets > IPS Events",
+        "Log & Report > Security Events > Intrusion Prevention",
+        "Security Profiles > IPS > Logs",
+        "Monitor > IPS Monitor"
+      ],
+      "answer": 1,
+      "explain": "Les logs IPS sont consultables dans Log & Report > Security Events > Intrusion Prevention."
+    },
+    {
+      "q": "Quelle commande CLI liste toutes les signatures IPS chargées dans le moteur FortiGate ?",
+      "choices": [
+        "diagnose ips session stat",
+        "diagnose ips signature list",
+        "diagnose autoupdate versions",
+        "diagnose debug application ipsmonitor -1"
+      ],
+      "answer": 1,
+      "explain": "La commande `diagnose ips signature list` liste toutes les signatures IPS chargées dans le moteur."
+    },
+    {
+      "q": "Quelle commande CLI affiche les statistiques de sessions IPS en temps réel ?",
+      "choices": [
+        "diagnose ips signature list",
+        "diagnose ips anomaly list",
+        "diagnose ips session stat",
+        "diagnose sys top"
+      ],
+      "answer": 2,
+      "explain": "La commande `diagnose ips session stat` affiche les statistiques de sessions IPS en temps réel : nombre de sessions inspectées, paquets analysés, signatures déclenchées."
+    },
+    {
+      "q": "Quelle commande CLI permet de voir les versions des bases de signatures FortiGuard ?",
+      "choices": [
+        "diagnose ips session stat",
+        "get system status",
+        "diagnose autoupdate versions",
+        "diagnose ips signature list"
+      ],
+      "answer": 2,
+      "explain": "La commande `diagnose autoupdate versions` affiche les versions courantes des bases de signatures (IPS, AV, App Control, etc.)."
+    },
+    {
+      "q": "Que fait NTurbo dans le contexte de l'IPS FortiGate ?",
+      "choices": [
+        "Il remplace l'inspection IPS par une analyse comportementale",
+        "Il accélère le traitement hardware des sessions autorisées via les puces NP (Network Processor)",
+        "Il augmente la profondeur d'inspection des signatures complexes",
+        "Il synchronise les signatures IPS entre FortiGates en cluster"
+      ],
+      "answer": 1,
+      "explain": "NTurbo est une accélération hardware du traitement IPS via les puces NP (Network Processor) pour les sessions autorisées — améliore les performances sans dégrader la sécurité."
+    },
+    {
+      "q": "Quelle commande CLI liste les anomalies rate-based configurées dans les capteurs IPS ?",
+      "choices": [
+        "diagnose ips signature list",
+        "diagnose ips anomaly list",
+        "diagnose ips session stat",
+        "diagnose autoupdate versions"
+      ],
+      "answer": 1,
+      "explain": "La commande `diagnose ips anomaly list` liste les anomalies de taux (rate-based) configurées dans les capteurs IPS."
+    },
+    {
+      "q": "Quel processus FortiGate est responsable du moteur IPS et est visible dans `diagnose sys top` ?",
+      "choices": [
+        "ipsmonitor",
+        "ipsengine",
+        "fortiips",
+        "ipsd"
+      ],
+      "answer": 1,
+      "explain": "Le processus ipsengine est responsable du moteur IPS. Il est visible dans `diagnose sys top` et consomme du CPU lors des inspections IPS."
+    },
+    {
+      "q": "En mode fail-open IPS, que se passe-t-il si le moteur ipsengine est surchargé ?",
+      "choices": [
+        "Le trafic est bloqué jusqu'au retour à la normale",
+        "Le trafic passe sans inspection IPS",
+        "FortiGate réduit automatiquement le nombre de signatures actives",
+        "Une alerte est envoyée et l'IPS est désactivé manuellement"
+      ],
+      "answer": 1,
+      "explain": "En fail-open IPS, si le moteur ipsengine est surchargé ou en crash, le trafic passe sans inspection IPS. La disponibilité est prioritaire."
+    },
+    {
+      "q": "Quels champs sont présents dans un log IPS FortiGate ?",
+      "choices": [
+        "Timestamp, URL, User-Agent, Response Code",
+        "Timestamp, Src IP, Dst IP, protocole, signature, sévérité, action, interface",
+        "VLAN, MAC source, MAC destination, protocole",
+        "Username, groupe, politique, durée de session"
+      ],
+      "answer": 1,
+      "explain": "Un log IPS contient : timestamp, src IP, dst IP, protocole, signature, sévérité, action et interface réseau."
+    },
+    {
+      "q": "Sur quels équipements FortiGate NTurbo est-il disponible ?",
+      "choices": [
+        "Tous les FortiGate sans exception",
+        "Uniquement les FortiGate équipés de puces NP (Network Processor)",
+        "Uniquement les FortiGate avec licence Advanced Threat Protection",
+        "Uniquement les FortiGate en cluster actif-actif"
+      ],
+      "answer": 1,
+      "explain": "NTurbo est disponible uniquement sur les FortiGate équipés de puces NP (Network Processor) qui permettent l'accélération hardware."
+    },
+    {
+      "q": "Quelle commande active le debug du processus ipsmonitor ?",
+      "choices": [
+        "diagnose ips session stat",
+        "diagnose debug application ipsmonitor -1",
+        "diagnose debug application ipsengine -1",
+        "diagnose ips anomaly list"
+      ],
+      "answer": 1,
+      "explain": "La commande `diagnose debug application ipsmonitor -1` active le debug du processus ipsmonitor — utile pour diagnostiquer les problèmes de mise à jour ou de communication avec FortiGuard."
+    },
+    {
+      "q": "Quel mode fail IPS privilégie la disponibilité sur la sécurité ?",
+      "choices": [
+        "Fail-close",
+        "Fail-open",
+        "Fail-safe",
+        "Fail-bypass"
+      ],
+      "answer": 1,
+      "explain": "Le mode fail-open privilégie la disponibilité — si le moteur ipsengine cesse de fonctionner, le trafic passe sans inspection IPS."
+    },
+    {
+      "q": "NTurbo traite-t-il toutes les sessions ou seulement une partie ?",
+      "choices": [
+        "Toutes les sessions, y compris les nouvelles connexions non inspectées",
+        "Uniquement les sessions autorisées après inspection initiale par ipsengine",
+        "Uniquement les sessions UDP et ICMP",
+        "Uniquement les sessions avec des signatures de sévérité Low ou Info"
+      ],
+      "answer": 1,
+      "explain": "NTurbo accélère uniquement les sessions déjà inspectées et autorisées par ipsengine — il ne remplace pas l'inspection IPS initiale."
+    },
+    {
+      "q": "Où le processus ipsengine apparaît-il lors de la supervision système FortiGate ?",
+      "choices": [
+        "Dans les logs firewall de Log & Report",
+        "Dans la sortie de `diagnose sys top`",
+        "Dans le tableau de bord Dashboard uniquement",
+        "Dans FortiView > Applications"
+      ],
+      "answer": 1,
+      "explain": "Le processus ipsengine est visible dans la sortie de `diagnose sys top`. Sa consommation CPU indique la charge de l'inspection IPS."
+    },
+    {
+      "q": "Quel avantage principal apporte NTurbo pour les performances IPS ?",
+      "choices": [
+        "Il augmente la capacité de stockage des logs IPS",
+        "Il réduit la charge CPU du processus ipsengine en traitant les sessions autorisées via les puces NP",
+        "Il permet d'inspecter simultanément plus de protocoles",
+        "Il double la profondeur d'analyse des signatures"
+      ],
+      "answer": 1,
+      "explain": "NTurbo réduit la charge CPU du processus ipsengine en traitant les sessions autorisées via les puces NP (Network Processor), améliorant les performances sans dégrader la sécurité."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Où consulter les logs IPS dans l'interface FortiGate ?",
+      "choices": [
+        "Dashboard > Widgets > IPS Events",
+        "Log & Report > Security Events > Intrusion Prevention",
+        "Security Profiles > IPS > Logs",
+        "Monitor > IPS Monitor"
+      ],
+      "answer": 1,
+      "explain": "Les logs IPS sont consultables dans Log & Report > Security Events > Intrusion Prevention."
+    },
+    {
+      "q": "Quelle commande CLI liste toutes les signatures IPS chargées dans le moteur FortiGate ?",
+      "choices": [
+        "diagnose ips session stat",
+        "diagnose ips signature list",
+        "diagnose autoupdate versions",
+        "diagnose debug application ipsmonitor -1"
+      ],
+      "answer": 1,
+      "explain": "La commande `diagnose ips signature list` liste toutes les signatures IPS chargées dans le moteur."
+    },
+    {
+      "q": "Que fait NTurbo dans le contexte de l'IPS FortiGate ?",
+      "choices": [
+        "Il remplace l'inspection IPS par une analyse comportementale",
+        "Il accélère le traitement hardware des sessions autorisées via les puces NP (Network Processor)",
+        "Il augmente la profondeur d'inspection des signatures complexes",
+        "Il synchronise les signatures IPS entre FortiGates en cluster"
+      ],
+      "answer": 1,
+      "explain": "NTurbo est une accélération hardware du traitement IPS via les puces NP (Network Processor) pour les sessions autorisées — améliore les performances sans dégrader la sécurité."
+    },
+    {
+      "q": "En mode fail-open IPS, que se passe-t-il si le moteur ipsengine est surchargé ?",
+      "choices": [
+        "Le trafic est bloqué jusqu'au retour à la normale",
+        "Le trafic passe sans inspection IPS",
+        "FortiGate réduit automatiquement le nombre de signatures actives",
+        "Une alerte est envoyée et l'IPS est désactivé manuellement"
+      ],
+      "answer": 1,
+      "explain": "En fail-open IPS, si le moteur ipsengine est surchargé ou en crash, le trafic passe sans inspection IPS. La disponibilité est prioritaire."
+    },
+    {
+      "q": "Quelle commande CLI affiche les statistiques de sessions IPS en temps réel ?",
+      "choices": [
+        "diagnose ips signature list",
+        "diagnose ips anomaly list",
+        "diagnose ips session stat",
+        "diagnose sys top"
+      ],
+      "answer": 2,
+      "explain": "La commande `diagnose ips session stat` affiche les statistiques de sessions IPS en temps réel : nombre de sessions inspectées, paquets analysés, signatures déclenchées."
+    }
+  ]
+}
