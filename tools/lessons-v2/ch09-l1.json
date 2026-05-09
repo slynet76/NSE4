@@ -1,0 +1,120 @@
+{
+  "id": "ch09-l1",
+  "module": "Web Filtering",
+  "title": "Composants du filtrage web",
+  "durationMin": 6,
+  "content": "## Objectif du filtrage web\n\nLe filtrage web FortiGate a deux buts :\n1. **Empêcher les utilisateurs d'atteindre des sites malveillants**.\n2. **Bloquer les communications sortantes** si un poste est déjà infecté.\n\nAprès l'établissement d'une connexion TCP, le navigateur envoie une requête **HTTP GET**. FortiGate intercepte cette requête, extrait les informations clés (URL, hostname…) et consulte FortiGuard pour catégoriser le site. L'action appliquée dépend du profil web filter rattaché à la politique pare-feu.\n\n## Les trois composants principaux\n\n![Composants du filtrage web](diagram:0)\n\n### 1. Web content filtering\n\nBloque les pages contenant des **mots-clés ou des motifs** définis par l'administrateur. Idéal pour bloquer des thèmes précis indépendamment du domaine.\n\n### 2. URL filtering\n\nUtilise des **URL ou des patterns** pour bloquer ou exempter des pages de sources spécifiques. Peut aussi bloquer des URL malveillantes détectées par FortiSandbox.\n\n> **Limiter le filtrage par domaine** : filtrer `tumblr.com` entier bloquerait tous les blogs, y compris les légitimes. On peut cibler `tumblr.com/hacking` pour rester précis.\n\n### 3. FortiGuard Web Filtering\n\nService cloud qui **classifie dynamiquement** les URL dans des catégories. FortiGate envoie une **requête temps réel** aux serveurs FortiGuard pour obtenir la catégorie, puis applique l'action configurée dans le profil.\n\n## Inspection du trafic chiffré (HTTPS)\n\n### SSL certificate inspection\n\nFortiGate n'a **pas besoin de déchiffrer le payload** pour filtrer — il inspecte uniquement la couche SSL/TLS.\n\nPour identifier le site demandé, FortiGate utilise :\n1. Le **SNI** (*Server Name Indication*) présent dans le **Client Hello** — c'est la source préférée.\n2. Si le SNI est absent → FortiGate consulte le **champ CN** (*Common Name*) du **certificat serveur**.\n\n> ⚠️ **Le CN peut ne pas correspondre au FQDN demandé.** Exemple : le CN de `youtube.com` est `google.com`. Si le navigateur ne supporte pas SNI, FortiGate peut catégoriser incorrectement le site.\n\n### Handshake TLS — les 4 étapes\n\n1. **Client Hello** — avec le SNI (extension TLS)\n2. **Server Hello**\n3. **Authentification serveur** (envoi du certificat)\n4. **Server Hello Done**\n\nPour le filtrage web, l'inspection de certificat SSL est généralement suffisante — FortiGate n'a pas besoin de lire le payload HTTP.",
+  "diagrams": [
+    {
+      "caption": "Les trois composants du filtrage web FortiGate et leur interaction avec FortiGuard.",
+      "height": 200,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 560 200'><rect x='20' y='20' width='100' height='40' rx='6' fill='#374151' stroke='#6b7280' stroke-width='1.5'/><text x='70' y='44' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#d1d5db'>Client</text><rect x='220' y='10' width='120' height='180' rx='8' fill='#1e3a5f' stroke='#3b82f6' stroke-width='2'/><text x='280' y='30' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#93c5fd'>FortiGate</text><text x='280' y='52' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#e2e8f0'>Web Content</text><text x='280' y='64' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#e2e8f0'>Filter</text><line x1='280' y1='68' x2='280' y2='80' stroke='#6b7280' stroke-width='1'/><text x='280' y='92' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#e2e8f0'>URL Filter</text><line x1='280' y1='97' x2='280' y2='110' stroke='#6b7280' stroke-width='1'/><text x='280' y='122' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#e2e8f0'>FortiGuard</text><text x='280' y='134' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#e2e8f0'>Categories</text><rect x='430' y='60' width='110' height='50' rx='6' fill='#1a2e1a' stroke='#22c55e' stroke-width='1.5'/><text x='485' y='80' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='700' fill='#86efac'>FortiGuard</text><text x='485' y='94' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#86efac'>Cloud Rating</text><rect x='430' y='130' width='110' height='40' rx='6' fill='#374151' stroke='#6b7280' stroke-width='1.5'/><text x='485' y='154' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='700' fill='#d1d5db'>Internet</text><line x1='120' y1='40' x2='220' y2='80' stroke='#3b82f6' stroke-width='2'/><polygon points='220,80 210,74 214,84' fill='#3b82f6'/><text x='165' y='55' font-family='sans-serif' font-size='9' fill='#93c5fd'>HTTP GET</text><line x1='340' y1='125' x2='430' y2='85' stroke='#22c55e' stroke-width='1.5' stroke-dasharray='4 3'/><polygon points='430,85 420,85 425,79' fill='#22c55e'/><text x='385' y='112' font-family='sans-serif' font-size='9' fill='#86efac'>rating req</text><line x1='340' y1='150' x2='430' y2='150' stroke='#6b7280' stroke-width='1.5'/><polygon points='430,150 420,146 420,154' fill='#6b7280'/><text x='385' y='144' font-family='sans-serif' font-size='9' fill='#64748b'>to internet</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quels sont les trois composants principaux du filtrage web FortiGate ?",
+      "choices": ["IPS, AV, URL filtering", "Web content, URL filtering, FortiGuard categories", "DNS filter, URL filter, proxy filter", "FortiGuard, FortiSandbox, URL filter"],
+      "answer": 1,
+      "explain": "Les trois composants : (1) Web content filtering (mots-clés), (2) URL filtering (patterns), (3) FortiGuard Web Filtering (catégories dynamiques)."
+    },
+    {
+      "q": "Comment FortiGate détermine-t-il la catégorie d'un site web ?",
+      "choices": ["Il consulte une base locale uniquement", "Il envoie une requête temps réel à FortiGuard", "Il analyse le contenu HTML de la page", "Il consulte le DNS local"],
+      "answer": 1,
+      "explain": "FortiGate envoie une requête temps réel aux serveurs FortiGuard pour obtenir la catégorie du site, puis applique l'action configurée."
+    },
+    {
+      "q": "Si le SNI n'est pas présent dans le Client Hello, où FortiGate trouve-t-il le FQDN ?",
+      "choices": ["Dans le champ CN du certificat serveur", "Dans les headers HTTP", "Dans le champ SAN du certificat", "Via une requête DNS inverse"],
+      "answer": 0,
+      "explain": "Sans SNI, FortiGate consulte le champ CN (Common Name) du certificat serveur. Attention : le CN peut ne pas correspondre au FQDN réel (ex: CN de youtube.com = google.com)."
+    },
+    {
+      "q": "Quelle est la première étape du handshake TLS ?",
+      "choices": ["Server Hello", "Client Hello (avec SNI)", "Certificate Request", "Change Cipher Spec"],
+      "answer": 1,
+      "explain": "Le handshake TLS commence par le Client Hello qui contient le SNI (Server Name Indication) — utilisé par FortiGate pour identifier le site."
+    },
+    {
+      "q": "Pourquoi filtrer simplement par domaine peut être insuffisant ?",
+      "choices": ["Les domaines ne sont pas routables", "Un domaine peut héberger des contenus hétérogènes avec des auteurs différents", "FortiGate ne peut pas filtrer les domaines", "Les domaines changent trop souvent"],
+      "answer": 1,
+      "explain": "Exemple : bloquer tumblr.com entier est trop large. On peut cibler tumblr.com/hacking pour plus de précision."
+    },
+    {
+      "q": "En SSL certificate inspection, FortiGate déchiffre-t-il le payload HTTPS ?",
+      "choices": ["Oui, toujours", "Non, il inspecte uniquement la couche SSL/TLS sans déchiffrer le payload", "Uniquement si le profil le configure", "Oui, mais seulement en mode proxy"],
+      "answer": 1,
+      "explain": "En SSL certificate inspection, FortiGate n'a pas besoin de déchiffrer le payload — il lit le SNI ou le CN du certificat pour catégoriser le site."
+    },
+    {
+      "q": "Pourquoi le champ CN peut-il mener à une mauvaise catégorisation ?",
+      "choices": ["Le CN est toujours vide", "Le CN peut ne pas correspondre au FQDN réel demandé par l'utilisateur", "Le CN est chiffré en TLS 1.3", "FortiGate ne lit pas le CN"],
+      "answer": 1,
+      "explain": "Exemple : le CN de youtube.com est google.com. Si le navigateur ne supporte pas SNI, FortiGate catégorise le site comme google.com au lieu de youtube.com."
+    },
+    {
+      "q": "Quand FortiGate intercepte-t-il la requête HTTP GET pour le filtrage web ?",
+      "choices": ["Avant l'établissement de la connexion TCP", "Après l'établissement de la connexion TCP", "Pendant le handshake TLS", "Uniquement sur les connexions UDP"],
+      "answer": 1,
+      "explain": "Après l'établissement de la connexion TCP, le navigateur envoie la requête HTTP GET que FortiGate intercepte pour extraire l'URL et le hostname."
+    },
+    {
+      "q": "Quel composant du filtrage web utilise des mots-clés définis par l'admin ?",
+      "choices": ["FortiGuard Web Filtering", "URL filtering", "Web content filtering", "DNS filtering"],
+      "answer": 2,
+      "explain": "Web content filtering bloque les pages contenant des mots-clés ou des motifs définis par l'administrateur."
+    },
+    {
+      "q": "Quel composant peut bloquer des URL malveillantes détectées par FortiSandbox ?",
+      "choices": ["Web content filtering", "URL filtering", "FortiGuard categories", "IPS engine"],
+      "answer": 1,
+      "explain": "URL filtering peut utiliser des patterns d'URL, y compris des URLs malveillantes identifiées par FortiSandbox."
+    },
+    {
+      "q": "En inspection SSL, quelle source d'identification du site FortiGate préfère-t-il ?",
+      "choices": ["Le champ CN du certificat", "Le SNI dans le Client Hello", "L'adresse IP de destination", "Le header HTTP Host"],
+      "answer": 1,
+      "explain": "FortiGate préfère le SNI (Server Name Indication) présent dans le Client Hello. Si absent, il se rabat sur le champ CN du certificat serveur."
+    },
+    {
+      "q": "Le filtrage web FortiGate peut-il bloquer des communications d'un poste déjà infecté ?",
+      "choices": ["Non, uniquement les accès entrants", "Oui, il bloque aussi les communications sortantes malveillantes", "Uniquement avec un profil IPS actif", "Uniquement en mode transparent"],
+      "answer": 1,
+      "explain": "Le filtrage web a deux buts : empêcher l'accès à des sites malveillants ET bloquer les communications sortantes en cas d'infection."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quels sont les trois composants principaux du filtrage web FortiGate ?",
+      "choices": ["IPS, AV, URL filtering", "Web content, URL filtering, FortiGuard categories", "DNS filter, URL filter, proxy filter", "FortiGuard, FortiSandbox, URL filter"],
+      "answer": 1,
+      "explain": "Les trois composants : web content filtering, URL filtering, FortiGuard Web Filtering (catégories dynamiques)."
+    },
+    {
+      "q": "Comment FortiGate détermine-t-il la catégorie d'un site web ?",
+      "choices": ["Il consulte une base locale uniquement", "Il envoie une requête temps réel à FortiGuard", "Il analyse le contenu HTML", "Il consulte le DNS local"],
+      "answer": 1,
+      "explain": "FortiGate envoie une requête temps réel aux serveurs FortiGuard pour obtenir la catégorie du site."
+    },
+    {
+      "q": "Si le SNI n'est pas présent dans le Client Hello, où FortiGate trouve-t-il le FQDN ?",
+      "choices": ["Dans le champ CN du certificat serveur", "Dans les headers HTTP", "Dans le champ SAN", "Via DNS inverse"],
+      "answer": 0,
+      "explain": "Sans SNI, FortiGate consulte le champ CN du certificat serveur. Attention : le CN peut ne pas correspondre au FQDN réel."
+    },
+    {
+      "q": "Quelle est la première étape du handshake TLS ?",
+      "choices": ["Server Hello", "Client Hello (avec SNI)", "Certificate Request", "Change Cipher Spec"],
+      "answer": 1,
+      "explain": "Le handshake TLS commence par le Client Hello qui contient le SNI."
+    },
+    {
+      "q": "En SSL certificate inspection, FortiGate déchiffre-t-il le payload HTTPS ?",
+      "choices": ["Oui, toujours", "Non, il inspecte uniquement la couche SSL/TLS", "Uniquement en mode proxy", "Oui, avec la clé privée du serveur"],
+      "answer": 1,
+      "explain": "En SSL certificate inspection, FortiGate lit seulement le SNI ou le CN du certificat — pas besoin de déchiffrer."
+    }
+  ]
+}

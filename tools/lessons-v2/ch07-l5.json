@@ -1,0 +1,120 @@
+{
+  "id": "ch07-l5",
+  "module": "Certificate Operations",
+  "title": "Gestion : import, CRL et store",
+  "durationMin": 6,
+  "content": "## Centralisation dans System > Certificates\n\nFortiGate centralise tous les certificats sous **System > Certificates** : import, export, génération et supervision des certificats utilisés par le boîtier.\n\n### Certificat de l'interface GUI\n\nPar défaut, FortiGate présente un **certificat self-signed** lors de la première connexion → avertissement navigateur. Trois options :\n1. Accepter une fois et laisser le navigateur mémoriser.\n2. Configurer FortiGate avec **`Fortinet_GUI_Server`** + déployer `Fortinet_CA_SSL` dans le store racine des postes admins.\n3. Générer un certificat signé par la **CA interne de l'entreprise** pour chaque FortiGate.\n\n## Import de certificats\n\n### Certificat d'entreprise (CA signing)\n\nDeux méthodes pour importer la CA de l'organisation :\n- **SCEP** (*Simple Certificate Enrollment Protocol*) — protocole standard d'enrôlement automatisé.\n- **Import depuis fichier** — import manuel.\n\n### Certificat local (serveur ou utilisateur)\n\n![Trois méthodes d'import d'un certificat local](diagram:0)\n\n**Trois méthodes** :\n1. **CSR (Certificate Signing Request)** — générer le CSR sur FortiGate, le faire signer par la CA, puis importer uniquement le fichier CER. **La clé privée ne sort jamais du FortiGate** → méthode la plus sûre.\n2. **Fichier certificat + clé privée séparée** — import de deux fichiers distincts.\n3. **PKCS#12 / PFX** — format unique contenant **à la fois le certificat et la clé privée** (extension `.pfx` ou `.p12`).\n\n> **Bonne pratique** : préférer la méthode CSR — la clé privée reste sur FortiGate et ne transite jamais sur le réseau.\n\n## CRL — Certificate Revocation List\n\nUn certificat révoqué ne peut pas être rappelé physiquement → la CA publie une **liste des certificats révoqués** (CRL).\n\nFortiGate gère les CRL de deux façons :\n\n| Méthode | Avantage |\n|---|---|\n| **Import d'un fichier CRL** | Contrôle total, mais mise à jour manuelle |\n| **Pointer vers un dépôt CRL** (HTTP, LDAP ou SCEP) | **Recommandé** — mise à jour automatique |\n\nLe **Distribution Point** de la CRL est généralement renseigné dans le champ **CRL endpoints** du certificat.\n\n> La section CRL de la GUI n'apparaît qu'une fois qu'au moins une CRL a été chargée. Une CRL ne s'affiche que si la **CA correspondante est aussi importée** dans le store.\n\n## Vue d'ensemble du store System > Certificates\n\n| Section | Contenu |\n|---|---|\n| **Local CA Certificate** | `Fortinet_CA_SSL`, `Fortinet_CA_Untrusted`, CA d'entreprise importées |\n| **Local Certificate** | Certificats du boîtier / utilisateurs (statut `Pending` pour les CSR en attente) |\n| **Remote CA Certificate** | CA tiers importées, non utilisées comme signing CA |\n| **CRL** | Listes de révocation chargées |\n\n**Colonne Source** : `Factory` (certificats livrés d'usine) ou `User` (importés par un admin).\n\n### Stores navigateurs — attention\n\nTous les navigateurs ne partagent pas le même store :\n- **Firefox** — store propre (séparé de l'OS)\n- **Chrome / Edge** — store de l'OS Windows\n- **Mac / Linux** — leur propre logique d'OS\n\nImporter le certificat racine dans le bon store : **Autorités de certification racines de confiance**.",
+  "diagrams": [
+    {
+      "caption": "Trois méthodes d'import d'un certificat local sur FortiGate, de la plus sûre à la moins sûre.",
+      "height": 190,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 190'><rect x='20' y='15' width='500' height='44' rx='8' fill='#0d2a1a' stroke='#22c55e' stroke-width='2'/><text x='270' y='35' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#86efac'>1. CSR sur FortiGate — La plus sûre ✓</text><text x='270' y='52' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>Générer CSR → CA signe → importer CER seulement. Clé privée reste sur FG.</text><rect x='20' y='75' width='500' height='44' rx='8' fill='#1e3a5f' stroke='#3b82f6' stroke-width='1.5'/><text x='270' y='95' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#93c5fd'>2. Fichier certificat + clé privée séparée</text><text x='270' y='112' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>Import de deux fichiers distincts (CER + clé). Clé transite sur le réseau.</text><rect x='20' y='135' width='500' height='44' rx='8' fill='#2d2d00' stroke='#eab308' stroke-width='1.5'/><text x='270' y='155' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#fde047'>3. PKCS#12 / PFX — fichier tout-en-un</text><text x='270' y='172' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>Un seul fichier .pfx contenant certificat + clé privée. Pratique mais moins sûr.</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel protocole d'enrôlement de certificat FortiGate prend-il en charge ?",
+      "choices": ["LDAP", "SCEP (Simple Certificate Enrollment Protocol)", "RADIUS", "OCSP"],
+      "answer": 1,
+      "explain": "FortiGate supporte SCEP (Simple Certificate Enrollment Protocol) pour l'enrôlement automatisé de certificats auprès d'une CA."
+    },
+    {
+      "q": "Quel format de fichier contient à la fois le certificat et la clé privée ?",
+      "choices": ["CER", "PEM", "PKCS#12 / PFX", "CRL"],
+      "answer": 2,
+      "explain": "PKCS#12 (extension .pfx ou .p12) contient à la fois le certificat et la clé privée dans un seul fichier."
+    },
+    {
+      "q": "Pourquoi privilégier la génération d'un CSR sur FortiGate plutôt qu'un import clé+certificat ?",
+      "choices": ["Le CSR est plus rapide à générer", "La clé privée ne sort jamais du FortiGate — méthode la plus sûre", "Le CSR est le seul format supporté par FortiGate", "Le CSR est obligatoire pour les CA d'entreprise"],
+      "answer": 1,
+      "explain": "Avec le CSR, la clé privée est générée ET reste sur FortiGate — elle ne transite jamais sur le réseau, contrairement aux méthodes d'import de clé externe."
+    },
+    {
+      "q": "Pourquoi pointer FortiGate vers un dépôt CRL HTTP/LDAP/SCEP plutôt qu'importer un fichier ?",
+      "choices": ["C'est la seule méthode supportée par FortiGate", "Les CRLs sont mises à jour automatiquement — recommandé", "Les fichiers CRL ne sont pas au bon format", "Les dépôts CRL sont plus rapides à consulter"],
+      "answer": 1,
+      "explain": "En pointant vers un dépôt CRL, les listes de révocation sont mises à jour automatiquement — évite la gestion manuelle des fichiers."
+    },
+    {
+      "q": "Une CRL importée s'affiche-t-elle si la CA correspondante n'est pas dans le store ?",
+      "choices": ["Oui, toujours", "Non, la CA correspondante doit être importée dans le store", "Oui, mais avec un avertissement", "Non, et FortiGate la supprime automatiquement"],
+      "answer": 1,
+      "explain": "Une CRL ne s'affiche dans la GUI que si la CA correspondante est aussi importée dans le store System > Certificates."
+    },
+    {
+      "q": "Quel est l'état 'Pending' dans la section Local Certificate ?",
+      "choices": ["Le certificat est en cours d'importation", "Un CSR a été généré mais n'a pas encore été signé et importé", "Le certificat a expiré", "La licence est en attente de validation"],
+      "answer": 1,
+      "explain": "Pending indique qu'un CSR a été généré sur FortiGate et attend d'être signé par une CA — la clé privée est présente, le certificat pas encore."
+    },
+    {
+      "q": "Quel navigateur utilise son propre store de certificats, indépendant de l'OS ?",
+      "choices": ["Chrome", "Edge", "Firefox", "Safari"],
+      "answer": 2,
+      "explain": "Firefox possède son propre store de certificats, indépendant du store système. Chrome et Edge utilisent le store de l'OS Windows."
+    },
+    {
+      "q": "Où importer le certificat racine pour que le navigateur fasse confiance aux certificats FortiGate ?",
+      "choices": ["Dans le store 'Intermediate CA'", "Dans le store 'Autorités de certification racines de confiance'", "Dans le store 'Personal'", "Dans le store 'Trusted Publishers'"],
+      "answer": 1,
+      "explain": "Il faut importer Fortinet_CA_SSL dans le store 'Autorités de certification racines de confiance' (Trusted Root Certification Authorities)."
+    },
+    {
+      "q": "Que contient la colonne 'Source' dans System > Certificates ?",
+      "choices": ["L'adresse IP de la CA émettrice", "Factory (livré d'usine) ou User (importé par un admin)", "Le protocole utilisé pour l'import", "Le système d'exploitation de la CA"],
+      "answer": 1,
+      "explain": "La colonne Source indique Factory (certificats Fortinet d'usine) ou User (importés/générés par un administrateur)."
+    },
+    {
+      "q": "Où se trouve le Distribution Point d'une CRL dans un certificat ?",
+      "choices": ["Dans le champ CN", "Dans le champ CRL endpoints du certificat", "Dans le champ SAN", "Dans le champ Issuer"],
+      "answer": 1,
+      "explain": "Le Distribution Point de la CRL est généralement renseigné dans le champ CRL endpoints du certificat — permet à FortiGate de savoir où télécharger la CRL."
+    },
+    {
+      "q": "Combien de méthodes d'import d'un certificat local FortiGate propose-t-il ?",
+      "choices": ["1", "2", "3", "4"],
+      "answer": 2,
+      "explain": "Trois méthodes : (1) CSR généré sur FortiGate, (2) fichier certificat + clé privée séparée, (3) PKCS#12/PFX tout-en-un."
+    },
+    {
+      "q": "Dans quel menu FortiGate exporte-t-on Fortinet_CA_SSL pour l'importer dans les navigateurs clients ?",
+      "choices": ["Network > Interfaces", "System > Certificates", "Security Profiles > SSL/SSH", "System > Admin > Certificate"],
+      "answer": 1,
+      "explain": "System > Certificates est l'interface centrale pour exporter Fortinet_CA_SSL au format CER et le déployer sur les postes clients."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quel protocole d'enrôlement de certificat FortiGate prend-il en charge ?",
+      "choices": ["LDAP", "SCEP (Simple Certificate Enrollment Protocol)", "RADIUS", "OCSP"],
+      "answer": 1,
+      "explain": "FortiGate supporte SCEP pour l'enrôlement automatisé de certificats."
+    },
+    {
+      "q": "Quel format de fichier contient à la fois le certificat et la clé privée ?",
+      "choices": ["CER", "PEM", "PKCS#12 / PFX", "CRL"],
+      "answer": 2,
+      "explain": "PKCS#12 (extension .pfx ou .p12) contient à la fois le certificat et la clé privée."
+    },
+    {
+      "q": "Pourquoi privilégier la génération d'un CSR sur FortiGate ?",
+      "choices": ["Plus rapide à générer", "La clé privée ne sort jamais du FortiGate — méthode la plus sûre", "Seul format supporté", "Obligatoire pour les CA d'entreprise"],
+      "answer": 1,
+      "explain": "Avec le CSR, la clé privée reste sur FortiGate — elle ne transite jamais sur le réseau."
+    },
+    {
+      "q": "Pourquoi pointer FortiGate vers un dépôt CRL plutôt qu'importer un fichier ?",
+      "choices": ["Seule méthode supportée", "Les CRLs sont mises à jour automatiquement — recommandé", "Les fichiers CRL ne sont pas au bon format", "Les dépôts sont plus rapides"],
+      "answer": 1,
+      "explain": "Les dépôts CRL permettent des mises à jour automatiques — évite la gestion manuelle."
+    },
+    {
+      "q": "Une CRL importée s'affiche-t-elle si la CA correspondante n'est pas dans le store ?",
+      "choices": ["Oui, toujours", "Non, la CA correspondante doit être importée", "Oui mais avec avertissement", "Non, FortiGate la supprime"],
+      "answer": 1,
+      "explain": "Une CRL ne s'affiche que si la CA correspondante est aussi présente dans le store."
+    }
+  ]
+}

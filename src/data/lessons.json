@@ -2051,11 +2051,152 @@
         "id":  "ch07-l3",
         "module":  "Certificate Operations",
         "title":  "Validation et certificats invalides",
-        "durationMin":  5,
-        "content":  "En full SSL inspection, FortiGate inspecte le certificat prÃ©sentÃ© par le serveur. Quatre raisons peuvent rendre un certificat invalide :\n- Expired : la date de validitÃ© est dÃ©passÃ©e.\n- Revoked : le certificat figure dans la CRL de sa CA.\n- Validation timeout : impossible de joindre la CA pour valider Ã  temps.\n- Validation failed : la signature ne valide pas, ou le certificat n\u0027est pas encore valide.\n\nPour chacun de ces cas, l\u0027administrateur peut configurer une action dans le profil SSL/SSH :\n- `Keep Untrusted \u0026 Allow` : FortiGate laisse passer mais marque le certificat comme non fiable (le navigateur affichera l\u0027avertissement).\n- `Block` : FortiGate bloque purement et simplement.\n- `Trust \u0026 Allow` : FortiGate considÃ¨re le certificat comme valide (Ã  utiliser avec prÃ©caution).\n\nDeux contrÃ´les sont menÃ©s en parallÃ¨le :\n- La validitÃ© (expiration, rÃ©vocation, validation).\n- La validation de la chaÃ®ne, basÃ©e sur les CA installÃ©es localement et les certificats prÃ©sentÃ©s par le serveur.\n\nSelon les rÃ©sultats, FortiGate prÃ©sente au client un certificat temporaire signÃ© soit par `Fortinet_CA_SSL` (si tout est OK) soit par `Fortinet_CA_Untrusted` (si problÃ¨me). On peut aussi tracer ces incidents via l\u0027option `Log SSL anomalies`.\n\nGestion des certificats non fiables (Untrusted SSL certificates) â€” par exemple un certificat self-signed ou non importÃ© dans le store du navigateur. Trois options :\n- `Allow` : FortiGate gÃ©nÃ¨re un certificat temporaire signÃ© par `Fortinet_CA_Untrusted` et le prÃ©sente au navigateur ; le navigateur affiche un avertissement, mais l\u0027utilisateur peut continuer.\n- `Block` : FortiGate bloque la connexion, l\u0027utilisateur ne peut pas continuer.\n- `Ignore` : FortiGate prÃ©sente toujours un certificat signÃ© par `Fortinet_CA_SSL`, peu importe le statut du certificat serveur. Cela masque le problÃ¨me â€” Ã  Ã©viter en gÃ©nÃ©ral.\n\nPour que ce mÃ©canisme fonctionne sans avertissement permanent cÃ´tÃ© utilisateur :\n- `Fortinet_CA_SSL` doit Ãªtre importÃ© comme racine de confiance dans le navigateur ou l\u0027OS du poste client.\n- `Fortinet_CA_Untrusted` ne doit JAMAIS Ãªtre importÃ© comme CA de confiance â€” c\u0027est prÃ©cisÃ©ment son rÃ´le de provoquer un warning.\n\nGestion des sites contrastÃ©s : si la chaÃ®ne complÃ¨te d\u0027un certificat n\u0027est pas valide, FortiGate ne peut signer correctement. Il faut donc s\u0027assurer que les CA intermÃ©diaires nÃ©cessaires sont prÃ©sentes dans le store des CA distantes. FortiGate transmet la chaÃ®ne au navigateur lors du handshake.\n\nÃ€ retenir pour l\u0027examen : les 4 motifs d\u0027invaliditÃ©, les 3 actions (Keep Untrusted/Block/Trust), les 2 certificats `Fortinet_CA_SSL` et `Fortinet_CA_Untrusted` et leur usage opposÃ© cÃ´tÃ© navigateur.",
+        "durationMin":  6,
+        "content":  "## Les 4 motifs d\u0027invalidité d\u0027un certificat\n\nEn full SSL inspection, FortiGate inspecte le certificat présenté par le serveur. Quatre raisons peuvent le rendre invalide :\n\n| Motif | Description |\n|---|---|\n| **Expired** | La date de validité est dépassée |\n| **Revoked** | Le certificat figure dans la CRL de sa CA |\n| **Validation timeout** | Impossible de joindre la CA pour valider à temps |\n| **Validation failed** | La signature ne valide pas, ou le certificat n\u0027est pas encore valide |\n\n\u003e **Ce qui n\u0027est PAS un motif d\u0027invalidité sur FortiGate** : *Wrong cipher* — le chiffrement utilisé n\u0027est pas un critère de validité du certificat lui-même.\n\n## Les 3 actions configurables par motif\n\nPour chacun des 4 motifs ci-dessus, l\u0027administrateur configure une action dans le profil SSL/SSH :\n\n| Action | Comportement |\n|---|---|\n| **Keep Untrusted \u0026 Allow** | FortiGate laisse passer mais marque le certificat comme non fiable (le navigateur affichera l\u0027avertissement) |\n| **Block** | FortiGate bloque la connexion |\n| **Trust \u0026 Allow** | FortiGate considère le certificat comme valide (à utiliser avec précaution) |\n\n## Certificats temporaires FortiGate\n\n![Fortinet_CA_SSL vs Fortinet_CA_Untrusted](diagram:0)\n\nSelon l\u0027état du certificat serveur, FortiGate présente au client un **certificat temporaire** signé par l\u0027une de ces deux CA :\n\n- **`Fortinet_CA_SSL`** : tout est OK — le navigateur n\u0027affiche pas d\u0027avertissement (si cette CA est dans le store de confiance du navigateur).\n- **`Fortinet_CA_Untrusted`** : problème détecté — le navigateur affiche intentionnellement un avertissement.\n\n\u003e ⚠️ **Ne jamais importer `Fortinet_CA_Untrusted` dans le store de confiance du navigateur** — cela supprimerait l\u0027avertissement légitime sur les certificats invalides, masquant le problème à l\u0027utilisateur.\n\nOn peut tracer les incidents via l\u0027option **`Log SSL anomalies`**.\n\n## Gestion des certificats non fiables (Untrusted SSL)\n\nTrois options pour gérer les certificats non fiables (ex : certificat self-signed non importé) :\n\n| Option | Comportement |\n|---|---|\n| **Allow** | Certificat temporaire signé par `Fortinet_CA_Untrusted` → avertissement navigateur, l\u0027utilisateur peut continuer |\n| **Block** | FortiGate bloque la connexion, l\u0027utilisateur ne peut pas continuer |\n| **Ignore** | FortiGate présente toujours un certificat signé par `Fortinet_CA_SSL` quel que soit le statut du certificat serveur — **masque le problème, à éviter** |\n\n## Deux contrôles en parallèle\n\nFortiGate effectue simultanément :\n1. **Validité** : expiration, révocation, timeout de validation.\n2. **Validation de la chaîne** : basée sur les CA installées localement et les certificats présentés par le serveur.\n\nSi la chaîne complète n\u0027est pas valide, FortiGate ne peut pas signer correctement → s\u0027assurer que les **CA intermédiaires** nécessaires sont présentes dans le store des CA distantes.",
+        "diagrams":  [
+                         {
+                             "caption":  "Fortinet_CA_SSL vs Fortinet_CA_Untrusted : quand chacune est utilisée et la règle d\u0027importation dans le navigateur.",
+                             "height":  200,
+                             "svg":  "\u003csvg xmlns=\u0027http://www.w3.org/2000/svg\u0027 viewBox=\u00270 0 540 200\u0027\u003e\u003crect x=\u002720\u0027 y=\u002720\u0027 width=\u0027230\u0027 height=\u0027160\u0027 rx=\u00278\u0027 fill=\u0027#0d2a1a\u0027 stroke=\u0027#22c55e\u0027 stroke-width=\u00272\u0027/\u003e\u003ctext x=\u0027135\u0027 y=\u002745\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002712\u0027 font-weight=\u0027700\u0027 fill=\u0027#86efac\u0027\u003eFortinet_CA_SSL\u003c/text\u003e\u003ctext x=\u0027135\u0027 y=\u002765\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#e2e8f0\u0027\u003eCertificat serveur valide\u003c/text\u003e\u003ctext x=\u0027135\u0027 y=\u002780\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#e2e8f0\u0027\u003eChaîne complète OK\u003c/text\u003e\u003crect x=\u002740\u0027 y=\u002795\u0027 width=\u0027190\u0027 height=\u002730\u0027 rx=\u00274\u0027 fill=\u0027#1a3d1a\u0027 stroke=\u0027#22c55e\u0027 stroke-width=\u00271\u0027/\u003e\u003ctext x=\u0027135\u0027 y=\u0027114\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002711\u0027 fill=\u0027#86efac\u0027\u003e✓ Navigateur OK si importée\u003c/text\u003e\u003ctext x=\u0027135\u0027 y=\u0027145\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#64748b\u0027\u003e→ Importer dans store racine\u003c/text\u003e\u003ctext x=\u0027135\u0027 y=\u0027160\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#64748b\u0027\u003edes postes clients\u003c/text\u003e\u003crect x=\u0027290\u0027 y=\u002720\u0027 width=\u0027230\u0027 height=\u0027160\u0027 rx=\u00278\u0027 fill=\u0027#2b1010\u0027 stroke=\u0027#ef4444\u0027 stroke-width=\u00272\u0027/\u003e\u003ctext x=\u0027405\u0027 y=\u002745\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002712\u0027 font-weight=\u0027700\u0027 fill=\u0027#fca5a5\u0027\u003eFortinet_CA_Untrusted\u003c/text\u003e\u003ctext x=\u0027405\u0027 y=\u002765\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#e2e8f0\u0027\u003eCertificat serveur invalide\u003c/text\u003e\u003ctext x=\u0027405\u0027 y=\u002780\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#e2e8f0\u0027\u003e(expiré, révoqué, self-signed…)\u003c/text\u003e\u003crect x=\u0027310\u0027 y=\u002795\u0027 width=\u0027190\u0027 height=\u002730\u0027 rx=\u00274\u0027 fill=\u0027#3b1010\u0027 stroke=\u0027#ef4444\u0027 stroke-width=\u00271\u0027/\u003e\u003ctext x=\u0027405\u0027 y=\u0027114\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002711\u0027 fill=\u0027#fca5a5\u0027\u003e⚠ Avertissement navigateur\u003c/text\u003e\u003ctext x=\u0027405\u0027 y=\u0027145\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#ef4444\u0027\u003e✗ NE PAS importer dans le store\u003c/text\u003e\u003ctext x=\u0027405\u0027 y=\u0027160\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#ef4444\u0027\u003e→ Masquerait les vrais problèmes\u003c/text\u003e\u003c/svg\u003e"
+                         }
+                     ],
+        "questionPool":  [
+                             {
+                                 "q":  "Lequel n\u0027est PAS un motif d\u0027invalidité d\u0027un certificat sur FortiGate ?",
+                                 "choices":  [
+                                                 "Expired",
+                                                 "Revoked",
+                                                 "Validation timeout",
+                                                 "Wrong cipher"
+                                             ],
+                                 "answer":  3,
+                                 "explain":  "Les 4 motifs valides : Expired, Revoked, Validation timeout, Validation failed. Wrong cipher n\u0027est pas un critère de validité du certificat lui-même."
+                             },
+                             {
+                                 "q":  "Quelle action laisse passer le trafic mais marque le certificat comme non fiable ?",
+                                 "choices":  [
+                                                 "Trust \u0026 Allow",
+                                                 "Block",
+                                                 "Keep Untrusted \u0026 Allow",
+                                                 "Ignore"
+                                             ],
+                                 "answer":  2,
+                                 "explain":  "Keep Untrusted \u0026 Allow laisse passer le trafic mais marque le certificat comme non fiable — le navigateur affiche un avertissement."
+                             },
+                             {
+                                 "q":  "Pourquoi NE PAS importer Fortinet_CA_Untrusted dans le store de confiance d\u0027un navigateur ?",
+                                 "choices":  [
+                                                 "Cette CA n\u0027est pas compatible avec les navigateurs",
+                                                 "Cela supprimerait l\u0027avertissement légitime sur les certificats invalides",
+                                                 "Elle expire après 90 jours",
+                                                 "Elle n\u0027est pas exportable"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Fortinet_CA_Untrusted est précisément conçue pour déclencher un avertissement. L\u0027importer comme CA de confiance masquerait les vrais problèmes de certificats."
+                             },
+                             {
+                                 "q":  "Quelle option de gestion du untrusted présente toujours un certificat signé Fortinet_CA_SSL ?",
+                                 "choices":  [
+                                                 "Allow",
+                                                 "Block",
+                                                 "Ignore",
+                                                 "Trust \u0026 Allow"
+                                             ],
+                                 "answer":  2,
+                                 "explain":  "Ignore : FortiGate présente toujours Fortinet_CA_SSL quel que soit le statut du certificat serveur — masque le problème, à éviter."
+                             },
+                             {
+                                 "q":  "Quel paramètre permet de tracer les anomalies de certificats SSL ?",
+                                 "choices":  [
+                                                 "Enable certificate logging",
+                                                 "Log SSL anomalies",
+                                                 "SSL audit mode",
+                                                 "Certificate debug"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "L\u0027option \u0027Log SSL anomalies\u0027 dans le profil SSL/SSH permet de tracer les incidents de certificats."
+                             },
+                             {
+                                 "q":  "Que signifie le motif \u0027Validation timeout\u0027 ?",
+                                 "choices":  [
+                                                 "Le certificat a expiré",
+                                                 "Impossible de joindre la CA pour valider le certificat à temps",
+                                                 "Le certificat est révoqué",
+                                                 "La signature numérique n\u0027est pas valide"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Validation timeout : FortiGate n\u0027a pas pu contacter la CA pour valider le certificat dans le délai imparti."
+                             },
+                             {
+                                 "q":  "Que signifie le motif \u0027Revoked\u0027 ?",
+                                 "choices":  [
+                                                 "Le certificat a expiré",
+                                                 "Le certificat figure dans la CRL (Certificate Revocation List) de sa CA",
+                                                 "La CA n\u0027est pas installée sur FortiGate",
+                                                 "Le certificat est self-signed"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Revoked : le certificat a été révoqué par sa CA et figure dans la CRL."
+                             },
+                             {
+                                 "q":  "Combien de motifs d\u0027invalidité de certificat FortiGate reconnaît-il ?",
+                                 "choices":  [
+                                                 "2",
+                                                 "3",
+                                                 "4",
+                                                 "5"
+                                             ],
+                                 "answer":  2,
+                                 "explain":  "4 motifs : Expired, Revoked, Validation timeout, Validation failed."
+                             },
+                             {
+                                 "q":  "Quel certificat temporaire FortiGate présente-t-il quand tout est OK ?",
+                                 "choices":  [
+                                                 "Fortinet_CA_Untrusted",
+                                                 "Fortinet_CA_SSL",
+                                                 "FortiGate_Self_Signed",
+                                                 "Fortinet_Factory"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Quand le certificat serveur est valide, FortiGate signe le certificat temporaire avec Fortinet_CA_SSL — pas d\u0027avertissement si cette CA est dans le store du navigateur."
+                             },
+                             {
+                                 "q":  "Pourquoi Fortinet_CA_SSL doit-elle être importée dans le store racine des postes clients ?",
+                                 "choices":  [
+                                                 "Pour chiffrer le trafic entre FortiGate et les clients",
+                                                 "Pour que les navigateurs fassent confiance aux certificats temporaires générés par FortiGate",
+                                                 "Pour permettre l\u0027authentification mutuelle TLS",
+                                                 "Pour générer des CSR sur les postes"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Si Fortinet_CA_SSL n\u0027est pas dans le store de confiance des navigateurs, chaque connexion HTTPS inspectée génèrera un avertissement de certificat."
+                             },
+                             {
+                                 "q":  "Quels deux contrôles FortiGate effectue-t-il en parallèle sur les certificats ?",
+                                 "choices":  [
+                                                 "Validité + performance",
+                                                 "Validité (expiration/révocation) + validation de la chaîne",
+                                                 "Révocation + chiffrement",
+                                                 "Chaîne + SNI"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "FortiGate vérifie simultanément : (1) la validité (expiration, révocation, timeout) et (2) la validation de la chaîne de certification."
+                             },
+                             {
+                                 "q":  "Quelle action \u0027Untrusted\u0027 bloque définitivement l\u0027accès à l\u0027utilisateur ?",
+                                 "choices":  [
+                                                 "Allow",
+                                                 "Ignore",
+                                                 "Keep Untrusted \u0026 Allow",
+                                                 "Block"
+                                             ],
+                                 "answer":  3,
+                                 "explain":  "L\u0027action Block dans la gestion des Untrusted SSL certificates bloque complètement la connexion — l\u0027utilisateur ne peut pas continuer."
+                             }
+                         ],
         "quiz":  [
                      {
-                         "q":  "Lequel n\u0027est PAS un motif d\u0027invaliditÃ© d\u0027un certificat sur FortiGate ?",
+                         "q":  "Lequel n\u0027est PAS un motif d\u0027invalidité d\u0027un certificat sur FortiGate ?",
                          "choices":  [
                                          "Expired",
                                          "Revoked",
@@ -2063,51 +2204,51 @@
                                          "Wrong cipher"
                                      ],
                          "answer":  3,
-                         "explain":  "Le chiffrement n\u0027est pas un motif d\u0027invaliditÃ© de certificat."
+                         "explain":  "Les 4 motifs valides : Expired, Revoked, Validation timeout, Validation failed. Wrong cipher n\u0027est pas un critère."
                      },
                      {
                          "q":  "Quelle action laisse passer le trafic mais marque le certificat comme non fiable ?",
                          "choices":  [
-                                         "Block",
                                          "Trust \u0026 Allow",
+                                         "Block",
                                          "Keep Untrusted \u0026 Allow",
                                          "Ignore"
                                      ],
                          "answer":  2,
-                         "explain":  "Keep Untrusted \u0026 Allow laisse le browser dÃ©cider."
+                         "explain":  "Keep Untrusted \u0026 Allow laisse passer le trafic mais déclenche un avertissement navigateur."
                      },
                      {
-                         "q":  "Pourquoi NE PAS importer Fortinet_CA_Untrusted dans le store de confiance d\u0027un navigateur ?",
+                         "q":  "Pourquoi NE PAS importer Fortinet_CA_Untrusted dans le store de confiance ?",
                          "choices":  [
-                                         "Cela ralentit le navigateur",
-                                         "Cela supprimerait l\u0027avertissement lÃ©gitime sur les certificats invalides",
-                                         "Cela bloque les MAJ",
-                                         "C\u0027est obligatoire"
+                                         "Elle n\u0027est pas compatible",
+                                         "Cela supprimerait l\u0027avertissement légitime sur les certificats invalides",
+                                         "Elle expire après 90 jours",
+                                         "Elle n\u0027est pas exportable"
                                      ],
                          "answer":  1,
-                         "explain":  "Untrusted CA doit gÃ©nÃ©rer un avertissement, c\u0027est son rÃ´le."
+                         "explain":  "Fortinet_CA_Untrusted est conçue pour déclencher un avertissement — l\u0027importer masquerait les vrais problèmes."
                      },
                      {
-                         "q":  "Quelle option de gestion du untrusted prÃ©sente toujours un certificat signÃ© Fortinet_CA_SSL ?",
+                         "q":  "Quelle option de gestion du untrusted présente toujours Fortinet_CA_SSL ?",
                          "choices":  [
                                          "Allow",
                                          "Block",
                                          "Ignore",
-                                         "Trust"
+                                         "Trust \u0026 Allow"
                                      ],
                          "answer":  2,
-                         "explain":  "Ignore masque le statut rÃ©el â€” Ã  Ã©viter."
+                         "explain":  "Ignore : FortiGate présente toujours Fortinet_CA_SSL quel que soit le statut réel — masque le problème."
                      },
                      {
-                         "q":  "Quel paramÃ¨tre permet de tracer les anomalies de certificats ?",
+                         "q":  "Quel paramètre permet de tracer les anomalies de certificats SSL ?",
                          "choices":  [
-                                         "Log all sessions",
+                                         "Enable certificate logging",
                                          "Log SSL anomalies",
-                                         "Debug SSL handshake",
-                                         "Aucun"
+                                         "SSL audit mode",
+                                         "Certificate debug"
                                      ],
                          "answer":  1,
-                         "explain":  "Log SSL anomalies enregistre les incidents."
+                         "explain":  "L\u0027option \u0027Log SSL anomalies\u0027 permet de tracer les incidents de certificats dans le profil SSL/SSH."
                      }
                  ]
     },
@@ -2179,63 +2320,204 @@
         "id":  "ch07-l5",
         "module":  "Certificate Operations",
         "title":  "Gestion : import, CRL et store",
-        "durationMin":  5,
-        "content":  "FortiGate centralise tous les certificats sous System \u003e Certificates. C\u0027est l\u0027endroit oÃ¹ l\u0027on importe, exporte, gÃ©nÃ¨re et supervise les certificats utilisÃ©s par le boÃ®tier.\n\nGUI HTTPS du FortiGate : par dÃ©faut, le boÃ®tier prÃ©sente un certificat self-signed lors de la premiÃ¨re connexion Ã  son interface, ce qui dÃ©clenche un avertissement. Trois options :\n- Accepter une fois et laisser le navigateur enregistrer le certificat.\n- Configurer FortiGate pour utiliser `Fortinet_GUI_Server` et dÃ©ployer `Fortinet_CA_SSL` dans le store racine de tous les postes administrateurs.\n- GÃ©nÃ©rer un certificat signÃ© par la CA interne de l\u0027entreprise pour chaque FortiGate.\n\nTÃ©lÃ©charger le certificat racine : depuis System \u003e Certificates, on peut exporter `Fortinet_CA_SSL` au format CER, puis l\u0027importer dans le navigateur ou l\u0027OS. Attention, tous les navigateurs ne partagent pas le mÃªme store : Firefox a le sien propre ; Chrome et Edge utilisent celui de l\u0027OS Windows ; les Mac et Linux ont leur propre logique. Bien importer le certificat dans le store des autoritÃ©s racines de confiance.\n\nImporter un certificat de signature d\u0027entreprise : si l\u0027organisation possÃ¨de une CA interne, on peut importer le certificat de cette CA dans FortiGate. Deux mÃ©thodes :\n- Connexion Ã  un serveur SCEP (Simple Certificate Enrollment Protocol) â€” protocole standard d\u0027enrÃ´lement.\n- Import depuis fichier.\n\nImporter un certificat local (serveur ou utilisateur) â€” trois mÃ©thodes :\n- GÃ©nÃ©rer un CSR (Certificate Signing Request) sur FortiGate, le faire signer par la CA, puis n\u0027importer que le fichier CER ; la clÃ© privÃ©e reste sur FortiGate (mÃ©thode la plus sÃ»re).\n- Importer un fichier de certificat avec sa clÃ© privÃ©e sÃ©parÃ©e.\n- Importer un fichier PKCS#12 (extension `.pfx`) qui contient certificat + clÃ©.\n\nCRL â€” Certificate Revocation List : un certificat ne peut pas Ãªtre rappelÃ© physiquement. La CA publie donc une liste des certificats rÃ©voquÃ©s (compromis, erreurs d\u0027Ã©mission, etc.). FortiGate gÃ¨re les CRL de deux faÃ§ons :\n- Importer un fichier CRL fourni par la CA.\n- Pointer FortiGate vers un dÃ©pÃ´t CRL accessible en HTTP, LDAP ou SCEP â€” mÃ©thode recommandÃ©e car les CRLs sont mises Ã  jour automatiquement.\n\nLe Distribution Point d\u0027une CRL est gÃ©nÃ©ralement renseignÃ© dans le champ CRL endpoints du certificat. La section CRL de la GUI n\u0027apparaÃ®t qu\u0027une fois qu\u0027au moins une CRL a Ã©tÃ© chargÃ©e. Une CRL ne s\u0027affiche que si la CA correspondante est elle aussi importÃ©e dans le store.\n\nVue d\u0027ensemble du store System \u003e Certificates :\n- Local CA Certificate : `Fortinet_CA_SSL`, `Fortinet_CA_Untrusted` et toute CA d\u0027entreprise importÃ©e.\n- Local Certificate : certificats du boÃ®tier ou utilisateurs (statut `Pending` pour les CSR en attente).\n- Remote CA Certificate : CA tiers importÃ©es non utilisÃ©es comme signing CA.\n- CRL : listes de rÃ©vocation chargÃ©es.\n- Colonne Source : `Factory` (certificats livrÃ©s d\u0027usine) ou `User` (importÃ©s par un administrateur).\n\nÃ€ retenir : les 3 mÃ©thodes d\u0027import (CSR, fichier+clÃ©, PKCS#12), SCEP comme protocole d\u0027enrÃ´lement, importance des CRLs et de leur mÃ©thode de distribution.",
+        "durationMin":  6,
+        "content":  "## Centralisation dans System \u003e Certificates\n\nFortiGate centralise tous les certificats sous **System \u003e Certificates** : import, export, génération et supervision des certificats utilisés par le boîtier.\n\n### Certificat de l\u0027interface GUI\n\nPar défaut, FortiGate présente un **certificat self-signed** lors de la première connexion → avertissement navigateur. Trois options :\n1. Accepter une fois et laisser le navigateur mémoriser.\n2. Configurer FortiGate avec **`Fortinet_GUI_Server`** + déployer `Fortinet_CA_SSL` dans le store racine des postes admins.\n3. Générer un certificat signé par la **CA interne de l\u0027entreprise** pour chaque FortiGate.\n\n## Import de certificats\n\n### Certificat d\u0027entreprise (CA signing)\n\nDeux méthodes pour importer la CA de l\u0027organisation :\n- **SCEP** (*Simple Certificate Enrollment Protocol*) — protocole standard d\u0027enrôlement automatisé.\n- **Import depuis fichier** — import manuel.\n\n### Certificat local (serveur ou utilisateur)\n\n![Trois méthodes d\u0027import d\u0027un certificat local](diagram:0)\n\n**Trois méthodes** :\n1. **CSR (Certificate Signing Request)** — générer le CSR sur FortiGate, le faire signer par la CA, puis importer uniquement le fichier CER. **La clé privée ne sort jamais du FortiGate** → méthode la plus sûre.\n2. **Fichier certificat + clé privée séparée** — import de deux fichiers distincts.\n3. **PKCS#12 / PFX** — format unique contenant **à la fois le certificat et la clé privée** (extension `.pfx` ou `.p12`).\n\n\u003e **Bonne pratique** : préférer la méthode CSR — la clé privée reste sur FortiGate et ne transite jamais sur le réseau.\n\n## CRL — Certificate Revocation List\n\nUn certificat révoqué ne peut pas être rappelé physiquement → la CA publie une **liste des certificats révoqués** (CRL).\n\nFortiGate gère les CRL de deux façons :\n\n| Méthode | Avantage |\n|---|---|\n| **Import d\u0027un fichier CRL** | Contrôle total, mais mise à jour manuelle |\n| **Pointer vers un dépôt CRL** (HTTP, LDAP ou SCEP) | **Recommandé** — mise à jour automatique |\n\nLe **Distribution Point** de la CRL est généralement renseigné dans le champ **CRL endpoints** du certificat.\n\n\u003e La section CRL de la GUI n\u0027apparaît qu\u0027une fois qu\u0027au moins une CRL a été chargée. Une CRL ne s\u0027affiche que si la **CA correspondante est aussi importée** dans le store.\n\n## Vue d\u0027ensemble du store System \u003e Certificates\n\n| Section | Contenu |\n|---|---|\n| **Local CA Certificate** | `Fortinet_CA_SSL`, `Fortinet_CA_Untrusted`, CA d\u0027entreprise importées |\n| **Local Certificate** | Certificats du boîtier / utilisateurs (statut `Pending` pour les CSR en attente) |\n| **Remote CA Certificate** | CA tiers importées, non utilisées comme signing CA |\n| **CRL** | Listes de révocation chargées |\n\n**Colonne Source** : `Factory` (certificats livrés d\u0027usine) ou `User` (importés par un admin).\n\n### Stores navigateurs — attention\n\nTous les navigateurs ne partagent pas le même store :\n- **Firefox** — store propre (séparé de l\u0027OS)\n- **Chrome / Edge** — store de l\u0027OS Windows\n- **Mac / Linux** — leur propre logique d\u0027OS\n\nImporter le certificat racine dans le bon store : **Autorités de certification racines de confiance**.",
+        "diagrams":  [
+                         {
+                             "caption":  "Trois méthodes d\u0027import d\u0027un certificat local sur FortiGate, de la plus sûre à la moins sûre.",
+                             "height":  190,
+                             "svg":  "\u003csvg xmlns=\u0027http://www.w3.org/2000/svg\u0027 viewBox=\u00270 0 540 190\u0027\u003e\u003crect x=\u002720\u0027 y=\u002715\u0027 width=\u0027500\u0027 height=\u002744\u0027 rx=\u00278\u0027 fill=\u0027#0d2a1a\u0027 stroke=\u0027#22c55e\u0027 stroke-width=\u00272\u0027/\u003e\u003ctext x=\u0027270\u0027 y=\u002735\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002712\u0027 font-weight=\u0027700\u0027 fill=\u0027#86efac\u0027\u003e1. CSR sur FortiGate — La plus sûre ✓\u003c/text\u003e\u003ctext x=\u0027270\u0027 y=\u002752\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#64748b\u0027\u003eGénérer CSR → CA signe → importer CER seulement. Clé privée reste sur FG.\u003c/text\u003e\u003crect x=\u002720\u0027 y=\u002775\u0027 width=\u0027500\u0027 height=\u002744\u0027 rx=\u00278\u0027 fill=\u0027#1e3a5f\u0027 stroke=\u0027#3b82f6\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027270\u0027 y=\u002795\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002712\u0027 font-weight=\u0027700\u0027 fill=\u0027#93c5fd\u0027\u003e2. Fichier certificat + clé privée séparée\u003c/text\u003e\u003ctext x=\u0027270\u0027 y=\u0027112\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#64748b\u0027\u003eImport de deux fichiers distincts (CER + clé). Clé transite sur le réseau.\u003c/text\u003e\u003crect x=\u002720\u0027 y=\u0027135\u0027 width=\u0027500\u0027 height=\u002744\u0027 rx=\u00278\u0027 fill=\u0027#2d2d00\u0027 stroke=\u0027#eab308\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027270\u0027 y=\u0027155\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002712\u0027 font-weight=\u0027700\u0027 fill=\u0027#fde047\u0027\u003e3. PKCS#12 / PFX — fichier tout-en-un\u003c/text\u003e\u003ctext x=\u0027270\u0027 y=\u0027172\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#64748b\u0027\u003eUn seul fichier .pfx contenant certificat + clé privée. Pratique mais moins sûr.\u003c/text\u003e\u003c/svg\u003e"
+                         }
+                     ],
+        "questionPool":  [
+                             {
+                                 "q":  "Quel protocole d\u0027enrôlement de certificat FortiGate prend-il en charge ?",
+                                 "choices":  [
+                                                 "LDAP",
+                                                 "SCEP (Simple Certificate Enrollment Protocol)",
+                                                 "RADIUS",
+                                                 "OCSP"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "FortiGate supporte SCEP (Simple Certificate Enrollment Protocol) pour l\u0027enrôlement automatisé de certificats auprès d\u0027une CA."
+                             },
+                             {
+                                 "q":  "Quel format de fichier contient à la fois le certificat et la clé privée ?",
+                                 "choices":  [
+                                                 "CER",
+                                                 "PEM",
+                                                 "PKCS#12 / PFX",
+                                                 "CRL"
+                                             ],
+                                 "answer":  2,
+                                 "explain":  "PKCS#12 (extension .pfx ou .p12) contient à la fois le certificat et la clé privée dans un seul fichier."
+                             },
+                             {
+                                 "q":  "Pourquoi privilégier la génération d\u0027un CSR sur FortiGate plutôt qu\u0027un import clé+certificat ?",
+                                 "choices":  [
+                                                 "Le CSR est plus rapide à générer",
+                                                 "La clé privée ne sort jamais du FortiGate — méthode la plus sûre",
+                                                 "Le CSR est le seul format supporté par FortiGate",
+                                                 "Le CSR est obligatoire pour les CA d\u0027entreprise"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Avec le CSR, la clé privée est générée ET reste sur FortiGate — elle ne transite jamais sur le réseau, contrairement aux méthodes d\u0027import de clé externe."
+                             },
+                             {
+                                 "q":  "Pourquoi pointer FortiGate vers un dépôt CRL HTTP/LDAP/SCEP plutôt qu\u0027importer un fichier ?",
+                                 "choices":  [
+                                                 "C\u0027est la seule méthode supportée par FortiGate",
+                                                 "Les CRLs sont mises à jour automatiquement — recommandé",
+                                                 "Les fichiers CRL ne sont pas au bon format",
+                                                 "Les dépôts CRL sont plus rapides à consulter"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "En pointant vers un dépôt CRL, les listes de révocation sont mises à jour automatiquement — évite la gestion manuelle des fichiers."
+                             },
+                             {
+                                 "q":  "Une CRL importée s\u0027affiche-t-elle si la CA correspondante n\u0027est pas dans le store ?",
+                                 "choices":  [
+                                                 "Oui, toujours",
+                                                 "Non, la CA correspondante doit être importée dans le store",
+                                                 "Oui, mais avec un avertissement",
+                                                 "Non, et FortiGate la supprime automatiquement"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Une CRL ne s\u0027affiche dans la GUI que si la CA correspondante est aussi importée dans le store System \u003e Certificates."
+                             },
+                             {
+                                 "q":  "Quel est l\u0027état \u0027Pending\u0027 dans la section Local Certificate ?",
+                                 "choices":  [
+                                                 "Le certificat est en cours d\u0027importation",
+                                                 "Un CSR a été généré mais n\u0027a pas encore été signé et importé",
+                                                 "Le certificat a expiré",
+                                                 "La licence est en attente de validation"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Pending indique qu\u0027un CSR a été généré sur FortiGate et attend d\u0027être signé par une CA — la clé privée est présente, le certificat pas encore."
+                             },
+                             {
+                                 "q":  "Quel navigateur utilise son propre store de certificats, indépendant de l\u0027OS ?",
+                                 "choices":  [
+                                                 "Chrome",
+                                                 "Edge",
+                                                 "Firefox",
+                                                 "Safari"
+                                             ],
+                                 "answer":  2,
+                                 "explain":  "Firefox possède son propre store de certificats, indépendant du store système. Chrome et Edge utilisent le store de l\u0027OS Windows."
+                             },
+                             {
+                                 "q":  "Où importer le certificat racine pour que le navigateur fasse confiance aux certificats FortiGate ?",
+                                 "choices":  [
+                                                 "Dans le store \u0027Intermediate CA\u0027",
+                                                 "Dans le store \u0027Autorités de certification racines de confiance\u0027",
+                                                 "Dans le store \u0027Personal\u0027",
+                                                 "Dans le store \u0027Trusted Publishers\u0027"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Il faut importer Fortinet_CA_SSL dans le store \u0027Autorités de certification racines de confiance\u0027 (Trusted Root Certification Authorities)."
+                             },
+                             {
+                                 "q":  "Que contient la colonne \u0027Source\u0027 dans System \u003e Certificates ?",
+                                 "choices":  [
+                                                 "L\u0027adresse IP de la CA émettrice",
+                                                 "Factory (livré d\u0027usine) ou User (importé par un admin)",
+                                                 "Le protocole utilisé pour l\u0027import",
+                                                 "Le système d\u0027exploitation de la CA"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "La colonne Source indique Factory (certificats Fortinet d\u0027usine) ou User (importés/générés par un administrateur)."
+                             },
+                             {
+                                 "q":  "Où se trouve le Distribution Point d\u0027une CRL dans un certificat ?",
+                                 "choices":  [
+                                                 "Dans le champ CN",
+                                                 "Dans le champ CRL endpoints du certificat",
+                                                 "Dans le champ SAN",
+                                                 "Dans le champ Issuer"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Le Distribution Point de la CRL est généralement renseigné dans le champ CRL endpoints du certificat — permet à FortiGate de savoir où télécharger la CRL."
+                             },
+                             {
+                                 "q":  "Combien de méthodes d\u0027import d\u0027un certificat local FortiGate propose-t-il ?",
+                                 "choices":  [
+                                                 "1",
+                                                 "2",
+                                                 "3",
+                                                 "4"
+                                             ],
+                                 "answer":  2,
+                                 "explain":  "Trois méthodes : (1) CSR généré sur FortiGate, (2) fichier certificat + clé privée séparée, (3) PKCS#12/PFX tout-en-un."
+                             },
+                             {
+                                 "q":  "Dans quel menu FortiGate exporte-t-on Fortinet_CA_SSL pour l\u0027importer dans les navigateurs clients ?",
+                                 "choices":  [
+                                                 "Network \u003e Interfaces",
+                                                 "System \u003e Certificates",
+                                                 "Security Profiles \u003e SSL/SSH",
+                                                 "System \u003e Admin \u003e Certificate"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "System \u003e Certificates est l\u0027interface centrale pour exporter Fortinet_CA_SSL au format CER et le déployer sur les postes clients."
+                             }
+                         ],
         "quiz":  [
                      {
-                         "q":  "Quel protocole d\u0027enrÃ´lement de certificat FortiGate prend-il en charge ?",
+                         "q":  "Quel protocole d\u0027enrôlement de certificat FortiGate prend-il en charge ?",
                          "choices":  [
-                                         "FTP",
-                                         "SCEP",
-                                         "TFTP",
-                                         "SNMP"
+                                         "LDAP",
+                                         "SCEP (Simple Certificate Enrollment Protocol)",
+                                         "RADIUS",
+                                         "OCSP"
                                      ],
                          "answer":  1,
-                         "explain":  "SCEP (Simple Certificate Enrollment Protocol)."
+                         "explain":  "FortiGate supporte SCEP pour l\u0027enrôlement automatisé de certificats."
                      },
                      {
-                         "q":  "Quel format de fichier contient Ã  la fois certificat et clÃ© privÃ©e ?",
+                         "q":  "Quel format de fichier contient à la fois le certificat et la clé privée ?",
                          "choices":  [
                                          "CER",
-                                         "CSR",
+                                         "PEM",
                                          "PKCS#12 / PFX",
-                                         "PEM"
+                                         "CRL"
                                      ],
                          "answer":  2,
-                         "explain":  "PKCS#12 (.pfx) contient le certificat et la clÃ©."
+                         "explain":  "PKCS#12 (extension .pfx ou .p12) contient à la fois le certificat et la clé privée."
                      },
                      {
-                         "q":  "Pourquoi privilÃ©gier la gÃ©nÃ©ration d\u0027un CSR sur FortiGate plutÃ´t qu\u0027un import clÃ©+certificat ?",
+                         "q":  "Pourquoi privilégier la génération d\u0027un CSR sur FortiGate ?",
                          "choices":  [
-                                         "Pour gagner du temps",
-                                         "Parce que la clÃ© privÃ©e ne sort jamais du FortiGate",
-                                         "Pour Ã©conomiser le stockage",
-                                         "Pour Ã©viter les CRL"
+                                         "Plus rapide à générer",
+                                         "La clé privée ne sort jamais du FortiGate — méthode la plus sûre",
+                                         "Seul format supporté",
+                                         "Obligatoire pour les CA d\u0027entreprise"
                                      ],
                          "answer":  1,
-                         "explain":  "Le CSR garde la clÃ© privÃ©e sur le boÃ®tier, plus sÃ©curisÃ©."
+                         "explain":  "Avec le CSR, la clé privée reste sur FortiGate — elle ne transite jamais sur le réseau."
                      },
                      {
-                         "q":  "Pourquoi pointer FortiGate vers un dÃ©pÃ´t CRL HTTP/LDAP/SCEP plutÃ´t qu\u0027importer un fichier ?",
+                         "q":  "Pourquoi pointer FortiGate vers un dépôt CRL plutôt qu\u0027importer un fichier ?",
                          "choices":  [
-                                         "C\u0027est plus rapide",
-                                         "Les CRLs sont mises Ã  jour automatiquement",
-                                         "C\u0027est obligatoire",
-                                         "C\u0027est moins coÃ»teux"
+                                         "Seule méthode supportée",
+                                         "Les CRLs sont mises à jour automatiquement — recommandé",
+                                         "Les fichiers CRL ne sont pas au bon format",
+                                         "Les dépôts sont plus rapides"
                                      ],
                          "answer":  1,
-                         "explain":  "La rÃ©cupÃ©ration automatique garantit l\u0027actualitÃ© de la liste."
+                         "explain":  "Les dépôts CRL permettent des mises à jour automatiques — évite la gestion manuelle."
                      },
                      {
-                         "q":  "Une CRL importÃ©e s\u0027affiche-t-elle si la CA correspondante n\u0027est pas dans le store ?",
+                         "q":  "Une CRL importée s\u0027affiche-t-elle si la CA correspondante n\u0027est pas dans le store ?",
                          "choices":  [
-                                         "Oui toujours",
-                                         "Non, la CA doit Ãªtre importÃ©e",
-                                         "Seulement si SCEP est activÃ©",
-                                         "Seulement avec LDAPS"
+                                         "Oui, toujours",
+                                         "Non, la CA correspondante doit être importée",
+                                         "Oui mais avec avertissement",
+                                         "Non, FortiGate la supprime"
                                      ],
                          "answer":  1,
-                         "explain":  "Sans la CA, la CRL n\u0027est pas affichÃ©e."
+                         "explain":  "Une CRL ne s\u0027affiche que si la CA correspondante est aussi présente dans le store."
                      }
                  ]
     },
@@ -2303,60 +2585,205 @@
     {
         "id":  "ch08-l2",
         "module":  "Antivirus",
-        "title":  "Techniques de dÃ©tection avancÃ©es",
+        "title":  "Techniques de détection avancées",
         "durationMin":  6,
-        "content":  "Au-delÃ  des signatures classiques, FortiGate propose plusieurs mÃ©canismes complÃ©mentaires.\n\n**Virus Outbreak Prevention Service (VOS)** : enrichit la base AV avec des hashes de malwares rÃ©cents issus du Global Threat Intelligence de FortiGuard. FortiGate envoie le hash du fichier scannÃ© Ã  FortiGuard ; si le hash est connu, le fichier est bloquÃ©. NÃ©cessite une licence VOS.\n\n**External malware block list** : listes de hashes (MD5/SHA1/SHA256) hÃ©bergÃ©es sur un serveur HTTP/HTTPS. On crÃ©e un connecteur dans la Security Fabric, puis on le sÃ©lectionne dans le profil AV.\n\n**EMS threat feed** : FortiGate reÃ§oit des hashes dÃ©tectÃ©s par les FortiClient via FortiClient EMS.\n\nOrdre de vÃ©rification quand plusieurs sources sont actives : base AV locale â†’ EMS threat feed â†’ external blocklist â†’ FortiGuard VOS.\n\n**Content Disarm and Reconstruction (CDR)** : nettoie les documents Office et PDF (y compris dans les ZIP) en retirant le contenu actif (macros, JavaScript, hyperliens, mÃ©dias embarquÃ©s). Le contenu textuel reste intact. SupportÃ© en HTTP, SMTP, POP3 et IMAP â€” uniquement en mode proxy.\n\n**Behavior-based detection** : envoie les fichiers suspects Ã  FortiSandbox pour analyse comportementale.\n\n**CIFS scanning** : permet le scan AV et le file filter sur le trafic CIFS (partages Windows).\n\nÃ€ retenir : CDR et FortiNDR ne sont disponibles qu\u0027en proxy-based.",
+        "content":  "## Au-delà des signatures classiques\n\nFortiGate propose plusieurs mécanismes complémentaires aux signatures AV standard pour détecter les menaces avancées et les malwares récents.\n\n## Virus Outbreak Prevention Service (VOS)\n\nEnrichit la base AV locale avec des **hashes de malwares récents** issus du **Global Threat Intelligence de FortiGuard**.\n\n- FortiGate envoie le **hash du fichier scanné** à FortiGuard.\n- Si le hash est connu comme malveillant → le fichier est bloqué.\n- Nécessite une **licence VOS** active.\n\n## External malware block list\n\nListes de hashes (**MD5**, **SHA1**, **SHA256**) hébergées sur un **serveur HTTP/HTTPS** externe.\n\n1. Créer un connecteur dans la **Security Fabric**.\n2. Sélectionner le connecteur dans le **profil AV**.\n\n\u003e ⚠️ **CRC32 n\u0027est pas un format de hash supporté** par l\u0027external malware block list.\n\n## EMS threat feed\n\nFortiGate reçoit des **hashes détectés par les FortiClient** via **FortiClient EMS**. Partage en temps réel des menaces détectées sur les endpoints.\n\n## Ordre de vérification\n\nQuand plusieurs sources sont actives, FortiGate les consulte dans cet ordre :\n\n```\n1. Base AV locale\n2. EMS threat feed\n3. External malware block list\n4. FortiGuard VOS\n```\n\n![Ordre de vérification des sources AV](diagram:0)\n\n## Content Disarm and Reconstruction (CDR)\n\nNettoie les documents **Office** et **PDF** (y compris dans les archives **ZIP**) en retirant :\n- Macros\n- JavaScript embarqué\n- Hyperliens actifs\n- Médias embarqués\n\nLe **contenu textuel** reste intact. Seuls les éléments actifs potentiellement dangereux sont supprimés.\n\n**Protocoles supportés** : HTTP, SMTP, POP3, IMAP.\n\n\u003e ⚠️ **CDR est disponible uniquement en mode proxy-based.** Il n\u0027est pas disponible en flow-based.\n\n## Behavior-based detection\n\nEnvoie les fichiers suspects à **FortiSandbox** pour une **analyse comportementale**. Le fichier est exécuté dans un environnement isolé pour observer son comportement réel.\n\n## CIFS scanning\n\nPermet le **scan AV** et le **file filter** sur le trafic **CIFS** (partages Windows — protocole SMB).\n\n## À retenir\n\n- **CDR** et **FortiNDR** sont disponibles uniquement en **proxy-based**.\n- Hashes supportés par l\u0027external block list : **MD5, SHA1, SHA256** (pas CRC32).\n- Ordre de vérification : **base locale → EMS → external blocklist → FortiGuard VOS**.",
+        "diagrams":  [
+                         {
+                             "caption":  "Ordre de vérification quand toutes les sources de détection AV avancée sont actives.",
+                             "height":  180,
+                             "svg":  "\u003csvg xmlns=\u0027http://www.w3.org/2000/svg\u0027 viewBox=\u00270 0 500 180\u0027\u003e\u003crect x=\u002720\u0027 y=\u002715\u0027 width=\u0027460\u0027 height=\u002732\u0027 rx=\u00276\u0027 fill=\u0027#1e3a5f\u0027 stroke=\u0027#3b82f6\u0027 stroke-width=\u00272\u0027/\u003e\u003ctext x=\u0027250\u0027 y=\u002735\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002712\u0027 font-weight=\u0027700\u0027 fill=\u0027#93c5fd\u0027\u003e1. Base AV locale\u003c/text\u003e\u003cline x1=\u0027250\u0027 y1=\u002747\u0027 x2=\u0027250\u0027 y2=\u002762\u0027 stroke=\u0027#475569\u0027 stroke-width=\u00271.5\u0027/\u003e\u003cpolygon points=\u0027246,62 254,62 250,70\u0027 fill=\u0027#475569\u0027/\u003e\u003crect x=\u002720\u0027 y=\u002770\u0027 width=\u0027460\u0027 height=\u002732\u0027 rx=\u00276\u0027 fill=\u0027#1e3a5f\u0027 stroke=\u0027#3b82f6\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027250\u0027 y=\u002790\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002712\u0027 font-weight=\u0027700\u0027 fill=\u0027#93c5fd\u0027\u003e2. EMS threat feed (FortiClient)\u003c/text\u003e\u003cline x1=\u0027250\u0027 y1=\u0027102\u0027 x2=\u0027250\u0027 y2=\u0027117\u0027 stroke=\u0027#475569\u0027 stroke-width=\u00271.5\u0027/\u003e\u003cpolygon points=\u0027246,117 254,117 250,125\u0027 fill=\u0027#475569\u0027/\u003e\u003crect x=\u002720\u0027 y=\u0027125\u0027 width=\u0027460\u0027 height=\u002732\u0027 rx=\u00276\u0027 fill=\u0027#1e3a5f\u0027 stroke=\u0027#3b82f6\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027250\u0027 y=\u0027145\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002712\u0027 font-weight=\u0027700\u0027 fill=\u0027#93c5fd\u0027\u003e3. External malware block list\u003c/text\u003e\u003cline x1=\u0027250\u0027 y1=\u0027157\u0027 x2=\u0027250\u0027 y2=\u0027163\u0027 stroke=\u0027#475569\u0027 stroke-width=\u00271.5\u0027/\u003e\u003cpolygon points=\u0027246,163 254,163 250,171\u0027 fill=\u0027#475569\u0027/\u003e\u003crect x=\u0027130\u0027 y=\u0027163\u0027 width=\u0027240\u0027 height=\u002714\u0027 rx=\u00274\u0027 fill=\u0027#1a2e1a\u0027 stroke=\u0027#22c55e\u0027 stroke-width=\u00271\u0027/\u003e\u003ctext x=\u0027250\u0027 y=\u0027174\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 font-weight=\u0027700\u0027 fill=\u0027#86efac\u0027\u003e4. FortiGuard VOS (cloud hash lookup)\u003c/text\u003e\u003c/svg\u003e"
+                         }
+                     ],
+        "questionPool":  [
+                             {
+                                 "q":  "Quel est l\u0027ordre de vérification quand toutes les sources AV avancées sont actives ?",
+                                 "choices":  [
+                                                 "FortiGuard VOS → EMS → external blocklist → base locale",
+                                                 "Base locale → EMS → external blocklist → FortiGuard VOS",
+                                                 "EMS → base locale → FortiGuard VOS → external blocklist",
+                                                 "External blocklist → base locale → EMS → FortiGuard VOS"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Ordre : (1) Base AV locale, (2) EMS threat feed, (3) External malware block list, (4) FortiGuard VOS."
+                             },
+                             {
+                                 "q":  "Que fait le CDR (Content Disarm and Reconstruction) ?",
+                                 "choices":  [
+                                                 "Bloque tous les fichiers Office et PDF",
+                                                 "Retire les contenus actifs (macros, scripts, hyperliens) des documents en conservant le texte",
+                                                 "Chiffre les fichiers avant envoi à FortiSandbox",
+                                                 "Remplace les documents par des messages d\u0027alerte"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "CDR supprime les éléments actifs potentiellement dangereux (macros, JS, hyperliens) des documents Office et PDF, en conservant le contenu textuel."
+                             },
+                             {
+                                 "q":  "Le CDR est compatible avec quel mode d\u0027inspection ?",
+                                 "choices":  [
+                                                 "Flow-based uniquement",
+                                                 "Proxy-based uniquement",
+                                                 "Les deux modes",
+                                                 "Uniquement en mode transparent"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "CDR est disponible uniquement en mode proxy-based — pas en flow-based."
+                             },
+                             {
+                                 "q":  "D\u0027où viennent les hashes de l\u0027EMS threat feed ?",
+                                 "choices":  [
+                                                 "Du cloud FortiGuard directement",
+                                                 "Des détections effectuées par les FortiClient via FortiClient EMS",
+                                                 "De FortiSandbox",
+                                                 "De l\u0027external malware block list"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "FortiGate reçoit les hashes détectés par les FortiClient (endpoints) via FortiClient EMS — partage en temps réel des menaces endpoint."
+                             },
+                             {
+                                 "q":  "Lequel n\u0027est PAS un format de hash supporté par l\u0027external malware block list ?",
+                                 "choices":  [
+                                                 "MD5",
+                                                 "SHA1",
+                                                 "SHA256",
+                                                 "CRC32"
+                                             ],
+                                 "answer":  3,
+                                 "explain":  "L\u0027external malware block list supporte MD5, SHA1 et SHA256. CRC32 n\u0027est pas un format de hash cryptographique et n\u0027est pas supporté."
+                             },
+                             {
+                                 "q":  "Comment fonctionne le Virus Outbreak Prevention Service (VOS) ?",
+                                 "choices":  [
+                                                 "Il télécharge toutes les signatures de malwares récents sur FortiGate",
+                                                 "FortiGate envoie le hash du fichier à FortiGuard qui le compare à sa base de menaces récentes",
+                                                 "Il analyse le comportement du fichier dans un sandbox",
+                                                 "Il bloque automatiquement tous les fichiers inconnus"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "VOS : FortiGate envoie le hash du fichier à FortiGuard — si le hash est connu comme malveillant dans le Global Threat Intelligence, le fichier est bloqué."
+                             },
+                             {
+                                 "q":  "Le CDR peut-il traiter les fichiers Office dans des archives ZIP ?",
+                                 "choices":  [
+                                                 "Non, uniquement les fichiers directement attachés",
+                                                 "Oui, CDR traite les documents Office et PDF dans les ZIPs",
+                                                 "Uniquement si le ZIP est déchiffré d\u0027abord",
+                                                 "Uniquement en mode actif-actif"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "CDR peut traiter les documents Office et PDF, y compris ceux contenus dans des archives ZIP."
+                             },
+                             {
+                                 "q":  "Comment configurer une external malware block list dans FortiGate ?",
+                                 "choices":  [
+                                                 "Uploader un fichier CSV directement dans le profil AV",
+                                                 "Créer un connecteur dans la Security Fabric puis le sélectionner dans le profil AV",
+                                                 "Configurer un serveur LDAP avec les hashes",
+                                                 "Via FortiManager uniquement"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "On crée un connecteur Security Fabric pointant vers le serveur HTTP/HTTPS hébergeant les hashes, puis on le sélectionne dans le profil AV."
+                             },
+                             {
+                                 "q":  "Quels protocoles le CDR supporte-t-il pour le traitement des fichiers ?",
+                                 "choices":  [
+                                                 "HTTP uniquement",
+                                                 "HTTP, SMTP, POP3 et IMAP",
+                                                 "HTTP, HTTPS et FTP",
+                                                 "SMTP et POP3 uniquement"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "CDR supporte : HTTP, SMTP, POP3 et IMAP. Il ne supporte pas HTTPS directement (nécessite une inspection SSL en amont)."
+                             },
+                             {
+                                 "q":  "Quelle technique envoie les fichiers suspects à FortiSandbox pour analyse ?",
+                                 "choices":  [
+                                                 "CDR",
+                                                 "VOS",
+                                                 "Behavior-based detection",
+                                                 "EMS threat feed"
+                                             ],
+                                 "answer":  2,
+                                 "explain":  "Behavior-based detection envoie les fichiers suspects à FortiSandbox pour une analyse comportementale dans un environnement isolé."
+                             },
+                             {
+                                 "q":  "Quel service permet le scan AV sur le trafic de partages Windows (SMB) ?",
+                                 "choices":  [
+                                                 "CDR",
+                                                 "CIFS scanning",
+                                                 "EMS threat feed",
+                                                 "FortiNDR"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "CIFS scanning permet le scan AV et le file filter sur le trafic CIFS (Common Internet File System / protocole SMB des partages Windows)."
+                             },
+                             {
+                                 "q":  "Quelle licence est nécessaire pour utiliser le Virus Outbreak Prevention Service ?",
+                                 "choices":  [
+                                                 "FortiGuard AV standard",
+                                                 "Licence VOS active",
+                                                 "Licence FortiSandbox Cloud",
+                                                 "FortiGuard IPS"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Le VOS nécessite une licence VOS active en plus de la licence AV standard."
+                             }
+                         ],
         "quiz":  [
                      {
-                         "q":  "Quel est l\u0027ordre de vÃ©rification quand toutes les sources sont actives ?",
+                         "q":  "Quel est l\u0027ordre de vérification quand toutes les sources AV avancées sont actives ?",
                          "choices":  [
-                                         "FortiGuard VOS â†’ EMS â†’ blocklist â†’ base locale",
-                                         "Base locale â†’ EMS â†’ external blocklist â†’ FortiGuard VOS",
-                                         "EMS â†’ base locale â†’ FortiGuard VOS â†’ blocklist",
-                                         "Blocklist â†’ base locale â†’ FortiGuard â†’ EMS"
-                                     ],
-                         "answer":  1
-                     },
-                     {
-                         "q":  "Que fait le CDR ?",
-                         "choices":  [
-                                         "Crypte les documents sensibles",
-                                         "Retire les contenus actifs (macros, scripts) des documents",
-                                         "Compresse les fichiers volumineux",
-                                         "Quarantaine les exÃ©cutables"
+                                         "FortiGuard VOS → EMS → external blocklist → base locale",
+                                         "Base locale → EMS → external blocklist → FortiGuard VOS",
+                                         "EMS → base locale → FortiGuard VOS → external blocklist",
+                                         "External blocklist → base locale → EMS → FortiGuard VOS"
                                      ],
                          "answer":  1,
-                         "explain":  "CDR Â« dÃ©sarme Â» les fichiers en retirant le code exÃ©cutable, en gardant le texte."
+                         "explain":  "Ordre : (1) Base AV locale, (2) EMS threat feed, (3) External malware block list, (4) FortiGuard VOS."
+                     },
+                     {
+                         "q":  "Que fait le CDR (Content Disarm and Reconstruction) ?",
+                         "choices":  [
+                                         "Bloque tous les fichiers Office et PDF",
+                                         "Retire les contenus actifs (macros, scripts, hyperliens) des documents",
+                                         "Chiffre les fichiers avant envoi à FortiSandbox",
+                                         "Remplace les documents par des alertes"
+                                     ],
+                         "answer":  1,
+                         "explain":  "CDR supprime les éléments actifs (macros, JS, hyperliens) en conservant le contenu textuel."
                      },
                      {
                          "q":  "Le CDR est compatible avec quel mode d\u0027inspection ?",
                          "choices":  [
                                          "Flow-based uniquement",
                                          "Proxy-based uniquement",
-                                         "Les deux",
-                                         "Aucun des deux"
+                                         "Les deux modes",
+                                         "Uniquement transparent"
                                      ],
-                         "answer":  1
+                         "answer":  1,
+                         "explain":  "CDR est disponible uniquement en mode proxy-based."
                      },
                      {
-                         "q":  "D\u0027oÃ¹ viennent les hashes de l\u0027EMS threat feed ?",
+                         "q":  "D\u0027où viennent les hashes de l\u0027EMS threat feed ?",
                          "choices":  [
-                                         "FortiGuard Labs",
-                                         "DÃ©tections des FortiClient via FortiClient EMS",
-                                         "Liste statique du FortiGate",
-                                         "FortiSandbox uniquement"
+                                         "Du cloud FortiGuard directement",
+                                         "Des détections des FortiClient via FortiClient EMS",
+                                         "De FortiSandbox",
+                                         "De l\u0027external malware block list"
                                      ],
-                         "answer":  1
+                         "answer":  1,
+                         "explain":  "FortiGate reçoit les hashes détectés par les FortiClient (endpoints) via FortiClient EMS."
                      },
                      {
-                         "q":  "Lequel n\u0027est PAS un format de hash supportÃ© par l\u0027external malware block list ?",
+                         "q":  "Lequel n\u0027est PAS un format de hash supporté par l\u0027external malware block list ?",
                          "choices":  [
                                          "MD5",
                                          "SHA1",
                                          "SHA256",
                                          "CRC32"
                                      ],
-                         "answer":  3
+                         "answer":  3,
+                         "explain":  "L\u0027external malware block list supporte MD5, SHA1 et SHA256. CRC32 n\u0027est pas supporté."
                      }
                  ]
     },
@@ -2543,63 +2970,204 @@
         "id":  "ch09-l1",
         "module":  "Web Filtering",
         "title":  "Composants du filtrage web",
-        "durationMin":  5,
-        "content":  "Le filtrage web FortiGate a pour but d\u0027empecher les utilisateurs d\u0027atteindre des sites malveillants et de bloquer les communications sortantes en cas d\u0027infection. Apres l\u0027etablissement d\u0027une connexion TCP, le navigateur envoie une requete HTTP GET. FortiGate intercepte cette requete, extrait des informations cles (URL, hostname, etc.) et envoie une requete temps reel aux serveurs FortiGuard pour determiner la categorie du site. L\u0027action appliquee depend ensuite du profil de filtrage web rattache a la politique pare-feu.\n\nFortiOS combine trois mecanismes principaux. Le premier est le filtrage de contenu web, qui bloque les pages contenant des mots-cles ou des motifs definis par l\u0027administrateur. Le deuxieme est le filtrage par URL, qui utilise des URL ou des motifs pour bloquer ou exempter des pages issues de sources specifiques, ou pour bloquer des URL malveillantes detectees par FortiSandbox. Le troisieme est le service FortiGuard Web Filtering, qui s\u0027appuie sur de nombreuses categories pour classer dynamiquement les sites.\n\nFiltrer uniquement par domaine peut bloquer trop largement. Par exemple, sur tumblr.com, chaque blog a un auteur different. Plutot que bloquer le domaine entier, on peut cibler une partie de l\u0027URL comme `tumblr.com/hacking` pour rester precis.\n\nPour le trafic chiffre, FortiGate doit ajouter une etape d\u0027inspection. En SSL certificate inspection, il n\u0027inspecte que la couche SSL/TLS sans dechiffrer le payload. Si le SNI est present dans le Client Hello, FortiGate l\u0027utilise pour resoudre le FQDN et categoriser. En son absence, il consulte le champ CN du certificat serveur. Or, ce CN ne correspond pas toujours au FQDN demande : par exemple le CN de youtube.com est google.com, ce qui peut conduire a une mauvaise categorisation si le navigateur ne supporte pas SNI.\n\nLe handshake TLS suit quatre etapes : Client Hello (avec SNI), Server Hello, envoi des informations d\u0027authentification serveur, puis Server Hello Done. Pour le filtrage web, l\u0027inspection de certificat SSL est generalement suffisante car FortiGate n\u0027a pas besoin de lire le payload.",
+        "durationMin":  6,
+        "content":  "## Objectif du filtrage web\n\nLe filtrage web FortiGate a deux buts :\n1. **Empêcher les utilisateurs d\u0027atteindre des sites malveillants**.\n2. **Bloquer les communications sortantes** si un poste est déjà infecté.\n\nAprès l\u0027établissement d\u0027une connexion TCP, le navigateur envoie une requête **HTTP GET**. FortiGate intercepte cette requête, extrait les informations clés (URL, hostname…) et consulte FortiGuard pour catégoriser le site. L\u0027action appliquée dépend du profil web filter rattaché à la politique pare-feu.\n\n## Les trois composants principaux\n\n![Composants du filtrage web](diagram:0)\n\n### 1. Web content filtering\n\nBloque les pages contenant des **mots-clés ou des motifs** définis par l\u0027administrateur. Idéal pour bloquer des thèmes précis indépendamment du domaine.\n\n### 2. URL filtering\n\nUtilise des **URL ou des patterns** pour bloquer ou exempter des pages de sources spécifiques. Peut aussi bloquer des URL malveillantes détectées par FortiSandbox.\n\n\u003e **Limiter le filtrage par domaine** : filtrer `tumblr.com` entier bloquerait tous les blogs, y compris les légitimes. On peut cibler `tumblr.com/hacking` pour rester précis.\n\n### 3. FortiGuard Web Filtering\n\nService cloud qui **classifie dynamiquement** les URL dans des catégories. FortiGate envoie une **requête temps réel** aux serveurs FortiGuard pour obtenir la catégorie, puis applique l\u0027action configurée dans le profil.\n\n## Inspection du trafic chiffré (HTTPS)\n\n### SSL certificate inspection\n\nFortiGate n\u0027a **pas besoin de déchiffrer le payload** pour filtrer — il inspecte uniquement la couche SSL/TLS.\n\nPour identifier le site demandé, FortiGate utilise :\n1. Le **SNI** (*Server Name Indication*) présent dans le **Client Hello** — c\u0027est la source préférée.\n2. Si le SNI est absent → FortiGate consulte le **champ CN** (*Common Name*) du **certificat serveur**.\n\n\u003e ⚠️ **Le CN peut ne pas correspondre au FQDN demandé.** Exemple : le CN de `youtube.com` est `google.com`. Si le navigateur ne supporte pas SNI, FortiGate peut catégoriser incorrectement le site.\n\n### Handshake TLS — les 4 étapes\n\n1. **Client Hello** — avec le SNI (extension TLS)\n2. **Server Hello**\n3. **Authentification serveur** (envoi du certificat)\n4. **Server Hello Done**\n\nPour le filtrage web, l\u0027inspection de certificat SSL est généralement suffisante — FortiGate n\u0027a pas besoin de lire le payload HTTP.",
+        "diagrams":  [
+                         {
+                             "caption":  "Les trois composants du filtrage web FortiGate et leur interaction avec FortiGuard.",
+                             "height":  200,
+                             "svg":  "\u003csvg xmlns=\u0027http://www.w3.org/2000/svg\u0027 viewBox=\u00270 0 560 200\u0027\u003e\u003crect x=\u002720\u0027 y=\u002720\u0027 width=\u0027100\u0027 height=\u002740\u0027 rx=\u00276\u0027 fill=\u0027#374151\u0027 stroke=\u0027#6b7280\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u002770\u0027 y=\u002744\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002711\u0027 font-weight=\u0027700\u0027 fill=\u0027#d1d5db\u0027\u003eClient\u003c/text\u003e\u003crect x=\u0027220\u0027 y=\u002710\u0027 width=\u0027120\u0027 height=\u0027180\u0027 rx=\u00278\u0027 fill=\u0027#1e3a5f\u0027 stroke=\u0027#3b82f6\u0027 stroke-width=\u00272\u0027/\u003e\u003ctext x=\u0027280\u0027 y=\u002730\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002711\u0027 font-weight=\u0027700\u0027 fill=\u0027#93c5fd\u0027\u003eFortiGate\u003c/text\u003e\u003ctext x=\u0027280\u0027 y=\u002752\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#e2e8f0\u0027\u003eWeb Content\u003c/text\u003e\u003ctext x=\u0027280\u0027 y=\u002764\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#e2e8f0\u0027\u003eFilter\u003c/text\u003e\u003cline x1=\u0027280\u0027 y1=\u002768\u0027 x2=\u0027280\u0027 y2=\u002780\u0027 stroke=\u0027#6b7280\u0027 stroke-width=\u00271\u0027/\u003e\u003ctext x=\u0027280\u0027 y=\u002792\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#e2e8f0\u0027\u003eURL Filter\u003c/text\u003e\u003cline x1=\u0027280\u0027 y1=\u002797\u0027 x2=\u0027280\u0027 y2=\u0027110\u0027 stroke=\u0027#6b7280\u0027 stroke-width=\u00271\u0027/\u003e\u003ctext x=\u0027280\u0027 y=\u0027122\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#e2e8f0\u0027\u003eFortiGuard\u003c/text\u003e\u003ctext x=\u0027280\u0027 y=\u0027134\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#e2e8f0\u0027\u003eCategories\u003c/text\u003e\u003crect x=\u0027430\u0027 y=\u002760\u0027 width=\u0027110\u0027 height=\u002750\u0027 rx=\u00276\u0027 fill=\u0027#1a2e1a\u0027 stroke=\u0027#22c55e\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027485\u0027 y=\u002780\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 font-weight=\u0027700\u0027 fill=\u0027#86efac\u0027\u003eFortiGuard\u003c/text\u003e\u003ctext x=\u0027485\u0027 y=\u002794\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#86efac\u0027\u003eCloud Rating\u003c/text\u003e\u003crect x=\u0027430\u0027 y=\u0027130\u0027 width=\u0027110\u0027 height=\u002740\u0027 rx=\u00276\u0027 fill=\u0027#374151\u0027 stroke=\u0027#6b7280\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027485\u0027 y=\u0027154\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 font-weight=\u0027700\u0027 fill=\u0027#d1d5db\u0027\u003eInternet\u003c/text\u003e\u003cline x1=\u0027120\u0027 y1=\u002740\u0027 x2=\u0027220\u0027 y2=\u002780\u0027 stroke=\u0027#3b82f6\u0027 stroke-width=\u00272\u0027/\u003e\u003cpolygon points=\u0027220,80 210,74 214,84\u0027 fill=\u0027#3b82f6\u0027/\u003e\u003ctext x=\u0027165\u0027 y=\u002755\u0027 font-family=\u0027sans-serif\u0027 font-size=\u00279\u0027 fill=\u0027#93c5fd\u0027\u003eHTTP GET\u003c/text\u003e\u003cline x1=\u0027340\u0027 y1=\u0027125\u0027 x2=\u0027430\u0027 y2=\u002785\u0027 stroke=\u0027#22c55e\u0027 stroke-width=\u00271.5\u0027 stroke-dasharray=\u00274 3\u0027/\u003e\u003cpolygon points=\u0027430,85 420,85 425,79\u0027 fill=\u0027#22c55e\u0027/\u003e\u003ctext x=\u0027385\u0027 y=\u0027112\u0027 font-family=\u0027sans-serif\u0027 font-size=\u00279\u0027 fill=\u0027#86efac\u0027\u003erating req\u003c/text\u003e\u003cline x1=\u0027340\u0027 y1=\u0027150\u0027 x2=\u0027430\u0027 y2=\u0027150\u0027 stroke=\u0027#6b7280\u0027 stroke-width=\u00271.5\u0027/\u003e\u003cpolygon points=\u0027430,150 420,146 420,154\u0027 fill=\u0027#6b7280\u0027/\u003e\u003ctext x=\u0027385\u0027 y=\u0027144\u0027 font-family=\u0027sans-serif\u0027 font-size=\u00279\u0027 fill=\u0027#64748b\u0027\u003eto internet\u003c/text\u003e\u003c/svg\u003e"
+                         }
+                     ],
+        "questionPool":  [
+                             {
+                                 "q":  "Quels sont les trois composants principaux du filtrage web FortiGate ?",
+                                 "choices":  [
+                                                 "IPS, AV, URL filtering",
+                                                 "Web content, URL filtering, FortiGuard categories",
+                                                 "DNS filter, URL filter, proxy filter",
+                                                 "FortiGuard, FortiSandbox, URL filter"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Les trois composants : (1) Web content filtering (mots-clés), (2) URL filtering (patterns), (3) FortiGuard Web Filtering (catégories dynamiques)."
+                             },
+                             {
+                                 "q":  "Comment FortiGate détermine-t-il la catégorie d\u0027un site web ?",
+                                 "choices":  [
+                                                 "Il consulte une base locale uniquement",
+                                                 "Il envoie une requête temps réel à FortiGuard",
+                                                 "Il analyse le contenu HTML de la page",
+                                                 "Il consulte le DNS local"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "FortiGate envoie une requête temps réel aux serveurs FortiGuard pour obtenir la catégorie du site, puis applique l\u0027action configurée."
+                             },
+                             {
+                                 "q":  "Si le SNI n\u0027est pas présent dans le Client Hello, où FortiGate trouve-t-il le FQDN ?",
+                                 "choices":  [
+                                                 "Dans le champ CN du certificat serveur",
+                                                 "Dans les headers HTTP",
+                                                 "Dans le champ SAN du certificat",
+                                                 "Via une requête DNS inverse"
+                                             ],
+                                 "answer":  0,
+                                 "explain":  "Sans SNI, FortiGate consulte le champ CN (Common Name) du certificat serveur. Attention : le CN peut ne pas correspondre au FQDN réel (ex: CN de youtube.com = google.com)."
+                             },
+                             {
+                                 "q":  "Quelle est la première étape du handshake TLS ?",
+                                 "choices":  [
+                                                 "Server Hello",
+                                                 "Client Hello (avec SNI)",
+                                                 "Certificate Request",
+                                                 "Change Cipher Spec"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Le handshake TLS commence par le Client Hello qui contient le SNI (Server Name Indication) — utilisé par FortiGate pour identifier le site."
+                             },
+                             {
+                                 "q":  "Pourquoi filtrer simplement par domaine peut être insuffisant ?",
+                                 "choices":  [
+                                                 "Les domaines ne sont pas routables",
+                                                 "Un domaine peut héberger des contenus hétérogènes avec des auteurs différents",
+                                                 "FortiGate ne peut pas filtrer les domaines",
+                                                 "Les domaines changent trop souvent"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Exemple : bloquer tumblr.com entier est trop large. On peut cibler tumblr.com/hacking pour plus de précision."
+                             },
+                             {
+                                 "q":  "En SSL certificate inspection, FortiGate déchiffre-t-il le payload HTTPS ?",
+                                 "choices":  [
+                                                 "Oui, toujours",
+                                                 "Non, il inspecte uniquement la couche SSL/TLS sans déchiffrer le payload",
+                                                 "Uniquement si le profil le configure",
+                                                 "Oui, mais seulement en mode proxy"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "En SSL certificate inspection, FortiGate n\u0027a pas besoin de déchiffrer le payload — il lit le SNI ou le CN du certificat pour catégoriser le site."
+                             },
+                             {
+                                 "q":  "Pourquoi le champ CN peut-il mener à une mauvaise catégorisation ?",
+                                 "choices":  [
+                                                 "Le CN est toujours vide",
+                                                 "Le CN peut ne pas correspondre au FQDN réel demandé par l\u0027utilisateur",
+                                                 "Le CN est chiffré en TLS 1.3",
+                                                 "FortiGate ne lit pas le CN"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Exemple : le CN de youtube.com est google.com. Si le navigateur ne supporte pas SNI, FortiGate catégorise le site comme google.com au lieu de youtube.com."
+                             },
+                             {
+                                 "q":  "Quand FortiGate intercepte-t-il la requête HTTP GET pour le filtrage web ?",
+                                 "choices":  [
+                                                 "Avant l\u0027établissement de la connexion TCP",
+                                                 "Après l\u0027établissement de la connexion TCP",
+                                                 "Pendant le handshake TLS",
+                                                 "Uniquement sur les connexions UDP"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Après l\u0027établissement de la connexion TCP, le navigateur envoie la requête HTTP GET que FortiGate intercepte pour extraire l\u0027URL et le hostname."
+                             },
+                             {
+                                 "q":  "Quel composant du filtrage web utilise des mots-clés définis par l\u0027admin ?",
+                                 "choices":  [
+                                                 "FortiGuard Web Filtering",
+                                                 "URL filtering",
+                                                 "Web content filtering",
+                                                 "DNS filtering"
+                                             ],
+                                 "answer":  2,
+                                 "explain":  "Web content filtering bloque les pages contenant des mots-clés ou des motifs définis par l\u0027administrateur."
+                             },
+                             {
+                                 "q":  "Quel composant peut bloquer des URL malveillantes détectées par FortiSandbox ?",
+                                 "choices":  [
+                                                 "Web content filtering",
+                                                 "URL filtering",
+                                                 "FortiGuard categories",
+                                                 "IPS engine"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "URL filtering peut utiliser des patterns d\u0027URL, y compris des URLs malveillantes identifiées par FortiSandbox."
+                             },
+                             {
+                                 "q":  "En inspection SSL, quelle source d\u0027identification du site FortiGate préfère-t-il ?",
+                                 "choices":  [
+                                                 "Le champ CN du certificat",
+                                                 "Le SNI dans le Client Hello",
+                                                 "L\u0027adresse IP de destination",
+                                                 "Le header HTTP Host"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "FortiGate préfère le SNI (Server Name Indication) présent dans le Client Hello. Si absent, il se rabat sur le champ CN du certificat serveur."
+                             },
+                             {
+                                 "q":  "Le filtrage web FortiGate peut-il bloquer des communications d\u0027un poste déjà infecté ?",
+                                 "choices":  [
+                                                 "Non, uniquement les accès entrants",
+                                                 "Oui, il bloque aussi les communications sortantes malveillantes",
+                                                 "Uniquement avec un profil IPS actif",
+                                                 "Uniquement en mode transparent"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Le filtrage web a deux buts : empêcher l\u0027accès à des sites malveillants ET bloquer les communications sortantes en cas d\u0027infection."
+                             }
+                         ],
         "quiz":  [
                      {
                          "q":  "Quels sont les trois composants principaux du filtrage web FortiGate ?",
                          "choices":  [
-                                         "Antivirus, IPS, DLP",
+                                         "IPS, AV, URL filtering",
                                          "Web content, URL filtering, FortiGuard categories",
-                                         "DNS filter, SSL inspect, IPS",
-                                         "Proxy, NAT, VPN"
+                                         "DNS filter, URL filter, proxy filter",
+                                         "FortiGuard, FortiSandbox, URL filter"
                                      ],
                          "answer":  1,
-                         "explain":  "Web content filtering, URL filtering et FortiGuard Web Filtering forment les trois composants."
+                         "explain":  "Les trois composants : web content filtering, URL filtering, FortiGuard Web Filtering (catégories dynamiques)."
                      },
                      {
-                         "q":  "Comment FortiGate determine-t-il la categorie d\u0027un site web ?",
+                         "q":  "Comment FortiGate détermine-t-il la catégorie d\u0027un site web ?",
                          "choices":  [
-                                         "Il interroge le DNS",
-                                         "Il envoie une requete temps reel a FortiGuard",
-                                         "Il lit le whois",
-                                         "Il analyse le HTML"
+                                         "Il consulte une base locale uniquement",
+                                         "Il envoie une requête temps réel à FortiGuard",
+                                         "Il analyse le contenu HTML",
+                                         "Il consulte le DNS local"
                                      ],
                          "answer":  1,
-                         "explain":  "FortiGate envoie une requete a la FortiGuard Distribution Network (FDN)."
+                         "explain":  "FortiGate envoie une requête temps réel aux serveurs FortiGuard pour obtenir la catégorie du site."
                      },
                      {
-                         "q":  "Si le SNI n\u0027est pas present, ou FortiGate trouve-t-il le FQDN ?",
+                         "q":  "Si le SNI n\u0027est pas présent dans le Client Hello, où FortiGate trouve-t-il le FQDN ?",
                          "choices":  [
-                                         "Dans le champ CN du certificat",
-                                         "Dans l\u0027en-tete HTTP Host",
-                                         "Dans le DNS inverse",
-                                         "Il bloque la session"
+                                         "Dans le champ CN du certificat serveur",
+                                         "Dans les headers HTTP",
+                                         "Dans le champ SAN",
+                                         "Via DNS inverse"
                                      ],
                          "answer":  0,
-                         "explain":  "FortiGate utilise le CN du certificat serveur si le SNI est absent."
+                         "explain":  "Sans SNI, FortiGate consulte le champ CN du certificat serveur. Attention : le CN peut ne pas correspondre au FQDN réel."
                      },
                      {
-                         "q":  "Quelle est la premiere etape du handshake TLS ?",
+                         "q":  "Quelle est la première étape du handshake TLS ?",
                          "choices":  [
                                          "Server Hello",
                                          "Client Hello (avec SNI)",
-                                         "Echange des cles ESP",
-                                         "Server Hello Done"
+                                         "Certificate Request",
+                                         "Change Cipher Spec"
                                      ],
                          "answer":  1,
-                         "explain":  "Le client envoie un Client Hello qui contient le SNI."
+                         "explain":  "Le handshake TLS commence par le Client Hello qui contient le SNI."
                      },
                      {
-                         "q":  "Pourquoi filtrer simplement par domaine peut etre insuffisant ?",
+                         "q":  "En SSL certificate inspection, FortiGate déchiffre-t-il le payload HTTPS ?",
                          "choices":  [
-                                         "Le DNS est lent",
-                                         "Le HTTPS empeche le filtrage",
-                                         "Un domaine peut heberger des contenus heterogenes",
-                                         "FortiGate ne supporte pas les FQDN"
+                                         "Oui, toujours",
+                                         "Non, il inspecte uniquement la couche SSL/TLS",
+                                         "Uniquement en mode proxy",
+                                         "Oui, avec la clé privée du serveur"
                                      ],
-                         "answer":  2,
-                         "explain":  "Sur tumblr.com par exemple, chaque blog est different : il faut cibler l\u0027URL."
+                         "answer":  1,
+                         "explain":  "En SSL certificate inspection, FortiGate lit seulement le SNI ou le CN du certificat — pas besoin de déchiffrer."
                      }
                  ]
     },
@@ -2670,12 +3238,153 @@
     {
         "id":  "ch09-l3",
         "module":  "Web Filtering",
-        "title":  "Categories FortiGuard et actions",
-        "durationMin":  5,
-        "content":  "Plutot que de gerer les sites un par un, FortiGuard category filtering classe les URL dans des categories puis applique une action en fonction de la categorie. C\u0027est un service vivant qui necessite un contrat actif. Si le contrat expire, une periode de grace de deux jours s\u0027applique. Au-dela, FortiGate retourne une rating error pour chaque requete et bloque par defaut la page concernee. On peut changer ce comportement avec l\u0027option Allow websites when a rating error occurs. Il est aussi possible de faire jouer a un FortiManager le role de serveur FortiGuard local en y telechargeant les bases.\n\nCinq actions sont disponibles par categorie. Allow autorise sans creer de log de filtrage web. Block refuse l\u0027acces et journalise, l\u0027utilisateur voit une page de remplacement. Monitor laisse passer mais journalise pour analyse. Warning informe l\u0027utilisateur que le site n\u0027est pas autorise mais lui permet de cliquer sur Proceed pour continuer. La premiere tentative cree un log block et, si l\u0027utilisateur poursuit, un second log passthrough est emis. L\u0027intervalle de l\u0027avertissement est configurable.\n\nL\u0027action Authenticate va plus loin : elle bloque l\u0027acces sauf si l\u0027utilisateur s\u0027authentifie avec succes (local, LDAP, RADIUS, etc.) et appartient a un groupe autorise a override. Comme pour Warning, un timer evite de re-authentifier a chaque site dans la categorie. Les messages de remplacement sont personnalisables dans System \u003e Replacement Messages.\n\nLes quotas permettent de limiter quotidiennement le temps ou la bande passante par categorie. Ils se reinitialisent a minuit. Une fois le quota atteint, le trafic est bloque et un message de remplacement s\u0027affiche. Les quotas s\u0027appliquent uniquement aux actions Monitor, Warning et Authenticate.\n\nSi une URL est mal classee, on peut soumettre une re-evaluation sur le site Fortinet URL Rating Submission, ou creer un override local dans la configuration FortiGate. Attention : changer la categorie ne change pas automatiquement l\u0027action, qui depend du profil web filter applique.",
+        "title":  "Catégories FortiGuard et actions",
+        "durationMin":  6,
+        "content":  "## FortiGuard Category Filtering\n\nPlutôt que de gérer les sites un par un, **FortiGuard category filtering** classe les URL dans des catégories gérées par Fortinet, puis applique une action selon la catégorie.\n\nC\u0027est un **service cloud actif** qui nécessite un contrat valide :\n- Si le contrat **expire** → période de grâce de **2 jours**.\n- Au-delà → FortiGate retourne une **rating error** pour chaque requête et **bloque** la page par défaut.\n- On peut modifier ce comportement avec l\u0027option **Allow websites when a rating error occurs**.\n\n## FortiManager comme serveur FortiGuard local\n\nUn **FortiManager peut jouer le rôle de serveur FortiGuard local** en téléchargeant les bases de catégories. Les FortiGate consultent alors FortiManager au lieu de contacter le cloud directement — utile dans les environnements à connectivité internet limitée.\n\n## Les 5 actions disponibles par catégorie\n\n![Actions de filtrage par catégorie](diagram:0)\n\n| Action | Trafic | Log |\n|---|---|---|\n| **Allow** | Autorisé | Pas de log web filter |\n| **Monitor** | Autorisé | Log généré |\n| **Block** | Refusé | Log généré + page de remplacement |\n| **Warning** | Autorisé si l\u0027utilisateur clique Proceed | Log block + log passthrough |\n| **Authenticate** | Autorisé uniquement si authentifié dans un groupe override | Log |\n\n### Warning — détail\n\n1. FortiGate affiche un message : « ce site n\u0027est pas recommandé ».\n2. L\u0027utilisateur peut cliquer **Proceed** pour continuer.\n3. Un premier **log block** est généré, puis si l\u0027utilisateur continue, un **log passthrough**.\n4. L\u0027intervalle de l\u0027avertissement est configurable (évite de re-demander sur chaque page du même site).\n\n### Authenticate — détail\n\nBloque l\u0027accès sauf si l\u0027utilisateur **s\u0027authentifie** (local, LDAP, RADIUS…) et appartient à un **groupe autorisé à override**. Un timer évite de re-authentifier à chaque requête dans la même catégorie. Les messages de remplacement sont personnalisables dans **System \u003e Replacement Messages**.\n\n## Quotas\n\nLes quotas permettent de **limiter quotidiennement** le temps ou la bande passante par catégorie.\n\n- Se réinitialisent à **minuit**.\n- Une fois le quota atteint → le trafic est bloqué + message de remplacement.\n- **S\u0027appliquent uniquement aux actions Monitor, Warning et Authenticate** (pas Allow ni Block).\n\n## Override de catégorie\n\nSi une URL est mal classée :\n1. Soumettre une reclassification sur le portail **Fortinet URL Rating Submission**.\n2. Créer un **override local** dans la configuration FortiGate.\n\n\u003e ⚠️ Changer la catégorie d\u0027une URL ne change pas automatiquement l\u0027action — l\u0027action dépend du profil web filter appliqué à la policy.",
+        "diagrams":  [
+                         {
+                             "caption":  "Les 5 actions FortiGuard category filtering classées du plus restrictif au moins restrictif.",
+                             "height":  230,
+                             "svg":  "\u003csvg xmlns=\u0027http://www.w3.org/2000/svg\u0027 viewBox=\u00270 0 540 230\u0027\u003e\u003crect x=\u002720\u0027 y=\u002710\u0027 width=\u0027500\u0027 height=\u002736\u0027 rx=\u00276\u0027 fill=\u0027#3b1a0a\u0027 stroke=\u0027#ef4444\u0027 stroke-width=\u00272\u0027/\u003e\u003ctext x=\u0027270\u0027 y=\u002728\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002712\u0027 font-weight=\u0027700\u0027 fill=\u0027#fca5a5\u0027\u003eBlock — Refusé + log + page de remplacement\u003c/text\u003e\u003crect x=\u002720\u0027 y=\u002756\u0027 width=\u0027500\u0027 height=\u002736\u0027 rx=\u00276\u0027 fill=\u0027#3b1a1a\u0027 stroke=\u0027#f97316\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027270\u0027 y=\u002774\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002712\u0027 font-weight=\u0027700\u0027 fill=\u0027#fdba74\u0027\u003eAuthenticate — Bloqué sauf si auth groupe override\u003c/text\u003e\u003crect x=\u002720\u0027 y=\u0027102\u0027 width=\u0027500\u0027 height=\u002736\u0027 rx=\u00276\u0027 fill=\u0027#2d2d00\u0027 stroke=\u0027#eab308\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027270\u0027 y=\u0027120\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002712\u0027 font-weight=\u0027700\u0027 fill=\u0027#fde047\u0027\u003eWarning — Proceed requis → log block + passthrough\u003c/text\u003e\u003crect x=\u002720\u0027 y=\u0027148\u0027 width=\u0027500\u0027 height=\u002736\u0027 rx=\u00276\u0027 fill=\u0027#0d2a1a\u0027 stroke=\u0027#22c55e\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027270\u0027 y=\u0027166\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002712\u0027 font-weight=\u0027700\u0027 fill=\u0027#86efac\u0027\u003eMonitor — Autorisé + log web filter généré\u003c/text\u003e\u003crect x=\u002720\u0027 y=\u0027194\u0027 width=\u0027500\u0027 height=\u002736\u0027 rx=\u00276\u0027 fill=\u0027#1e3a5f\u0027 stroke=\u0027#3b82f6\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027270\u0027 y=\u0027212\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002712\u0027 font-weight=\u0027700\u0027 fill=\u0027#93c5fd\u0027\u003eAllow — Autorisé, pas de log web filter\u003c/text\u003e\u003ctext x=\u00275\u0027 y=\u002735\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#64748b\u0027 transform=\u0027rotate(-90,5,35)\u0027\u003e↑ + restrictif\u003c/text\u003e\u003c/svg\u003e"
+                         }
+                     ],
+        "questionPool":  [
+                             {
+                                 "q":  "Combien de jours dure la période de grâce après expiration du contrat FortiGuard Web Filtering ?",
+                                 "choices":  [
+                                                 "1 jour",
+                                                 "2 jours",
+                                                 "7 jours",
+                                                 "30 jours"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "La période de grâce est de 2 jours. Au-delà, FortiGate retourne une rating error et bloque les pages par défaut."
+                             },
+                             {
+                                 "q":  "Quelle action laisse passer le trafic mais crée un log web filter ?",
+                                 "choices":  [
+                                                 "Allow",
+                                                 "Block",
+                                                 "Monitor",
+                                                 "Warning"
+                                             ],
+                                 "answer":  2,
+                                 "explain":  "Monitor autorise le trafic et génère un log — utile pour l\u0027analyse sans bloquer. Allow autorise sans log web filter."
+                             },
+                             {
+                                 "q":  "Sur quelles actions peut-on appliquer des quotas FortiGuard ?",
+                                 "choices":  [
+                                                 "Allow et Block",
+                                                 "Block et Monitor",
+                                                 "Monitor, Warning et Authenticate",
+                                                 "Toutes les actions"
+                                             ],
+                                 "answer":  2,
+                                 "explain":  "Les quotas s\u0027appliquent uniquement aux actions Monitor, Warning et Authenticate — pas Allow ni Block."
+                             },
+                             {
+                                 "q":  "Quel rôle peut jouer FortiManager dans le filtrage web ?",
+                                 "choices":  [
+                                                 "Proxy web pour les utilisateurs",
+                                                 "Serveur FortiGuard local (cache des bases de catégories)",
+                                                 "Pare-feu secondaire pour le filtrage",
+                                                 "Gestionnaire des profils web filter"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "FortiManager peut jouer le rôle de serveur FortiGuard local en téléchargeant les bases — les FortiGate le consultent au lieu du cloud."
+                             },
+                             {
+                                 "q":  "Que se passe-t-il quand l\u0027utilisateur clique Proceed après un Warning ?",
+                                 "choices":  [
+                                                 "Un log Allow est généré",
+                                                 "Un log passthrough est généré (en plus du log block initial)",
+                                                 "L\u0027accès est définitivement autorisé pour la session",
+                                                 "L\u0027action passe en Monitor"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Warning génère un log block initial. Si l\u0027utilisateur clique Proceed, un second log passthrough est généré."
+                             },
+                             {
+                                 "q":  "Quelle est la différence principale entre Warning et Authenticate ?",
+                                 "choices":  [
+                                                 "Warning bloque définitivement, Authenticate permet de continuer",
+                                                 "Warning permet à tout utilisateur de continuer (Proceed) ; Authenticate exige une authentification réussie dans un groupe override",
+                                                 "Warning log, Authenticate ne log pas",
+                                                 "Aucune différence fonctionnelle"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Warning : tout utilisateur peut cliquer Proceed. Authenticate : accès uniquement si l\u0027utilisateur s\u0027authentifie ET appartient à un groupe autorisé à override."
+                             },
+                             {
+                                 "q":  "À quelle heure les quotas FortiGuard se réinitialisent-ils ?",
+                                 "choices":  [
+                                                 "À chaque redémarrage FortiGate",
+                                                 "À minuit",
+                                                 "Toutes les 24 heures à partir de la première connexion",
+                                                 "À 06h00 par défaut"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Les quotas de filtrage web se réinitialisent automatiquement à minuit chaque jour."
+                             },
+                             {
+                                 "q":  "L\u0027action Allow génère-t-elle un log web filter ?",
+                                 "choices":  [
+                                                 "Oui, toujours",
+                                                 "Non, Allow n\u0027enregistre pas de log web filter",
+                                                 "Oui, mais uniquement si le logging est activé dans la policy",
+                                                 "Oui, sous forme de log passthrough"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Allow autorise le trafic sans créer de log web filter. C\u0027est la différence clé avec Monitor qui autorise ET log."
+                             },
+                             {
+                                 "q":  "Que fait FortiGate quand une rating error se produit (contrat expiré) par défaut ?",
+                                 "choices":  [
+                                                 "Autorise le trafic sans log",
+                                                 "Bloque la page et génère une rating error",
+                                                 "Redirige vers FortiGuard pour re-évaluation",
+                                                 "Applique l\u0027action Monitor"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Par défaut, une rating error bloque la page. On peut modifier ce comportement avec \u0027Allow websites when a rating error occurs\u0027."
+                             },
+                             {
+                                 "q":  "Comment soumettre une demande de reclassification d\u0027une URL mal classée ?",
+                                 "choices":  [
+                                                 "Via le CLI FortiGate uniquement",
+                                                 "Via le portail Fortinet URL Rating Submission ou un override local",
+                                                 "En contactant le support Fortinet par email",
+                                                 "Via FortiManager uniquement"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "On peut soumettre une reclassification sur le portail Fortinet URL Rating Submission, ou créer un override local dans la configuration FortiGate."
+                             },
+                             {
+                                 "q":  "Si une URL est reclassée dans une nouvelle catégorie, l\u0027action change-t-elle automatiquement ?",
+                                 "choices":  [
+                                                 "Oui, FortiGate applique la nouvelle catégorie immédiatement",
+                                                 "Non, l\u0027action dépend du profil web filter appliqué à la policy",
+                                                 "Oui, après la prochaine mise à jour FortiGuard",
+                                                 "Non, il faut reboot FortiGate"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Changer la catégorie d\u0027une URL ne change pas automatiquement l\u0027action — celle-ci est définie par le profil web filter attaché à la politique."
+                             },
+                             {
+                                 "q":  "Où personnalise-t-on les messages de remplacement affichés lors d\u0027un blocage web ?",
+                                 "choices":  [
+                                                 "Web Filter \u003e Profiles \u003e Replacement",
+                                                 "System \u003e Replacement Messages",
+                                                 "Policy \u0026 Objects \u003e Addresses",
+                                                 "Security Profiles \u003e Web Filter \u003e Settings"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Les messages de remplacement (block pages, warning pages) sont personnalisables dans System \u003e Replacement Messages."
+                             }
+                         ],
         "quiz":  [
                      {
-                         "q":  "Combien de jours dure la periode de grace apres expiration du contrat FortiGuard ?",
+                         "q":  "Combien de jours dure la période de grâce après expiration du contrat FortiGuard Web Filtering ?",
                          "choices":  [
                                          "1 jour",
                                          "2 jours",
@@ -2683,51 +3392,51 @@
                                          "30 jours"
                                      ],
                          "answer":  1,
-                         "explain":  "Une periode de grace de deux jours est appliquee avant que les categorisations cessent."
+                         "explain":  "La période de grâce est de 2 jours. Au-delà, FortiGate retourne une rating error et bloque par défaut."
                      },
                      {
-                         "q":  "Quelle action laisse passer le trafic mais cree un log ?",
+                         "q":  "Quelle action laisse passer le trafic mais crée un log web filter ?",
                          "choices":  [
                                          "Allow",
                                          "Block",
                                          "Monitor",
-                                         "Authenticate"
+                                         "Warning"
                                      ],
                          "answer":  2,
-                         "explain":  "Monitor autorise et journalise pour analyse."
+                         "explain":  "Monitor autorise le trafic et génère un log. Allow autorise sans log web filter."
                      },
                      {
-                         "q":  "Sur quelles actions peut-on appliquer des quotas ?",
+                         "q":  "Sur quelles actions peut-on appliquer des quotas FortiGuard ?",
                          "choices":  [
                                          "Allow et Block",
+                                         "Block et Monitor",
                                          "Monitor, Warning et Authenticate",
-                                         "Block uniquement",
                                          "Toutes les actions"
                                      ],
-                         "answer":  1,
-                         "explain":  "Les quotas ne s\u0027appliquent qu\u0027a Monitor, Warning et Authenticate."
-                     },
-                     {
-                         "q":  "Quel role peut jouer FortiManager dans le filtrage web ?",
-                         "choices":  [
-                                         "Proxy SSL",
-                                         "Cache DNS",
-                                         "Serveur FortiGuard local",
-                                         "FortiSandbox local"
-                                     ],
                          "answer":  2,
-                         "explain":  "FortiManager peut heberger les bases FortiGuard et servir de serveur local."
+                         "explain":  "Les quotas s\u0027appliquent uniquement aux actions Monitor, Warning et Authenticate."
                      },
                      {
-                         "q":  "Que se passe-t-il quand l\u0027utilisateur clique Proceed apres un Warning ?",
+                         "q":  "Quel rôle peut jouer FortiManager dans le filtrage web ?",
                          "choices":  [
-                                         "Aucun log n\u0027est genere",
-                                         "Un log passthrough est genere",
-                                         "L\u0027utilisateur est bloque",
-                                         "FortiGate redemarre la session SSL"
+                                         "Proxy web pour les utilisateurs",
+                                         "Serveur FortiGuard local (cache des bases de catégories)",
+                                         "Pare-feu secondaire",
+                                         "Gestionnaire des profils"
                                      ],
                          "answer":  1,
-                         "explain":  "Un second log avec action passthrough est cree apres le Proceed."
+                         "explain":  "FortiManager peut servir de serveur FortiGuard local en téléchargeant les bases de catégories."
+                     },
+                     {
+                         "q":  "Que se passe-t-il quand l\u0027utilisateur clique Proceed après un Warning ?",
+                         "choices":  [
+                                         "Un log Allow est généré",
+                                         "Un log passthrough est généré en plus du log block initial",
+                                         "L\u0027accès est définitivement autorisé",
+                                         "L\u0027action passe en Monitor"
+                                     ],
+                         "answer":  1,
+                         "explain":  "Warning génère un log block initial + un log passthrough si l\u0027utilisateur clique Proceed."
                      }
                  ]
     },
@@ -2798,64 +3507,205 @@
     {
         "id":  "ch09-l5",
         "module":  "Web Filtering",
-        "title":  "Depannage du filtrage web",
+        "title":  "Dépannage du filtrage web",
         "durationMin":  5,
-        "content":  "Le filtrage par categorie repose sur une connexion vivante a FortiGuard. La commande `diagnose debug rating` affiche la liste des serveurs FortiGuard connus et plusieurs metriques utiles. Le champ Weight reflete l\u0027ecart de fuseau horaire entre FortiGate et le serveur, pour eviter de prefere un serveur trop eloigne. RTT donne le temps aller-retour. Flags indique l\u0027etat : D pour IP recue par DNS, I pour serveur de contrat contacte, T pour serveur en cours de chronometrage, F pour echec. TZ donne le fuseau horaire. FortiGuard-requests, Curr Lost et Total Lost permettent de detecter une connectivite degradee.\n\nPar defaut, FortiGate utilise HTTPS sur le port 443 vers FortiGuard ou FortiManager. Quand `fortiguard-anycast` est `enable`, le domaine FortiGuard resout vers une seule IP anycast, qui devient le seul serveur. Si on desactive l\u0027anycast, on peut utiliser HTTPS sur 53 et 8888, ou UDP sur 443, 53 et 8888. Attention : UDP/53 peut etre bloque par les inspections DNS car le trafic n\u0027est pas reellement DNS ; dans ce cas il faut basculer sur 443 ou 8888.\n\nSi le volume de requetes FortiGuard est eleve, on peut activer le Web Filter cache. FortiGate conserve alors les ratings recents en memoire, evitant de re-interroger FortiGuard pour les URL connues, ce qui ameliore la latence.\n\nQuand un profil web filter ne fonctionne pas malgre une connexion FortiGuard correcte, la cause est souvent une erreur de configuration. Verifier que le SSL Inspection contient au moins un profil avec une methode SSL certificate inspection. S\u0027assurer que le bon profil web filter est applique a la policy. Verifier que le mode d\u0027inspection (flow ou proxy) est coherent avec le feature set du profil web filter.\n\nPour confirmer le bon comportement, consulter les Web Filter logs. Le message indique le profil utilise, l\u0027URL, la categorie, le quota FortiGuard si configure, et plus de details sur l\u0027evenement. On peut telecharger les logs bruts au format syslog texte.",
+        "content":  "## Vérifier la connectivité FortiGuard\n\nLe filtrage par catégorie repose sur une connexion active à FortiGuard. La commande de référence est :\n\n```\ndiagnose debug rating\n```\n\nElle affiche la liste des serveurs FortiGuard connus et plusieurs métriques :\n\n| Champ | Signification |\n|---|---|\n| **Weight** | Écart de fuseau horaire entre FortiGate et le serveur (pour éviter un serveur trop éloigné) |\n| **RTT** | Round-Trip Time — temps aller-retour |\n| **Flags** | État du serveur (voir ci-dessous) |\n| **TZ** | Fuseau horaire du serveur |\n| **FortiGuard-requests** | Nombre total de requêtes envoyées |\n| **Curr Lost / Total Lost** | Requêtes perdues — utile pour détecter une connectivité dégradée |\n\n### Drapeaux (Flags)\n\n- **D** — IP reçue par DNS\n- **I** — Serveur de contrat contacté\n- **T** — Serveur en cours de chronométrage\n- **F** — Failed (échec de la connexion)\n\n## Ports et protocoles vers FortiGuard\n\nPar défaut, FortiGate utilise **HTTPS sur le port 443** vers FortiGuard (ou FortiManager en local).\n\n### Mode anycast\n\nQuand `fortiguard-anycast` est **activé** (défaut) : le domaine FortiGuard résout vers **une seule IP anycast** — un seul serveur s\u0027affiche dans `diagnose debug rating`.\n\nQuand **désactivé** : plusieurs options disponibles :\n- HTTPS sur **port 53** ou **8888**\n- UDP sur **443**, **53** ou **8888**\n\n\u003e ⚠️ **UDP/53 peut être bloqué** par les inspections DNS car le trafic n\u0027est pas réellement DNS. Dans ce cas, basculer sur **443 ou 8888**.\n\n## Web Filter cache\n\nSi le volume de requêtes FortiGuard est élevé, activer le **Web Filter cache** :\n- FortiGate conserve les ratings récents en mémoire.\n- Évite de re-interroger FortiGuard pour les URL déjà évaluées.\n- **Améliore la latence** et réduit la charge réseau vers FortiGuard.\n\n## Dépannage d\u0027un profil qui ne fonctionne pas\n\nSi le filtrage web est configuré mais ne fonctionne pas, vérifier dans cet ordre :\n\n1. **Connexion FortiGuard** : `diagnose debug rating` — chercher le flag **F** (Failed) ou des `Total Lost` élevés.\n2. **Profil SSL Inspection** : doit contenir au moins une méthode SSL certificate inspection.\n3. **Profil web filter** : vérifier que le bon profil est appliqué à la policy.\n4. **Mode d\u0027inspection** : vérifier la cohérence entre flow-based et proxy-based dans le profil.\n\n## Consulter les logs\n\nLes **Web Filter logs** confirment le bon comportement :\n- Profil utilisé\n- URL et catégorie\n- Quota FortiGuard si configuré\n- Détails de l\u0027événement\n\nOn peut télécharger les logs bruts au format **syslog texte**.",
+        "diagrams":  [
+                         {
+                             "caption":  "Flux de dépannage web filter : connexion FortiGuard → SSL inspection → profil → logs.",
+                             "height":  190,
+                             "svg":  "\u003csvg xmlns=\u0027http://www.w3.org/2000/svg\u0027 viewBox=\u00270 0 540 190\u0027\u003e\u003crect x=\u002720\u0027 y=\u002715\u0027 width=\u0027500\u0027 height=\u002736\u0027 rx=\u00276\u0027 fill=\u0027#1e3a5f\u0027 stroke=\u0027#3b82f6\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027270\u0027 y=\u002733\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002711\u0027 font-weight=\u0027700\u0027 fill=\u0027#93c5fd\u0027\u003e1. Connexion FortiGuard — diagnose debug rating\u003c/text\u003e\u003ctext x=\u0027270\u0027 y=\u002746\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#64748b\u0027\u003eChercher flag F (Failed) ou Total Lost élevé\u003c/text\u003e\u003cline x1=\u0027270\u0027 y1=\u002751\u0027 x2=\u0027270\u0027 y2=\u002766\u0027 stroke=\u0027#475569\u0027 stroke-width=\u00271.5\u0027/\u003e\u003cpolygon points=\u0027266,66 274,66 270,74\u0027 fill=\u0027#475569\u0027/\u003e\u003crect x=\u002720\u0027 y=\u002774\u0027 width=\u0027500\u0027 height=\u002730\u0027 rx=\u00276\u0027 fill=\u0027#1e3a5f\u0027 stroke=\u0027#3b82f6\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027270\u0027 y=\u002793\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002711\u0027 font-weight=\u0027700\u0027 fill=\u0027#93c5fd\u0027\u003e2. Profil SSL Inspection — méthode certificate inspection ?\u003c/text\u003e\u003cline x1=\u0027270\u0027 y1=\u0027104\u0027 x2=\u0027270\u0027 y2=\u0027118\u0027 stroke=\u0027#475569\u0027 stroke-width=\u00271.5\u0027/\u003e\u003cpolygon points=\u0027266,118 274,118 270,126\u0027 fill=\u0027#475569\u0027/\u003e\u003crect x=\u002720\u0027 y=\u0027126\u0027 width=\u0027500\u0027 height=\u002730\u0027 rx=\u00276\u0027 fill=\u0027#1e3a5f\u0027 stroke=\u0027#3b82f6\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027270\u0027 y=\u0027145\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002711\u0027 font-weight=\u0027700\u0027 fill=\u0027#93c5fd\u0027\u003e3. Bon profil web filter appliqué à la policy ?\u003c/text\u003e\u003cline x1=\u0027270\u0027 y1=\u0027156\u0027 x2=\u0027270\u0027 y2=\u0027170\u0027 stroke=\u0027#475569\u0027 stroke-width=\u00271.5\u0027/\u003e\u003cpolygon points=\u0027266,170 274,170 270,178\u0027 fill=\u0027#475569\u0027/\u003e\u003crect x=\u002720\u0027 y=\u0027170\u0027 width=\u0027500\u0027 height=\u002718\u0027 rx=\u00274\u0027 fill=\u0027#1a2e1a\u0027 stroke=\u0027#22c55e\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027270\u0027 y=\u0027183\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 font-weight=\u0027700\u0027 fill=\u0027#86efac\u0027\u003e4. Consulter Web Filter logs — profil, URL, catégorie, quota\u003c/text\u003e\u003c/svg\u003e"
+                         }
+                     ],
+        "questionPool":  [
+                             {
+                                 "q":  "Quelle commande vérifie la connectivité vers les serveurs FortiGuard Web Filtering ?",
+                                 "choices":  [
+                                                 "diagnose sys rating",
+                                                 "diagnose debug rating",
+                                                 "get system fortiguard",
+                                                 "diagnose debug application urlfilter"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "diagnose debug rating affiche les serveurs FortiGuard, leur RTT, leur état (flags) et les statistiques de requêtes."
+                             },
+                             {
+                                 "q":  "Que signifie le flag F dans la sortie de diagnose debug rating ?",
+                                 "choices":  [
+                                                 "FortiGuard",
+                                                 "Forwarding",
+                                                 "Failed",
+                                                 "Full"
+                                             ],
+                                 "answer":  2,
+                                 "explain":  "Le flag F (Failed) indique que FortiGate n\u0027a pas réussi à joindre ce serveur FortiGuard."
+                             },
+                             {
+                                 "q":  "Quel port FortiGate utilise-t-il par défaut vers FortiGuard Web Filtering ?",
+                                 "choices":  [
+                                                 "UDP 8888",
+                                                 "HTTPS 443",
+                                                 "HTTP 80",
+                                                 "UDP 53"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Par défaut, FortiGate utilise HTTPS sur le port 443 vers FortiGuard (ou FortiManager si configuré en serveur local)."
+                             },
+                             {
+                                 "q":  "Quel bénéfice apporte le Web Filter cache ?",
+                                 "choices":  [
+                                                 "Il bloque les sites non catégorisés",
+                                                 "Il réduit le nombre de requêtes FortiGuard et améliore la latence",
+                                                 "Il stocke les pages web pour les utilisateurs",
+                                                 "Il permet le filtrage sans connexion internet"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Le Web Filter cache conserve les ratings récents en mémoire, évitant de re-interroger FortiGuard pour les URL déjà évaluées."
+                             },
+                             {
+                                 "q":  "Que vérifier en priorité si le filtrage web ne fonctionne pas malgré une connexion FortiGuard correcte ?",
+                                 "choices":  [
+                                                 "Les règles de routage",
+                                                 "Le profil SSL inspection et le profil web filter appliqué à la policy",
+                                                 "Les licences FortiGuard",
+                                                 "Les règles NAT"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Vérifier : (1) le profil SSL Inspection avec méthode certificate inspection, (2) que le bon profil web filter est appliqué à la policy, (3) la cohérence flow/proxy."
+                             },
+                             {
+                                 "q":  "Que signifie le champ Weight dans diagnose debug rating ?",
+                                 "choices":  [
+                                                 "La bande passante vers le serveur",
+                                                 "L\u0027écart de fuseau horaire entre FortiGate et le serveur",
+                                                 "Le nombre de requêtes en attente",
+                                                 "La priorité du serveur dans la liste"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Weight reflète l\u0027écart de fuseau horaire — FortiGate préfère les serveurs géographiquement proches pour limiter la latence."
+                             },
+                             {
+                                 "q":  "Que signifie le flag D dans diagnose debug rating ?",
+                                 "choices":  [
+                                                 "Disabled — serveur désactivé",
+                                                 "IP reçue par DNS",
+                                                 "Down — serveur inaccessible",
+                                                 "Default — serveur par défaut"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Le flag D indique que l\u0027IP du serveur a été obtenue par résolution DNS."
+                             },
+                             {
+                                 "q":  "Pourquoi UDP/53 peut-il poser problème comme protocole vers FortiGuard ?",
+                                 "choices":  [
+                                                 "UDP/53 est trop lent",
+                                                 "Il peut être bloqué par les inspections DNS car le trafic n\u0027est pas réellement DNS",
+                                                 "UDP n\u0027est pas supporté par FortiGuard",
+                                                 "UDP/53 nécessite une licence spéciale"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "UDP/53 ressemble à du DNS mais n\u0027en est pas — les inspections DNS peuvent le bloquer. Dans ce cas, basculer sur 443 ou 8888."
+                             },
+                             {
+                                 "q":  "Quand fortiguard-anycast est activé, combien de serveurs apparaît dans diagnose debug rating ?",
+                                 "choices":  [
+                                                 "Autant que de serveurs dans la région",
+                                                 "Un seul (IP anycast)",
+                                                 "Trois (primaire + deux de secours)",
+                                                 "Dépend de la version de firmware"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Avec anycast activé, le domaine FortiGuard résout vers une seule IP anycast — un seul serveur s\u0027affiche dans diagnose debug rating."
+                             },
+                             {
+                                 "q":  "Quel champ de diagnose debug rating permet de détecter une connectivité dégradée ?",
+                                 "choices":  [
+                                                 "RTT uniquement",
+                                                 "Curr Lost et Total Lost",
+                                                 "Weight",
+                                                 "TZ"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Curr Lost et Total Lost indiquent les requêtes FortiGuard perdues — des valeurs élevées signalent une connectivité dégradée."
+                             },
+                             {
+                                 "q":  "Quel format permet d\u0027exporter les Web Filter logs ?",
+                                 "choices":  [
+                                                 "CSV uniquement",
+                                                 "JSON",
+                                                 "Syslog texte",
+                                                 "XML"
+                                             ],
+                                 "answer":  2,
+                                 "explain":  "On peut télécharger les logs bruts au format syslog texte depuis l\u0027interface FortiGate."
+                             },
+                             {
+                                 "q":  "En mode non-anycast, quels ports alternatifs peut-on utiliser en HTTPS vers FortiGuard ?",
+                                 "choices":  [
+                                                 "8080 et 8443",
+                                                 "53 et 8888",
+                                                 "443 uniquement",
+                                                 "8000 et 9000"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "En mode non-anycast, FortiGate peut utiliser HTTPS sur les ports 53 ou 8888 (en plus du 443 par défaut)."
+                             }
+                         ],
         "quiz":  [
                      {
-                         "q":  "Quelle commande verifie la connectivite vers les serveurs FortiGuard ?",
+                         "q":  "Quelle commande vérifie la connectivité vers les serveurs FortiGuard Web Filtering ?",
                          "choices":  [
-                                         "`diagnose debug rating`",
-                                         "`diagnose sniffer packet`",
-                                         "`get system status`",
-                                         "`execute ping fortiguard`"
+                                         "diagnose sys rating",
+                                         "diagnose debug rating",
+                                         "get system fortiguard",
+                                         "diagnose debug application urlfilter"
                                      ],
-                         "answer":  0,
-                         "explain":  "`diagnose debug rating` liste les serveurs FortiGuard et leurs metriques."
+                         "answer":  1,
+                         "explain":  "diagnose debug rating affiche les serveurs FortiGuard, leur RTT, leur état (flags) et les stats de requêtes."
                      },
                      {
                          "q":  "Que signifie le flag F dans la sortie de diagnose debug rating ?",
                          "choices":  [
-                                         "DNS",
+                                         "FortiGuard",
+                                         "Forwarding",
                                          "Failed",
-                                         "Forward",
-                                         "Filter"
-                                     ],
-                         "answer":  1,
-                         "explain":  "F indique que la connexion vers ce serveur a echoue."
-                     },
-                     {
-                         "q":  "Quel port par defaut utilise FortiGate vers FortiGuard ?",
-                         "choices":  [
-                                         "UDP 53",
-                                         "TCP 80",
-                                         "HTTPS 443",
-                                         "TCP 8888"
+                                         "Full"
                                      ],
                          "answer":  2,
-                         "explain":  "Le port par defaut est HTTPS 443."
+                         "explain":  "Le flag F (Failed) indique que FortiGate n\u0027a pas réussi à joindre ce serveur FortiGuard."
                      },
                      {
-                         "q":  "Quel benefice apporte le Web Filter cache ?",
+                         "q":  "Quel port FortiGate utilise-t-il par défaut vers FortiGuard ?",
                          "choices":  [
-                                         "Bloque les sites malveillants",
-                                         "Reduit le nombre de requetes FortiGuard",
-                                         "Active SSL inspection",
-                                         "Augmente la bande passante"
+                                         "UDP 8888",
+                                         "HTTPS 443",
+                                         "HTTP 80",
+                                         "UDP 53"
                                      ],
                          "answer":  1,
-                         "explain":  "Le cache evite de redemander un rating deja connu."
+                         "explain":  "Par défaut, FortiGate utilise HTTPS sur le port 443 vers FortiGuard."
                      },
                      {
-                         "q":  "Que verifier en priorite si le filtrage ne fonctionne pas ?",
+                         "q":  "Quel bénéfice apporte le Web Filter cache ?",
                          "choices":  [
-                                         "La license antivirus",
+                                         "Il bloque les sites non catégorisés",
+                                         "Il réduit les requêtes FortiGuard et améliore la latence",
+                                         "Il stocke les pages pour les utilisateurs",
+                                         "Il permet le filtrage sans internet"
+                                     ],
+                         "answer":  1,
+                         "explain":  "Le cache conserve les ratings récents — évite de re-interroger FortiGuard pour les URL déjà évaluées."
+                     },
+                     {
+                         "q":  "Que vérifier en priorité si le filtrage web ne fonctionne pas ?",
+                         "choices":  [
+                                         "Les règles de routage",
                                          "Le profil SSL inspection et le profil web filter de la policy",
-                                         "La memoire RAM",
-                                         "Les routes BGP"
+                                         "Les licences FortiGuard",
+                                         "Les règles NAT"
                                      ],
                          "answer":  1,
-                         "explain":  "Les misconfigurations de profils sont la cause la plus frequente."
+                         "explain":  "Vérifier le profil SSL Inspection (certificate inspection) et que le bon profil web filter est appliqué."
                      }
                  ]
     },
@@ -2863,63 +3713,204 @@
         "id":  "ch10-l1",
         "module":  "Intrusion Prevention and Application Control",
         "title":  "Composants de l\u0027IPS FortiGate",
-        "durationMin":  5,
-        "content":  "L\u0027Intrusion Prevention System (IPS) de FortiGate detecte les attaques reseau et empeche la compromission des hotes proteges. Il combine plusieurs techniques : signatures, decodeurs de protocole, heuristique (analyse comportementale), threat intelligence FortiGuard Labs et detection avancee. L\u0027IPS peut effectuer du deep packet inspection sur du trafic chiffre pour detecter des menaces connues comme inconnues (zero-day).\n\nTrois composants principaux composent l\u0027IPS. Premierement, les signatures IPS. FortiGate s\u0027appuie sur des bases de signatures pour detecter des exploits connus. Les signatures rate-based detectent en plus les anomalies, c\u0027est-a-dire des comportements inhabituels comme une montee en CPU ou un volume de trafic atypique. Ces signatures rate-based font partie de l\u0027analyse comportementale, au meme titre que les politiques DoS et l\u0027inspection des contraintes de protocole, et permettent parfois de bloquer ou attenuer une nouvelle attaque non encore connue.\n\nDeuxiemement, les protocol decoders. Ils analysent chaque paquet selon les specifications du protocole. En comprenant le protocole, ils peuvent detecter des anomalies ou des activites malicieuses meme cachees sous un comportement legitime. Si un paquet ne respecte pas la RFC, par exemple en envoyant des commandes invalides, le decoder le signale.\n\nTroisiemement, l\u0027IPS engine. Ce moteur est responsable de l\u0027IPS et des protocol decoders, mais aussi de l\u0027application control, de l\u0027antivirus flow-based, du filtrage web et du filtrage email.\n\nLes mises a jour de signatures arrivent via le package FortiGuard IPS. Apres telechargement, les nouvelles signatures apparaissent dans la liste et chacune dispose d\u0027une action par defaut : block, allow, monitor (pass), quarantine ou reset. L\u0027action par defaut est generalement correcte. On la modifie quand un editeur publie un patch (continuer a scanner gaspille les ressources), ou quand une application interne declenche une signature et provoque un faux positif. Dans ce cas, on ajuste l\u0027action en attendant que FortiGuard corrige la signature.",
+        "durationMin":  6,
+        "content":  "## Rôle de l\u0027IPS\n\nL\u0027**Intrusion Prevention System (IPS)** de FortiGate détecte les attaques réseau et empêche la compromission des hôtes protégés. Il combine plusieurs techniques :\n- Signatures d\u0027exploits connus\n- Décodeurs de protocole\n- Heuristique (analyse comportementale)\n- Threat intelligence FortiGuard Labs\n- Détection avancée (zero-day)\n\nL\u0027IPS peut effectuer du **deep packet inspection** sur du trafic chiffré.\n\n## Les trois composants principaux\n\n![Composants IPS FortiGate](diagram:0)\n\n### 1. Signatures IPS\n\nFortiGate s\u0027appuie sur des bases de **signatures** pour détecter des exploits connus.\n\n**Signatures rate-based** : détectent les **anomalies comportementales** — par exemple une montée en CPU anormale ou un volume de trafic atypique. Elles font partie de l\u0027analyse comportementale, au même titre que :\n- Les **politiques DoS**\n- L\u0027**inspection des contraintes de protocole**\n\nLes signatures rate-based peuvent parfois bloquer ou atténuer une nouvelle attaque non encore répertoriée.\n\n### 2. Protocol decoders\n\nAnalysent chaque paquet selon les **spécifications du protocole** (RFC). En comprenant le protocole, ils peuvent détecter des anomalies cachées sous un comportement légitime.\n\nExemple : si un paquet envoie des **commandes invalides** non prévues par la RFC, le decoder le signale.\n\n### 3. IPS engine\n\nLe **moteur IPS** est responsable de :\n- L\u0027IPS lui-même\n- Les protocol decoders\n- L\u0027**application control**\n- L\u0027**antivirus flow-based**\n- Le **filtrage web** (flow-based)\n- Le **filtrage email** (flow-based)\n\n## Mises à jour et gestion des signatures\n\nLes mises à jour arrivent via le **package FortiGuard IPS**. Après téléchargement, chaque signature dispose d\u0027une **action par défaut** :\n\n| Action | Description |\n|---|---|\n| **Block** | Bloque le paquet |\n| **Allow** | Laisse passer |\n| **Monitor** (pass) | Laisse passer + log |\n| **Quarantine** | Isole le source |\n| **Reset** | Réinitialise la connexion TCP |\n\nL\u0027action par défaut est généralement correcte. On la modifie dans deux cas :\n1. **L\u0027éditeur a publié un patch** : continuer à scanner gaspille des ressources.\n2. **Faux positif** : une application interne déclenche la signature → on ajuste l\u0027action en attendant la correction FortiGuard.",
+        "diagrams":  [
+                         {
+                             "caption":  "Les trois composants IPS et les autres fonctions qui s\u0027appuient sur le moteur IPS.",
+                             "height":  200,
+                             "svg":  "\u003csvg xmlns=\u0027http://www.w3.org/2000/svg\u0027 viewBox=\u00270 0 540 200\u0027\u003e\u003crect x=\u0027180\u0027 y=\u002710\u0027 width=\u0027180\u0027 height=\u002750\u0027 rx=\u00278\u0027 fill=\u0027#1e3a5f\u0027 stroke=\u0027#3b82f6\u0027 stroke-width=\u00272\u0027/\u003e\u003ctext x=\u0027270\u0027 y=\u002732\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002712\u0027 font-weight=\u0027700\u0027 fill=\u0027#93c5fd\u0027\u003eIPS Engine\u003c/text\u003e\u003ctext x=\u0027270\u0027 y=\u002750\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#64748b\u0027\u003e(moteur central)\u003c/text\u003e\u003crect x=\u002720\u0027 y=\u0027100\u0027 width=\u0027120\u0027 height=\u002736\u0027 rx=\u00276\u0027 fill=\u0027#0d2a1a\u0027 stroke=\u0027#22c55e\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u002780\u0027 y=\u0027122\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002711\u0027 font-weight=\u0027700\u0027 fill=\u0027#86efac\u0027\u003eSignatures IPS\u003c/text\u003e\u003crect x=\u0027160\u0027 y=\u0027100\u0027 width=\u0027120\u0027 height=\u002736\u0027 rx=\u00276\u0027 fill=\u0027#0d2a1a\u0027 stroke=\u0027#22c55e\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027220\u0027 y=\u0027122\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002711\u0027 font-weight=\u0027700\u0027 fill=\u0027#86efac\u0027\u003eProtocol Decoders\u003c/text\u003e\u003crect x=\u0027300\u0027 y=\u0027100\u0027 width=\u0027120\u0027 height=\u002736\u0027 rx=\u00276\u0027 fill=\u0027#0d2a1a\u0027 stroke=\u0027#22c55e\u0027 stroke-width=\u00271.5\u0027/\u003e\u003ctext x=\u0027360\u0027 y=\u0027122\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002711\u0027 font-weight=\u0027700\u0027 fill=\u0027#86efac\u0027\u003eApp Control\u003c/text\u003e\u003crect x=\u002720\u0027 y=\u0027155\u0027 width=\u0027110\u0027 height=\u002730\u0027 rx=\u00274\u0027 fill=\u0027#2d2d00\u0027 stroke=\u0027#eab308\u0027 stroke-width=\u00271\u0027/\u003e\u003ctext x=\u002775\u0027 y=\u0027174\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#fde047\u0027\u003eAV flow-based\u003c/text\u003e\u003crect x=\u0027140\u0027 y=\u0027155\u0027 width=\u0027110\u0027 height=\u002730\u0027 rx=\u00274\u0027 fill=\u0027#2d2d00\u0027 stroke=\u0027#eab308\u0027 stroke-width=\u00271\u0027/\u003e\u003ctext x=\u0027195\u0027 y=\u0027174\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#fde047\u0027\u003eWeb Filter flow\u003c/text\u003e\u003crect x=\u0027260\u0027 y=\u0027155\u0027 width=\u0027110\u0027 height=\u002730\u0027 rx=\u00274\u0027 fill=\u0027#2d2d00\u0027 stroke=\u0027#eab308\u0027 stroke-width=\u00271\u0027/\u003e\u003ctext x=\u0027315\u0027 y=\u0027174\u0027 text-anchor=\u0027middle\u0027 font-family=\u0027sans-serif\u0027 font-size=\u002710\u0027 fill=\u0027#fde047\u0027\u003eEmail Filter flow\u003c/text\u003e\u003cline x1=\u0027270\u0027 y1=\u002760\u0027 x2=\u002780\u0027 y2=\u0027100\u0027 stroke=\u0027#3b82f6\u0027 stroke-width=\u00271.5\u0027/\u003e\u003cpolygon points=\u002780,100 76,90 86,93\u0027 fill=\u0027#3b82f6\u0027/\u003e\u003cline x1=\u0027270\u0027 y1=\u002760\u0027 x2=\u0027220\u0027 y2=\u0027100\u0027 stroke=\u0027#3b82f6\u0027 stroke-width=\u00271.5\u0027/\u003e\u003cpolygon points=\u0027220,100 216,90 226,93\u0027 fill=\u0027#3b82f6\u0027/\u003e\u003cline x1=\u0027270\u0027 y1=\u002760\u0027 x2=\u0027360\u0027 y2=\u0027100\u0027 stroke=\u0027#3b82f6\u0027 stroke-width=\u00271.5\u0027/\u003e\u003cpolygon points=\u0027360,100 356,90 366,93\u0027 fill=\u0027#3b82f6\u0027/\u003e\u003c/svg\u003e"
+                         }
+                     ],
+        "questionPool":  [
+                             {
+                                 "q":  "Quels sont les trois composants principaux de l\u0027IPS FortiGate ?",
+                                 "choices":  [
+                                                 "Firewall, AV, IPS engine",
+                                                 "Signatures, protocol decoders, IPS engine",
+                                                 "IPS engine, App Control, Web Filter",
+                                                 "Signatures, heuristique, sandbox"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Les trois composants : (1) Signatures IPS, (2) Protocol decoders, (3) IPS engine."
+                             },
+                             {
+                                 "q":  "Que détectent les signatures rate-based ?",
+                                 "choices":  [
+                                                 "Des exploits connus dans les paquets",
+                                                 "Des anomalies comportementales (montée CPU, volume atypique)",
+                                                 "Des malwares dans les fichiers",
+                                                 "Des connexions chiffrées non autorisées"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Les signatures rate-based détectent les anomalies comportementales — elles font partie de l\u0027analyse heuristique avec les politiques DoS et l\u0027inspection de contraintes de protocole."
+                             },
+                             {
+                                 "q":  "Quelles autres fonctions s\u0027appuient sur l\u0027IPS engine (en plus de l\u0027IPS lui-même) ?",
+                                 "choices":  [
+                                                 "SSL inspection et NAT",
+                                                 "Application control, AV flow-based, web filter, email filter",
+                                                 "FSSO et authentification",
+                                                 "SD-WAN et monitoring"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "L\u0027IPS engine gère aussi : application control, AV flow-based, filtrage web flow-based et filtrage email flow-based."
+                             },
+                             {
+                                 "q":  "Quand modifier l\u0027action par défaut d\u0027une signature IPS ?",
+                                 "choices":  [
+                                                 "Jamais, l\u0027action par défaut est toujours correcte",
+                                                 "Après un patch éditeur (économie de ressources) ou un faux positif",
+                                                 "Uniquement pour les signatures FortiGuard VOS",
+                                                 "Uniquement en mode actif-actif"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "On modifie l\u0027action : (1) quand l\u0027éditeur a patché la vulnérabilité (inutile de continuer à scanner), (2) en cas de faux positif sur une application interne."
+                             },
+                             {
+                                 "q":  "Quelles actions une signature IPS peut-elle avoir ?",
+                                 "choices":  [
+                                                 "Block, allow, monitor, quarantine, reset",
+                                                 "Block, allow, drop, redirect",
+                                                 "Allow, block, warn, override",
+                                                 "Monitor, block, sandbox, quarantine"
+                                             ],
+                                 "answer":  0,
+                                 "explain":  "Les actions disponibles : Block, Allow, Monitor (pass + log), Quarantine, Reset."
+                             },
+                             {
+                                 "q":  "Que font les protocol decoders dans l\u0027IPS ?",
+                                 "choices":  [
+                                                 "Ils déchiffrent le trafic SSL",
+                                                 "Ils analysent les paquets selon les spécifications RFC du protocole pour détecter des anomalies",
+                                                 "Ils décodent les encodages d\u0027obfuscation",
+                                                 "Ils convertissent IPv6 en IPv4"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Les protocol decoders analysent les paquets selon les RFCs — ils détectent les commandes invalides ou comportements non conformes."
+                             },
+                             {
+                                 "q":  "L\u0027IPS FortiGate peut-il inspecter le trafic chiffré ?",
+                                 "choices":  [
+                                                 "Non, le trafic chiffré est toujours ignoré",
+                                                 "Oui, via le deep packet inspection sur trafic chiffré",
+                                                 "Uniquement si la clé privée du serveur est importée",
+                                                 "Uniquement avec FortiSandbox"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "L\u0027IPS peut effectuer du deep packet inspection sur du trafic chiffré pour détecter des menaces connues et inconnues (zero-day)."
+                             },
+                             {
+                                 "q":  "Comment FortiGate reçoit-il les mises à jour de signatures IPS ?",
+                                 "choices":  [
+                                                 "Via le package FortiGuard IPS téléchargé automatiquement",
+                                                 "Manuellement depuis le portail Fortinet",
+                                                 "Via FortiManager uniquement",
+                                                 "Via des fichiers CSV uploadés par l\u0027admin"
+                                             ],
+                                 "answer":  0,
+                                 "explain":  "Les mises à jour de signatures arrivent via le package FortiGuard IPS — téléchargé automatiquement depuis les serveurs FortiGuard."
+                             },
+                             {
+                                 "q":  "Qu\u0027est-ce que l\u0027action Quarantine dans une signature IPS ?",
+                                 "choices":  [
+                                                 "Bloque le paquet uniquement",
+                                                 "Isole la source (l\u0027adresse IP) du trafic malveillant",
+                                                 "Envoie le fichier à FortiSandbox",
+                                                 "Désactive temporairement la signature"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Quarantine isole la source — l\u0027adresse IP est bloquée pendant un temps configurable, pas seulement le paquet en cours."
+                             },
+                             {
+                                 "q":  "Quelle est la différence entre Monitor et Allow dans les actions IPS ?",
+                                 "choices":  [
+                                                 "Monitor bloque, Allow autorise",
+                                                 "Monitor autorise et log ; Allow autorise sans log IPS",
+                                                 "Aucune différence",
+                                                 "Monitor log et envoie à FortiSandbox"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Monitor (pass) laisse passer le trafic et génère un log. Allow laisse passer sans log IPS."
+                             },
+                             {
+                                 "q":  "Pourquoi l\u0027action Reset est-elle disponible dans les signatures IPS ?",
+                                 "choices":  [
+                                                 "Pour redémarrer l\u0027IPS engine",
+                                                 "Pour réinitialiser la connexion TCP (envoyer un RST) sans bloquer d\u0027autres paquets",
+                                                 "Pour réinitialiser les compteurs de la signature",
+                                                 "Pour remettre à zéro le profil IPS"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Reset envoie un paquet RST pour terminer la connexion TCP — plus propre que Block pour les protocoles TCP qui détectent les coupures."
+                             },
+                             {
+                                 "q":  "Comment les signatures rate-based se distinguent-elles des signatures classiques ?",
+                                 "choices":  [
+                                                 "Elles détectent des exploits connus dans les paquets",
+                                                 "Elles détectent des comportements anormaux (volume, fréquence) plutôt que des patterns d\u0027exploits",
+                                                 "Elles s\u0027appliquent uniquement au trafic UDP",
+                                                 "Elles ne nécessitent pas de licence FortiGuard"
+                                             ],
+                                 "answer":  1,
+                                 "explain":  "Les signatures rate-based analysent le comportement (volume, fréquence, montée CPU) — pas des patterns d\u0027exploits dans les paquets."
+                             }
+                         ],
         "quiz":  [
                      {
-                         "q":  "Quels sont les trois composants principaux de l\u0027IPS ?",
+                         "q":  "Quels sont les trois composants principaux de l\u0027IPS FortiGate ?",
                          "choices":  [
-                                         "Antivirus, IPS, DLP",
+                                         "Firewall, AV, IPS engine",
                                          "Signatures, protocol decoders, IPS engine",
-                                         "DNS, IPS, NAT",
-                                         "VPN, IPS, BGP"
+                                         "IPS engine, App Control, Web Filter",
+                                         "Signatures, heuristique, sandbox"
                                      ],
                          "answer":  1,
-                         "explain":  "L\u0027IPS s\u0027articule autour des signatures, protocol decoders et IPS engine."
+                         "explain":  "Les trois composants : Signatures IPS, Protocol decoders, IPS engine."
                      },
                      {
-                         "q":  "Que detectent les signatures rate-based ?",
+                         "q":  "Que détectent les signatures rate-based ?",
                          "choices":  [
-                                         "Des virus",
-                                         "Des anomalies comportementales",
-                                         "Des certificats invalides",
-                                         "Des erreurs DNS"
+                                         "Des exploits connus dans les paquets",
+                                         "Des anomalies comportementales (montée CPU, volume atypique)",
+                                         "Des malwares dans les fichiers",
+                                         "Des connexions chiffrées non autorisées"
                                      ],
                          "answer":  1,
-                         "explain":  "Elles detectent des comportements inhabituels (CPU eleve, trafic excessif)."
+                         "explain":  "Les signatures rate-based détectent les anomalies comportementales — elles font partie de l\u0027analyse heuristique."
                      },
                      {
                          "q":  "Quelles autres fonctions s\u0027appuient sur l\u0027IPS engine ?",
                          "choices":  [
-                                         "BGP, OSPF",
-                                         "Application control, AV flow, web filter, email filter",
-                                         "VPN IKE, DHCP",
-                                         "FortiManager sync"
+                                         "SSL inspection et NAT",
+                                         "Application control, AV flow-based, web filter, email filter",
+                                         "FSSO et authentification",
+                                         "SD-WAN et monitoring"
                                      ],
                          "answer":  1,
-                         "explain":  "L\u0027IPS engine porte aussi application control, AV flow, web filter et email filter."
+                         "explain":  "L\u0027IPS engine gère aussi : application control, AV flow-based, filtrage web et email flow-based."
                      },
                      {
-                         "q":  "Quand modifier l\u0027action par defaut d\u0027une signature ?",
+                         "q":  "Quand modifier l\u0027action par défaut d\u0027une signature IPS ?",
                          "choices":  [
                                          "Jamais",
-                                         "Apres un patch editeur ou un faux positif",
-                                         "A chaque mise a jour",
-                                         "Lors d\u0027un reboot"
+                                         "Après un patch éditeur ou un faux positif",
+                                         "Uniquement pour les signatures FortiGuard VOS",
+                                         "Uniquement en actif-actif"
                                      ],
                          "answer":  1,
-                         "explain":  "On la modifie pour les patches connus ou pour traiter un faux positif."
+                         "explain":  "On modifie l\u0027action après un patch éditeur (économie de ressources) ou en cas de faux positif."
                      },
                      {
                          "q":  "Quelles actions une signature IPS peut-elle avoir ?",
                          "choices":  [
                                          "Block, allow, monitor, quarantine, reset",
-                                         "Allow et drop seulement",
-                                         "Encrypt et decrypt",
-                                         "Mark et forward"
+                                         "Block, allow, drop, redirect",
+                                         "Allow, block, warn, override",
+                                         "Monitor, block, sandbox, quarantine"
                                      ],
                          "answer":  0,
-                         "explain":  "Block, allow, monitor (pass), quarantine et reset sont les actions disponibles."
+                         "explain":  "Les actions disponibles : Block, Allow, Monitor (pass + log), Quarantine, Reset."
                      }
                  ]
     },

@@ -1,0 +1,120 @@
+{
+  "id": "ch07-l3",
+  "module": "Certificate Operations",
+  "title": "Validation et certificats invalides",
+  "durationMin": 6,
+  "content": "## Les 4 motifs d'invalidité d'un certificat\n\nEn full SSL inspection, FortiGate inspecte le certificat présenté par le serveur. Quatre raisons peuvent le rendre invalide :\n\n| Motif | Description |\n|---|---|\n| **Expired** | La date de validité est dépassée |\n| **Revoked** | Le certificat figure dans la CRL de sa CA |\n| **Validation timeout** | Impossible de joindre la CA pour valider à temps |\n| **Validation failed** | La signature ne valide pas, ou le certificat n'est pas encore valide |\n\n> **Ce qui n'est PAS un motif d'invalidité sur FortiGate** : *Wrong cipher* — le chiffrement utilisé n'est pas un critère de validité du certificat lui-même.\n\n## Les 3 actions configurables par motif\n\nPour chacun des 4 motifs ci-dessus, l'administrateur configure une action dans le profil SSL/SSH :\n\n| Action | Comportement |\n|---|---|\n| **Keep Untrusted & Allow** | FortiGate laisse passer mais marque le certificat comme non fiable (le navigateur affichera l'avertissement) |\n| **Block** | FortiGate bloque la connexion |\n| **Trust & Allow** | FortiGate considère le certificat comme valide (à utiliser avec précaution) |\n\n## Certificats temporaires FortiGate\n\n![Fortinet_CA_SSL vs Fortinet_CA_Untrusted](diagram:0)\n\nSelon l'état du certificat serveur, FortiGate présente au client un **certificat temporaire** signé par l'une de ces deux CA :\n\n- **`Fortinet_CA_SSL`** : tout est OK — le navigateur n'affiche pas d'avertissement (si cette CA est dans le store de confiance du navigateur).\n- **`Fortinet_CA_Untrusted`** : problème détecté — le navigateur affiche intentionnellement un avertissement.\n\n> ⚠️ **Ne jamais importer `Fortinet_CA_Untrusted` dans le store de confiance du navigateur** — cela supprimerait l'avertissement légitime sur les certificats invalides, masquant le problème à l'utilisateur.\n\nOn peut tracer les incidents via l'option **`Log SSL anomalies`**.\n\n## Gestion des certificats non fiables (Untrusted SSL)\n\nTrois options pour gérer les certificats non fiables (ex : certificat self-signed non importé) :\n\n| Option | Comportement |\n|---|---|\n| **Allow** | Certificat temporaire signé par `Fortinet_CA_Untrusted` → avertissement navigateur, l'utilisateur peut continuer |\n| **Block** | FortiGate bloque la connexion, l'utilisateur ne peut pas continuer |\n| **Ignore** | FortiGate présente toujours un certificat signé par `Fortinet_CA_SSL` quel que soit le statut du certificat serveur — **masque le problème, à éviter** |\n\n## Deux contrôles en parallèle\n\nFortiGate effectue simultanément :\n1. **Validité** : expiration, révocation, timeout de validation.\n2. **Validation de la chaîne** : basée sur les CA installées localement et les certificats présentés par le serveur.\n\nSi la chaîne complète n'est pas valide, FortiGate ne peut pas signer correctement → s'assurer que les **CA intermédiaires** nécessaires sont présentes dans le store des CA distantes.",
+  "diagrams": [
+    {
+      "caption": "Fortinet_CA_SSL vs Fortinet_CA_Untrusted : quand chacune est utilisée et la règle d'importation dans le navigateur.",
+      "height": 200,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 200'><rect x='20' y='20' width='230' height='160' rx='8' fill='#0d2a1a' stroke='#22c55e' stroke-width='2'/><text x='135' y='45' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#86efac'>Fortinet_CA_SSL</text><text x='135' y='65' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#e2e8f0'>Certificat serveur valide</text><text x='135' y='80' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#e2e8f0'>Chaîne complète OK</text><rect x='40' y='95' width='190' height='30' rx='4' fill='#1a3d1a' stroke='#22c55e' stroke-width='1'/><text x='135' y='114' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#86efac'>✓ Navigateur OK si importée</text><text x='135' y='145' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>→ Importer dans store racine</text><text x='135' y='160' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>des postes clients</text><rect x='290' y='20' width='230' height='160' rx='8' fill='#2b1010' stroke='#ef4444' stroke-width='2'/><text x='405' y='45' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#fca5a5'>Fortinet_CA_Untrusted</text><text x='405' y='65' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#e2e8f0'>Certificat serveur invalide</text><text x='405' y='80' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#e2e8f0'>(expiré, révoqué, self-signed…)</text><rect x='310' y='95' width='190' height='30' rx='4' fill='#3b1010' stroke='#ef4444' stroke-width='1'/><text x='405' y='114' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#fca5a5'>⚠ Avertissement navigateur</text><text x='405' y='145' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#ef4444'>✗ NE PAS importer dans le store</text><text x='405' y='160' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#ef4444'>→ Masquerait les vrais problèmes</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Lequel n'est PAS un motif d'invalidité d'un certificat sur FortiGate ?",
+      "choices": ["Expired", "Revoked", "Validation timeout", "Wrong cipher"],
+      "answer": 3,
+      "explain": "Les 4 motifs valides : Expired, Revoked, Validation timeout, Validation failed. Wrong cipher n'est pas un critère de validité du certificat lui-même."
+    },
+    {
+      "q": "Quelle action laisse passer le trafic mais marque le certificat comme non fiable ?",
+      "choices": ["Trust & Allow", "Block", "Keep Untrusted & Allow", "Ignore"],
+      "answer": 2,
+      "explain": "Keep Untrusted & Allow laisse passer le trafic mais marque le certificat comme non fiable — le navigateur affiche un avertissement."
+    },
+    {
+      "q": "Pourquoi NE PAS importer Fortinet_CA_Untrusted dans le store de confiance d'un navigateur ?",
+      "choices": ["Cette CA n'est pas compatible avec les navigateurs", "Cela supprimerait l'avertissement légitime sur les certificats invalides", "Elle expire après 90 jours", "Elle n'est pas exportable"],
+      "answer": 1,
+      "explain": "Fortinet_CA_Untrusted est précisément conçue pour déclencher un avertissement. L'importer comme CA de confiance masquerait les vrais problèmes de certificats."
+    },
+    {
+      "q": "Quelle option de gestion du untrusted présente toujours un certificat signé Fortinet_CA_SSL ?",
+      "choices": ["Allow", "Block", "Ignore", "Trust & Allow"],
+      "answer": 2,
+      "explain": "Ignore : FortiGate présente toujours Fortinet_CA_SSL quel que soit le statut du certificat serveur — masque le problème, à éviter."
+    },
+    {
+      "q": "Quel paramètre permet de tracer les anomalies de certificats SSL ?",
+      "choices": ["Enable certificate logging", "Log SSL anomalies", "SSL audit mode", "Certificate debug"],
+      "answer": 1,
+      "explain": "L'option 'Log SSL anomalies' dans le profil SSL/SSH permet de tracer les incidents de certificats."
+    },
+    {
+      "q": "Que signifie le motif 'Validation timeout' ?",
+      "choices": ["Le certificat a expiré", "Impossible de joindre la CA pour valider le certificat à temps", "Le certificat est révoqué", "La signature numérique n'est pas valide"],
+      "answer": 1,
+      "explain": "Validation timeout : FortiGate n'a pas pu contacter la CA pour valider le certificat dans le délai imparti."
+    },
+    {
+      "q": "Que signifie le motif 'Revoked' ?",
+      "choices": ["Le certificat a expiré", "Le certificat figure dans la CRL (Certificate Revocation List) de sa CA", "La CA n'est pas installée sur FortiGate", "Le certificat est self-signed"],
+      "answer": 1,
+      "explain": "Revoked : le certificat a été révoqué par sa CA et figure dans la CRL."
+    },
+    {
+      "q": "Combien de motifs d'invalidité de certificat FortiGate reconnaît-il ?",
+      "choices": ["2", "3", "4", "5"],
+      "answer": 2,
+      "explain": "4 motifs : Expired, Revoked, Validation timeout, Validation failed."
+    },
+    {
+      "q": "Quel certificat temporaire FortiGate présente-t-il quand tout est OK ?",
+      "choices": ["Fortinet_CA_Untrusted", "Fortinet_CA_SSL", "FortiGate_Self_Signed", "Fortinet_Factory"],
+      "answer": 1,
+      "explain": "Quand le certificat serveur est valide, FortiGate signe le certificat temporaire avec Fortinet_CA_SSL — pas d'avertissement si cette CA est dans le store du navigateur."
+    },
+    {
+      "q": "Pourquoi Fortinet_CA_SSL doit-elle être importée dans le store racine des postes clients ?",
+      "choices": ["Pour chiffrer le trafic entre FortiGate et les clients", "Pour que les navigateurs fassent confiance aux certificats temporaires générés par FortiGate", "Pour permettre l'authentification mutuelle TLS", "Pour générer des CSR sur les postes"],
+      "answer": 1,
+      "explain": "Si Fortinet_CA_SSL n'est pas dans le store de confiance des navigateurs, chaque connexion HTTPS inspectée génèrera un avertissement de certificat."
+    },
+    {
+      "q": "Quels deux contrôles FortiGate effectue-t-il en parallèle sur les certificats ?",
+      "choices": ["Validité + performance", "Validité (expiration/révocation) + validation de la chaîne", "Révocation + chiffrement", "Chaîne + SNI"],
+      "answer": 1,
+      "explain": "FortiGate vérifie simultanément : (1) la validité (expiration, révocation, timeout) et (2) la validation de la chaîne de certification."
+    },
+    {
+      "q": "Quelle action 'Untrusted' bloque définitivement l'accès à l'utilisateur ?",
+      "choices": ["Allow", "Ignore", "Keep Untrusted & Allow", "Block"],
+      "answer": 3,
+      "explain": "L'action Block dans la gestion des Untrusted SSL certificates bloque complètement la connexion — l'utilisateur ne peut pas continuer."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Lequel n'est PAS un motif d'invalidité d'un certificat sur FortiGate ?",
+      "choices": ["Expired", "Revoked", "Validation timeout", "Wrong cipher"],
+      "answer": 3,
+      "explain": "Les 4 motifs valides : Expired, Revoked, Validation timeout, Validation failed. Wrong cipher n'est pas un critère."
+    },
+    {
+      "q": "Quelle action laisse passer le trafic mais marque le certificat comme non fiable ?",
+      "choices": ["Trust & Allow", "Block", "Keep Untrusted & Allow", "Ignore"],
+      "answer": 2,
+      "explain": "Keep Untrusted & Allow laisse passer le trafic mais déclenche un avertissement navigateur."
+    },
+    {
+      "q": "Pourquoi NE PAS importer Fortinet_CA_Untrusted dans le store de confiance ?",
+      "choices": ["Elle n'est pas compatible", "Cela supprimerait l'avertissement légitime sur les certificats invalides", "Elle expire après 90 jours", "Elle n'est pas exportable"],
+      "answer": 1,
+      "explain": "Fortinet_CA_Untrusted est conçue pour déclencher un avertissement — l'importer masquerait les vrais problèmes."
+    },
+    {
+      "q": "Quelle option de gestion du untrusted présente toujours Fortinet_CA_SSL ?",
+      "choices": ["Allow", "Block", "Ignore", "Trust & Allow"],
+      "answer": 2,
+      "explain": "Ignore : FortiGate présente toujours Fortinet_CA_SSL quel que soit le statut réel — masque le problème."
+    },
+    {
+      "q": "Quel paramètre permet de tracer les anomalies de certificats SSL ?",
+      "choices": ["Enable certificate logging", "Log SSL anomalies", "SSL audit mode", "Certificate debug"],
+      "answer": 1,
+      "explain": "L'option 'Log SSL anomalies' permet de tracer les incidents de certificats dans le profil SSL/SSH."
+    }
+  ]
+}

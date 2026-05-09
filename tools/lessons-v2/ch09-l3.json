@@ -1,0 +1,120 @@
+{
+  "id": "ch09-l3",
+  "module": "Web Filtering",
+  "title": "Catégories FortiGuard et actions",
+  "durationMin": 6,
+  "content": "## FortiGuard Category Filtering\n\nPlutôt que de gérer les sites un par un, **FortiGuard category filtering** classe les URL dans des catégories gérées par Fortinet, puis applique une action selon la catégorie.\n\nC'est un **service cloud actif** qui nécessite un contrat valide :\n- Si le contrat **expire** → période de grâce de **2 jours**.\n- Au-delà → FortiGate retourne une **rating error** pour chaque requête et **bloque** la page par défaut.\n- On peut modifier ce comportement avec l'option **Allow websites when a rating error occurs**.\n\n## FortiManager comme serveur FortiGuard local\n\nUn **FortiManager peut jouer le rôle de serveur FortiGuard local** en téléchargeant les bases de catégories. Les FortiGate consultent alors FortiManager au lieu de contacter le cloud directement — utile dans les environnements à connectivité internet limitée.\n\n## Les 5 actions disponibles par catégorie\n\n![Actions de filtrage par catégorie](diagram:0)\n\n| Action | Trafic | Log |\n|---|---|---|\n| **Allow** | Autorisé | Pas de log web filter |\n| **Monitor** | Autorisé | Log généré |\n| **Block** | Refusé | Log généré + page de remplacement |\n| **Warning** | Autorisé si l'utilisateur clique Proceed | Log block + log passthrough |\n| **Authenticate** | Autorisé uniquement si authentifié dans un groupe override | Log |\n\n### Warning — détail\n\n1. FortiGate affiche un message : « ce site n'est pas recommandé ».\n2. L'utilisateur peut cliquer **Proceed** pour continuer.\n3. Un premier **log block** est généré, puis si l'utilisateur continue, un **log passthrough**.\n4. L'intervalle de l'avertissement est configurable (évite de re-demander sur chaque page du même site).\n\n### Authenticate — détail\n\nBloque l'accès sauf si l'utilisateur **s'authentifie** (local, LDAP, RADIUS…) et appartient à un **groupe autorisé à override**. Un timer évite de re-authentifier à chaque requête dans la même catégorie. Les messages de remplacement sont personnalisables dans **System > Replacement Messages**.\n\n## Quotas\n\nLes quotas permettent de **limiter quotidiennement** le temps ou la bande passante par catégorie.\n\n- Se réinitialisent à **minuit**.\n- Une fois le quota atteint → le trafic est bloqué + message de remplacement.\n- **S'appliquent uniquement aux actions Monitor, Warning et Authenticate** (pas Allow ni Block).\n\n## Override de catégorie\n\nSi une URL est mal classée :\n1. Soumettre une reclassification sur le portail **Fortinet URL Rating Submission**.\n2. Créer un **override local** dans la configuration FortiGate.\n\n> ⚠️ Changer la catégorie d'une URL ne change pas automatiquement l'action — l'action dépend du profil web filter appliqué à la policy.",
+  "diagrams": [
+    {
+      "caption": "Les 5 actions FortiGuard category filtering classées du plus restrictif au moins restrictif.",
+      "height": 230,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 230'><rect x='20' y='10' width='500' height='36' rx='6' fill='#3b1a0a' stroke='#ef4444' stroke-width='2'/><text x='270' y='28' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#fca5a5'>Block — Refusé + log + page de remplacement</text><rect x='20' y='56' width='500' height='36' rx='6' fill='#3b1a1a' stroke='#f97316' stroke-width='1.5'/><text x='270' y='74' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#fdba74'>Authenticate — Bloqué sauf si auth groupe override</text><rect x='20' y='102' width='500' height='36' rx='6' fill='#2d2d00' stroke='#eab308' stroke-width='1.5'/><text x='270' y='120' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#fde047'>Warning — Proceed requis → log block + passthrough</text><rect x='20' y='148' width='500' height='36' rx='6' fill='#0d2a1a' stroke='#22c55e' stroke-width='1.5'/><text x='270' y='166' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#86efac'>Monitor — Autorisé + log web filter généré</text><rect x='20' y='194' width='500' height='36' rx='6' fill='#1e3a5f' stroke='#3b82f6' stroke-width='1.5'/><text x='270' y='212' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#93c5fd'>Allow — Autorisé, pas de log web filter</text><text x='5' y='35' font-family='sans-serif' font-size='10' fill='#64748b' transform='rotate(-90,5,35)'>↑ + restrictif</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Combien de jours dure la période de grâce après expiration du contrat FortiGuard Web Filtering ?",
+      "choices": ["1 jour", "2 jours", "7 jours", "30 jours"],
+      "answer": 1,
+      "explain": "La période de grâce est de 2 jours. Au-delà, FortiGate retourne une rating error et bloque les pages par défaut."
+    },
+    {
+      "q": "Quelle action laisse passer le trafic mais crée un log web filter ?",
+      "choices": ["Allow", "Block", "Monitor", "Warning"],
+      "answer": 2,
+      "explain": "Monitor autorise le trafic et génère un log — utile pour l'analyse sans bloquer. Allow autorise sans log web filter."
+    },
+    {
+      "q": "Sur quelles actions peut-on appliquer des quotas FortiGuard ?",
+      "choices": ["Allow et Block", "Block et Monitor", "Monitor, Warning et Authenticate", "Toutes les actions"],
+      "answer": 2,
+      "explain": "Les quotas s'appliquent uniquement aux actions Monitor, Warning et Authenticate — pas Allow ni Block."
+    },
+    {
+      "q": "Quel rôle peut jouer FortiManager dans le filtrage web ?",
+      "choices": ["Proxy web pour les utilisateurs", "Serveur FortiGuard local (cache des bases de catégories)", "Pare-feu secondaire pour le filtrage", "Gestionnaire des profils web filter"],
+      "answer": 1,
+      "explain": "FortiManager peut jouer le rôle de serveur FortiGuard local en téléchargeant les bases — les FortiGate le consultent au lieu du cloud."
+    },
+    {
+      "q": "Que se passe-t-il quand l'utilisateur clique Proceed après un Warning ?",
+      "choices": ["Un log Allow est généré", "Un log passthrough est généré (en plus du log block initial)", "L'accès est définitivement autorisé pour la session", "L'action passe en Monitor"],
+      "answer": 1,
+      "explain": "Warning génère un log block initial. Si l'utilisateur clique Proceed, un second log passthrough est généré."
+    },
+    {
+      "q": "Quelle est la différence principale entre Warning et Authenticate ?",
+      "choices": ["Warning bloque définitivement, Authenticate permet de continuer", "Warning permet à tout utilisateur de continuer (Proceed) ; Authenticate exige une authentification réussie dans un groupe override", "Warning log, Authenticate ne log pas", "Aucune différence fonctionnelle"],
+      "answer": 1,
+      "explain": "Warning : tout utilisateur peut cliquer Proceed. Authenticate : accès uniquement si l'utilisateur s'authentifie ET appartient à un groupe autorisé à override."
+    },
+    {
+      "q": "À quelle heure les quotas FortiGuard se réinitialisent-ils ?",
+      "choices": ["À chaque redémarrage FortiGate", "À minuit", "Toutes les 24 heures à partir de la première connexion", "À 06h00 par défaut"],
+      "answer": 1,
+      "explain": "Les quotas de filtrage web se réinitialisent automatiquement à minuit chaque jour."
+    },
+    {
+      "q": "L'action Allow génère-t-elle un log web filter ?",
+      "choices": ["Oui, toujours", "Non, Allow n'enregistre pas de log web filter", "Oui, mais uniquement si le logging est activé dans la policy", "Oui, sous forme de log passthrough"],
+      "answer": 1,
+      "explain": "Allow autorise le trafic sans créer de log web filter. C'est la différence clé avec Monitor qui autorise ET log."
+    },
+    {
+      "q": "Que fait FortiGate quand une rating error se produit (contrat expiré) par défaut ?",
+      "choices": ["Autorise le trafic sans log", "Bloque la page et génère une rating error", "Redirige vers FortiGuard pour re-évaluation", "Applique l'action Monitor"],
+      "answer": 1,
+      "explain": "Par défaut, une rating error bloque la page. On peut modifier ce comportement avec 'Allow websites when a rating error occurs'."
+    },
+    {
+      "q": "Comment soumettre une demande de reclassification d'une URL mal classée ?",
+      "choices": ["Via le CLI FortiGate uniquement", "Via le portail Fortinet URL Rating Submission ou un override local", "En contactant le support Fortinet par email", "Via FortiManager uniquement"],
+      "answer": 1,
+      "explain": "On peut soumettre une reclassification sur le portail Fortinet URL Rating Submission, ou créer un override local dans la configuration FortiGate."
+    },
+    {
+      "q": "Si une URL est reclassée dans une nouvelle catégorie, l'action change-t-elle automatiquement ?",
+      "choices": ["Oui, FortiGate applique la nouvelle catégorie immédiatement", "Non, l'action dépend du profil web filter appliqué à la policy", "Oui, après la prochaine mise à jour FortiGuard", "Non, il faut reboot FortiGate"],
+      "answer": 1,
+      "explain": "Changer la catégorie d'une URL ne change pas automatiquement l'action — celle-ci est définie par le profil web filter attaché à la politique."
+    },
+    {
+      "q": "Où personnalise-t-on les messages de remplacement affichés lors d'un blocage web ?",
+      "choices": ["Web Filter > Profiles > Replacement", "System > Replacement Messages", "Policy & Objects > Addresses", "Security Profiles > Web Filter > Settings"],
+      "answer": 1,
+      "explain": "Les messages de remplacement (block pages, warning pages) sont personnalisables dans System > Replacement Messages."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Combien de jours dure la période de grâce après expiration du contrat FortiGuard Web Filtering ?",
+      "choices": ["1 jour", "2 jours", "7 jours", "30 jours"],
+      "answer": 1,
+      "explain": "La période de grâce est de 2 jours. Au-delà, FortiGate retourne une rating error et bloque par défaut."
+    },
+    {
+      "q": "Quelle action laisse passer le trafic mais crée un log web filter ?",
+      "choices": ["Allow", "Block", "Monitor", "Warning"],
+      "answer": 2,
+      "explain": "Monitor autorise le trafic et génère un log. Allow autorise sans log web filter."
+    },
+    {
+      "q": "Sur quelles actions peut-on appliquer des quotas FortiGuard ?",
+      "choices": ["Allow et Block", "Block et Monitor", "Monitor, Warning et Authenticate", "Toutes les actions"],
+      "answer": 2,
+      "explain": "Les quotas s'appliquent uniquement aux actions Monitor, Warning et Authenticate."
+    },
+    {
+      "q": "Quel rôle peut jouer FortiManager dans le filtrage web ?",
+      "choices": ["Proxy web pour les utilisateurs", "Serveur FortiGuard local (cache des bases de catégories)", "Pare-feu secondaire", "Gestionnaire des profils"],
+      "answer": 1,
+      "explain": "FortiManager peut servir de serveur FortiGuard local en téléchargeant les bases de catégories."
+    },
+    {
+      "q": "Que se passe-t-il quand l'utilisateur clique Proceed après un Warning ?",
+      "choices": ["Un log Allow est généré", "Un log passthrough est généré en plus du log block initial", "L'accès est définitivement autorisé", "L'action passe en Monitor"],
+      "answer": 1,
+      "explain": "Warning génère un log block initial + un log passthrough si l'utilisateur clique Proceed."
+    }
+  ]
+}
