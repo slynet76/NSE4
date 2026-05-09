@@ -3,7 +3,7 @@
   "module": "Antivirus",
   "title": "Techniques de détection avancées",
   "durationMin": 6,
-  "content": "## Au-delà des signatures classiques\n\nFortiGate propose plusieurs mécanismes complémentaires aux signatures AV standard pour détecter les menaces avancées et les malwares récents.\n\n## Virus Outbreak Prevention Service (VOS)\n\nEnrichit la base AV locale avec des **hashes de malwares récents** issus du **Global Threat Intelligence de FortiGuard**.\n\n- FortiGate envoie le **hash du fichier scanné** à FortiGuard.\n- Si le hash est connu comme malveillant → le fichier est bloqué.\n- Nécessite une **licence VOS** active.\n\n## External malware block list\n\nListes de hashes (**MD5**, **SHA1**, **SHA256**) hébergées sur un **serveur HTTP/HTTPS** externe.\n\n1. Créer un connecteur dans la **Security Fabric**.\n2. Sélectionner le connecteur dans le **profil AV**.\n\n> ⚠️ **CRC32 n'est pas un format de hash supporté** par l'external malware block list.\n\n## EMS threat feed\n\nFortiGate reçoit des **hashes détectés par les FortiClient** via **FortiClient EMS**. Partage en temps réel des menaces détectées sur les endpoints.\n\n## Ordre de vérification\n\nQuand plusieurs sources sont actives, FortiGate les consulte dans cet ordre :\n\n```\n1. Base AV locale\n2. EMS threat feed\n3. External malware block list\n4. FortiGuard VOS\n```\n\n![Ordre de vérification des sources AV](diagram:0)\n\n## Content Disarm and Reconstruction (CDR)\n\nNettoie les documents **Office** et **PDF** (y compris dans les archives **ZIP**) en retirant :\n- Macros\n- JavaScript embarqué\n- Hyperliens actifs\n- Médias embarqués\n\nLe **contenu textuel** reste intact. Seuls les éléments actifs potentiellement dangereux sont supprimés.\n\n**Protocoles supportés** : HTTP, SMTP, POP3, IMAP.\n\n> ⚠️ **CDR est disponible uniquement en mode proxy-based.** Il n'est pas disponible en flow-based.\n\n## Behavior-based detection\n\nEnvoie les fichiers suspects à **FortiSandbox** pour une **analyse comportementale**. Le fichier est exécuté dans un environnement isolé pour observer son comportement réel.\n\n## CIFS scanning\n\nPermet le **scan AV** et le **file filter** sur le trafic **CIFS** (partages Windows — protocole SMB).\n\n## À retenir\n\n- **CDR** et **FortiNDR** sont disponibles uniquement en **proxy-based**.\n- Hashes supportés par l'external block list : **MD5, SHA1, SHA256** (pas CRC32).\n- Ordre de vérification : **base locale → EMS → external blocklist → FortiGuard VOS**.",
+  "content": "## Au-delà des signatures classiques\n\nFortiGate propose plusieurs mécanismes complémentaires aux signatures AV standard pour détecter les menaces avancées et les malwares récents.\n\n## Virus Outbreak Prevention Service (VOS)\n\nEnrichit la base AV locale avec des **hashes de malwares récents** issus du **Global Threat Intelligence de FortiGuard**.\n\n- FortiGate envoie le **hash du fichier scanné** à FortiGuard.\n- Si le hash est connu comme malveillant → le fichier est bloqué.\n- Nécessite une **licence VOS** active.\n\n## External malware block list\n\nListes de hashes (**MD5**, **SHA1**, **SHA256**) hébergées sur un **serveur HTTP/HTTPS** externe.\n\n1. Créer un connecteur dans la **Security Fabric**.\n2. Sélectionner le connecteur dans le **profil AV**.\n\n> ⚠️ **CRC32 n'est pas un format de hash supporté** par l'external malware block list.\n\n## EMS threat feed\n\nFortiGate reçoit des **hashes détectés par les FortiClient** via **FortiClient EMS**. Partage en temps réel des menaces détectées sur les endpoints.\n\n## Ordre de vérification\n\nQuand plusieurs sources sont actives, FortiGate les consulte dans cet ordre :\n\n```\n1. Base AV locale\n2. EMS threat feed\n3. External malware block list\n4. FortiGuard VOS\n```\n\n![Ordre de vérification des sources AV](diagram:0)\n\n## Content Disarm and Reconstruction (CDR)\n\nNettoie les documents **Office** et **PDF** (y compris dans les archives **ZIP**) en retirant :\n- Macros\n- JavaScript embarqué\n- Hyperliens actifs\n- Médias embarqués\n\nLe **contenu textuel** reste intact. Seuls les éléments actifs potentiellement dangereux sont supprimés.\n\n**Protocoles supportés** : HTTP, SMTP, POP3, IMAP.\n\n> ⚠️ **CDR est disponible uniquement en mode proxy-based.** Il n'est pas disponible en flow-based.\n\n## Behavior-based detection\n\nEnvoie les fichiers suspects à **FortiSandbox** pour une **analyse comportementale**. Le fichier est exécuté dans un environnement isolé pour observer son comportement réel.\n\n## CIFS scanning\n\nPermet le **scan AV** et le **file filter** sur le trafic **CIFS** (partages Windows — protocole SMB).\n\n## À retenir\n\n- **CDR** et **FortiNDR** sont disponibles uniquement en **proxy-based**.\n- Hashes supportés par l'external block list : **MD5, SHA1, SHA256** (pas CRC32).\n- Ordre de vérification : **base locale → EMS → external blocklist → FortiGuard VOS**.\n\n> **CDR** : **retire** les **contenus** actifs (macros, **scripts**, hyperliens) des documents en **conservant** le **texte** et la structure.",
   "diagrams": [
     {
       "caption": "Ordre de vérification quand toutes les sources de détection AV avancée sont actives.",
@@ -14,73 +14,133 @@
   "questionPool": [
     {
       "q": "Quel est l'ordre de vérification quand toutes les sources AV avancées sont actives ?",
-      "choices": ["FortiGuard VOS → EMS → external blocklist → base locale", "Base locale → EMS → external blocklist → FortiGuard VOS", "EMS → base locale → FortiGuard VOS → external blocklist", "External blocklist → base locale → EMS → FortiGuard VOS"],
+      "choices": [
+        "FortiGuard VOS → EMS → external blocklist → base locale",
+        "Base locale → EMS → external blocklist → FortiGuard VOS",
+        "EMS → base locale → FortiGuard VOS → external blocklist",
+        "External blocklist → base locale → EMS → FortiGuard VOS"
+      ],
       "answer": 1,
       "explain": "Ordre : (1) Base AV locale, (2) EMS threat feed, (3) External malware block list, (4) FortiGuard VOS."
     },
     {
       "q": "Que fait le CDR (Content Disarm and Reconstruction) ?",
-      "choices": ["Bloque tous les fichiers Office et PDF", "Retire les contenus actifs (macros, scripts, hyperliens) des documents en conservant le texte", "Chiffre les fichiers avant envoi à FortiSandbox", "Remplace les documents par des messages d'alerte"],
+      "choices": [
+        "Bloque tous les fichiers Office et PDF",
+        "Retire les contenus actifs (macros, scripts, hyperliens) des documents en conservant le texte",
+        "Chiffre les fichiers avant envoi à FortiSandbox",
+        "Remplace les documents par des messages d'alerte"
+      ],
       "answer": 1,
       "explain": "CDR supprime les éléments actifs potentiellement dangereux (macros, JS, hyperliens) des documents Office et PDF, en conservant le contenu textuel."
     },
     {
       "q": "Le CDR est compatible avec quel mode d'inspection ?",
-      "choices": ["Flow-based uniquement", "Proxy-based uniquement", "Les deux modes", "Uniquement en mode transparent"],
+      "choices": [
+        "Flow-based uniquement",
+        "Proxy-based uniquement",
+        "Les deux modes",
+        "Uniquement en mode transparent"
+      ],
       "answer": 1,
       "explain": "CDR est disponible uniquement en mode proxy-based — pas en flow-based."
     },
     {
       "q": "D'où viennent les hashes de l'EMS threat feed ?",
-      "choices": ["Du cloud FortiGuard directement", "Des détections effectuées par les FortiClient via FortiClient EMS", "De FortiSandbox", "De l'external malware block list"],
+      "choices": [
+        "Du cloud FortiGuard directement",
+        "Des détections effectuées par les FortiClient via FortiClient EMS",
+        "De FortiSandbox",
+        "De l'external malware block list"
+      ],
       "answer": 1,
       "explain": "FortiGate reçoit les hashes détectés par les FortiClient (endpoints) via FortiClient EMS — partage en temps réel des menaces endpoint."
     },
     {
       "q": "Lequel n'est PAS un format de hash supporté par l'external malware block list ?",
-      "choices": ["MD5", "SHA1", "SHA256", "CRC32"],
+      "choices": [
+        "MD5",
+        "SHA1",
+        "SHA256",
+        "CRC32"
+      ],
       "answer": 3,
       "explain": "L'external malware block list supporte MD5, SHA1 et SHA256. CRC32 n'est pas un format de hash cryptographique et n'est pas supporté."
     },
     {
       "q": "Comment fonctionne le Virus Outbreak Prevention Service (VOS) ?",
-      "choices": ["Il télécharge toutes les signatures de malwares récents sur FortiGate", "FortiGate envoie le hash du fichier à FortiGuard qui le compare à sa base de menaces récentes", "Il analyse le comportement du fichier dans un sandbox", "Il bloque automatiquement tous les fichiers inconnus"],
+      "choices": [
+        "Il télécharge toutes les signatures de malwares récents sur FortiGate",
+        "FortiGate envoie le hash du fichier à FortiGuard qui le compare à sa base de menaces récentes",
+        "Il analyse le comportement du fichier dans un sandbox",
+        "Il bloque automatiquement tous les fichiers inconnus"
+      ],
       "answer": 1,
       "explain": "VOS : FortiGate envoie le hash du fichier à FortiGuard — si le hash est connu comme malveillant dans le Global Threat Intelligence, le fichier est bloqué."
     },
     {
       "q": "Le CDR peut-il traiter les fichiers Office dans des archives ZIP ?",
-      "choices": ["Non, uniquement les fichiers directement attachés", "Oui, CDR traite les documents Office et PDF dans les ZIPs", "Uniquement si le ZIP est déchiffré d'abord", "Uniquement en mode actif-actif"],
+      "choices": [
+        "Non, uniquement les fichiers directement attachés",
+        "Oui, CDR traite les documents Office et PDF dans les ZIPs",
+        "Uniquement si le ZIP est déchiffré d'abord",
+        "Uniquement en mode actif-actif"
+      ],
       "answer": 1,
       "explain": "CDR peut traiter les documents Office et PDF, y compris ceux contenus dans des archives ZIP."
     },
     {
       "q": "Comment configurer une external malware block list dans FortiGate ?",
-      "choices": ["Uploader un fichier CSV directement dans le profil AV", "Créer un connecteur dans la Security Fabric puis le sélectionner dans le profil AV", "Configurer un serveur LDAP avec les hashes", "Via FortiManager uniquement"],
+      "choices": [
+        "Uploader un fichier CSV directement dans le profil AV",
+        "Créer un connecteur dans la Security Fabric puis le sélectionner dans le profil AV",
+        "Configurer un serveur LDAP avec les hashes",
+        "Via FortiManager uniquement"
+      ],
       "answer": 1,
       "explain": "On crée un connecteur Security Fabric pointant vers le serveur HTTP/HTTPS hébergeant les hashes, puis on le sélectionne dans le profil AV."
     },
     {
       "q": "Quels protocoles le CDR supporte-t-il pour le traitement des fichiers ?",
-      "choices": ["HTTP uniquement", "HTTP, SMTP, POP3 et IMAP", "HTTP, HTTPS et FTP", "SMTP et POP3 uniquement"],
+      "choices": [
+        "HTTP uniquement",
+        "HTTP, SMTP, POP3 et IMAP",
+        "HTTP, HTTPS et FTP",
+        "SMTP et POP3 uniquement"
+      ],
       "answer": 1,
       "explain": "CDR supporte : HTTP, SMTP, POP3 et IMAP. Il ne supporte pas HTTPS directement (nécessite une inspection SSL en amont)."
     },
     {
       "q": "Quelle technique envoie les fichiers suspects à FortiSandbox pour analyse ?",
-      "choices": ["CDR", "VOS", "Behavior-based detection", "EMS threat feed"],
+      "choices": [
+        "CDR",
+        "VOS",
+        "Behavior-based detection",
+        "EMS threat feed"
+      ],
       "answer": 2,
       "explain": "Behavior-based detection envoie les fichiers suspects à FortiSandbox pour une analyse comportementale dans un environnement isolé."
     },
     {
       "q": "Quel service permet le scan AV sur le trafic de partages Windows (SMB) ?",
-      "choices": ["CDR", "CIFS scanning", "EMS threat feed", "FortiNDR"],
+      "choices": [
+        "CDR",
+        "CIFS scanning",
+        "EMS threat feed",
+        "FortiNDR"
+      ],
       "answer": 1,
       "explain": "CIFS scanning permet le scan AV et le file filter sur le trafic CIFS (Common Internet File System / protocole SMB des partages Windows)."
     },
     {
       "q": "Quelle licence est nécessaire pour utiliser le Virus Outbreak Prevention Service ?",
-      "choices": ["FortiGuard AV standard", "Licence VOS active", "Licence FortiSandbox Cloud", "FortiGuard IPS"],
+      "choices": [
+        "FortiGuard AV standard",
+        "Licence VOS active",
+        "Licence FortiSandbox Cloud",
+        "FortiGuard IPS"
+      ],
       "answer": 1,
       "explain": "Le VOS nécessite une licence VOS active en plus de la licence AV standard."
     }
@@ -88,31 +148,56 @@
   "quiz": [
     {
       "q": "Quel est l'ordre de vérification quand toutes les sources AV avancées sont actives ?",
-      "choices": ["FortiGuard VOS → EMS → external blocklist → base locale", "Base locale → EMS → external blocklist → FortiGuard VOS", "EMS → base locale → FortiGuard VOS → external blocklist", "External blocklist → base locale → EMS → FortiGuard VOS"],
+      "choices": [
+        "FortiGuard VOS → EMS → external blocklist → base locale",
+        "Base locale → EMS → external blocklist → FortiGuard VOS",
+        "EMS → base locale → FortiGuard VOS → external blocklist",
+        "External blocklist → base locale → EMS → FortiGuard VOS"
+      ],
       "answer": 1,
       "explain": "Ordre : (1) Base AV locale, (2) EMS threat feed, (3) External malware block list, (4) FortiGuard VOS."
     },
     {
       "q": "Que fait le CDR (Content Disarm and Reconstruction) ?",
-      "choices": ["Bloque tous les fichiers Office et PDF", "Retire les contenus actifs (macros, scripts, hyperliens) des documents", "Chiffre les fichiers avant envoi à FortiSandbox", "Remplace les documents par des alertes"],
+      "choices": [
+        "Bloque tous les fichiers Office et PDF",
+        "Retire les contenus actifs (macros, scripts, hyperliens) des documents",
+        "Chiffre les fichiers avant envoi à FortiSandbox",
+        "Remplace les documents par des alertes"
+      ],
       "answer": 1,
       "explain": "CDR supprime les éléments actifs (macros, JS, hyperliens) en conservant le contenu textuel."
     },
     {
       "q": "Le CDR est compatible avec quel mode d'inspection ?",
-      "choices": ["Flow-based uniquement", "Proxy-based uniquement", "Les deux modes", "Uniquement transparent"],
+      "choices": [
+        "Flow-based uniquement",
+        "Proxy-based uniquement",
+        "Les deux modes",
+        "Uniquement transparent"
+      ],
       "answer": 1,
       "explain": "CDR est disponible uniquement en mode proxy-based."
     },
     {
       "q": "D'où viennent les hashes de l'EMS threat feed ?",
-      "choices": ["Du cloud FortiGuard directement", "Des détections des FortiClient via FortiClient EMS", "De FortiSandbox", "De l'external malware block list"],
+      "choices": [
+        "Du cloud FortiGuard directement",
+        "Des détections des FortiClient via FortiClient EMS",
+        "De FortiSandbox",
+        "De l'external malware block list"
+      ],
       "answer": 1,
       "explain": "FortiGate reçoit les hashes détectés par les FortiClient (endpoints) via FortiClient EMS."
     },
     {
       "q": "Lequel n'est PAS un format de hash supporté par l'external malware block list ?",
-      "choices": ["MD5", "SHA1", "SHA256", "CRC32"],
+      "choices": [
+        "MD5",
+        "SHA1",
+        "SHA256",
+        "CRC32"
+      ],
       "answer": 3,
       "explain": "L'external malware block list supporte MD5, SHA1 et SHA256. CRC32 n'est pas supporté."
     }

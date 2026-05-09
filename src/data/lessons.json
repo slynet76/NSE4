@@ -1602,64 +1602,181 @@
   {
     "id": "ch06-l1",
     "module": "Fortinet Single Sign-On (FSSO)",
-    "title": "Concepts FSSO et dÃ©ploiements",
-    "durationMin": 5,
-    "content": "Le Single Sign-On (SSO) permet Ã  un utilisateur d'accÃ©der Ã  toutes les applications d'un environnement aprÃ¨s une seule identification, sans saisir de nouveau ses identifiants Ã  chaque ressource. FSSO (Fortinet Single Sign-On) est l'implÃ©mentation Fortinet : un agent logiciel transmet Ã  FortiGate les informations de connexion (nom d'utilisateur, IP, groupes) que l'annuaire a authentifiÃ©es. Le FortiGate ne fait pas l'authentification lui-mÃªme â€” il consomme les Ã©vÃ©nements Ã©mis par le contrÃ´leur de domaine.\n\nQuand un utilisateur tente d'accÃ©der Ã  une ressource, FortiGate consulte sa base locale (alimentÃ©e par FSSO) pour identifier la session, puis applique la politique correspondante au groupe. FSSO est typiquement dÃ©ployÃ© avec Active Directory (Windows) ou Novell eDirectory.\n\nIl existe plusieurs modes de dÃ©ploiement, choisis selon la taille et la complexitÃ© du rÃ©seau :\n\n- DC agent mode (recommandÃ©) : un agent DC est installÃ© sur chaque contrÃ´leur de domaine et un Collector Agent (CA) tourne sur un serveur Windows membre du domaine. Les DC agents capturent les Ã©vÃ©nements de login en temps rÃ©el et les envoient au collector, qui les agrÃ¨ge et les transmet Ã  FortiGate. TrÃ¨s scalable.\n\n- Polling mode avec collector : pas de DC agent â€” le collector interroge pÃ©riodiquement les DCs (toutes les quelques secondes). Plus simple Ã  dÃ©ployer, mais le collector doit Ãªtre plus puissant et certains Ã©vÃ©nements peuvent Ãªtre manquÃ©s ou retardÃ©s. Trois mÃ©thodes de polling :\n  - WMI (recommandÃ©) : le collector envoie des requÃªtes WMI au DC, qui retourne uniquement les events de login.\n  - WinSecLog : le collector parse l'intÃ©gralitÃ© des journaux d'Ã©vÃ©nements de sÃ©curitÃ© â€” fiable mais lent sur les gros environnements.\n  - NetAPI : interroge les sessions temporaires via NetSessionEnum â€” rapide, mais peut manquer des events si le DC est chargÃ©.\n\n- Agentless polling mode : c'est le FortiGate lui-mÃªme qui interroge les DCs (pas de collector). Plus simple Ã  mettre en place pour les petits rÃ©seaux, mais consomme davantage de ressources sur le FortiGate et n'offre pas toutes les fonctionnalitÃ©s avancÃ©es (workstation checks, etc.). Il s'appuie sur les event IDs 4768 et 4769 via SMB.\n\n- TS agent : dÃ©ployÃ© sur les serveurs Citrix ou Terminal Services pour distinguer les sessions partageant la mÃªme IP source. Le TS agent ne parle pas directement Ã  FortiGate : il envoie ses events Ã  un collector ou Ã  FortiAuthenticator.\n\nÃ€ retenir pour le NSE4 : FortiGate ne fait pas l'authentification dans FSSO ; le DC agent mode est recommandÃ© ; agentless polling cible les petits rÃ©seaux ; TS agent est obligatoire en environnement Citrix/TS pour gÃ©rer les ports source par utilisateur.",
-    "quiz": [
+    "title": "Concepts FSSO et déploiements",
+    "durationMin": 8,
+    "content": "## Qu'est-ce que le FSSO ?\n\nLe **Fortinet Single Sign-On (FSSO)** permet au FortiGate d'identifier les utilisateurs du réseau **sans les ré-authentifier**. Le FortiGate consomme des événements de connexion produits par le contrôleur de domaine (DC) plutôt que de procéder lui-même à l'authentification.\n\n> Point clé NSE4 : **FortiGate n'authentifie pas** l'utilisateur dans un déploiement FSSO. C'est le DC qui authentifie ; le FortiGate se contente de recevoir l'information (utilisateur + IP + groupes).\n\n---\n\n## Les 4 modes de déploiement FSSO\n\n### 1. Mode DC Agent (recommandé)\n\nUn agent logiciel est installé sur **chaque contrôleur de domaine**. Il intercepte les événements d'authentification en temps réel et les transmet à un **Collector Agent**.\n\n- **Avantages** : temps réel, scalable, aucun événement manqué\n- **Recommandé** pour les environnements de grande taille\n- Flux : DC Agent → Collector Agent → FortiGate\n\n### 2. Mode Polling avec Collector (sans DC Agent)\n\nLe **Collector Agent** interroge directement les DC à intervalles réguliers. Trois méthodes de polling sont disponibles :\n\n| Méthode | Description | Recommandation |\n|---|---|---|\n| **WMI** | Windows Management Instrumentation | Recommandée |\n| **WinSecLog** | Lecture du journal de sécurité Windows | Alternative |\n| **NetAPI** | API réseau Windows | Moins utilisée |\n\n- **Inconvénients** : peut manquer des événements, délai possible\n- Le Collector envoie ensuite l'info au FortiGate (TCP 8000)\n\n### 3. Mode Agentless Polling\n\nLe **FortiGate lui-même joue le rôle de collector** et interroge directement le DC. Aucun agent ni collector n'est installé.\n\n- Surveille les **event IDs 4768 et 4769** (tickets Kerberos)\n- Adapté aux **petits réseaux** uniquement (consommation de ressources élevée sur le FortiGate)\n- LDAP est utilisé pour résoudre les groupes\n\n### 4. Mode TS Agent (Citrix / Terminal Services)\n\nDans un environnement **Citrix ou Terminal Services**, plusieurs utilisateurs partagent la **même adresse IP**. Le TS Agent est installé sur le serveur terminal et différencie les utilisateurs par numéro de port ou de session.\n\n- **Obligatoire** dans un contexte Citrix/Terminal Services\n- Le TS Agent envoie les informations au Collector Agent\n- Sans TS Agent, le FortiGate ne peut pas distinguer les utilisateurs sur le même serveur\n\n---\n\n## Tableau comparatif des modes\n\n| Mode | Agent sur DC | Collector | FortiGate comme collector | Usage recommandé |\n|---|---|---|---|---|\n| DC Agent | Oui | Oui | Non | Grandes entreprises |\n| Polling + Collector | Non | Oui | Non | Réseaux moyens |\n| Agentless | Non | Non | Oui | Petits réseaux |\n| TS Agent | Non (sur serveur TS) | Oui | Non | Citrix/Terminal Services |\n\n---\n\n## Points clés NSE4 à retenir\n\n- **FortiGate ne fait pas l'authentification** dans FSSO — c'est toujours le DC\n- Le **DC Agent est le mode recommandé** pour la scalabilité et la fiabilité\n- Le mode **agentless** est réservé aux petits réseaux (ressources FortiGate limitées)\n- Le **TS Agent est obligatoire** sur Citrix / Terminal Services (IP partagée)\n- WMI est la méthode de polling recommandée dans le mode Polling\n- Le Collector envoie à FortiGate : **utilisateur + IP + groupes**\n- Event IDs surveillés en agentless : **4768** (TGT Kerberos) et **4769** (service Kerberos)\n\n> Le Collector Agent reçoit les événements des DC Agents, résout le **DNS** et les groupes, puis envoie l'info au FortiGate.",
+    "diagrams": [
       {
-        "q": "Qui authentifie rÃ©ellement l'utilisateur dans une architecture FSSO ?",
+        "caption": "Comparaison des 4 modes de déploiement FSSO",
+        "height": 280,
+        "svg": "<svg xmlns='http://www.w3.org/2000/svg' width='560' height='280' font-family='sans-serif' font-size='12'><rect width='560' height='280' fill='#f8fafc' rx='8'/><text x='280' y='22' text-anchor='middle' font-size='14' font-weight='bold' fill='#1f2937'>4 Modes de déploiement FSSO</text><rect x='10' y='35' width='260' height='105' rx='6' fill='#dbeafe' stroke='#3b82f6' stroke-width='1.5'/><text x='140' y='55' text-anchor='middle' font-weight='bold' fill='#1f2937'>DC Agent (recommandé)</text><rect x='20' y='62' width='70' height='28' rx='4' fill='#3b82f6'/><text x='55' y='80' text-anchor='middle' fill='white' font-size='11'>DC Agent</text><text x='100' y='79' fill='#1f2937'>→</text><rect x='110' y='62' width='70' height='28' rx='4' fill='#22c55e'/><text x='145' y='80' text-anchor='middle' fill='white' font-size='11'>Collector</text><text x='190' y='79' fill='#1f2937'>→</text><rect x='200' y='62' width='60' height='28' rx='4' fill='#f59e0b'/><text x='230' y='80' text-anchor='middle' fill='white' font-size='11'>FortiGate</text><text x='140' y='110' text-anchor='middle' fill='#374151' font-size='11'>Scalable — temps réel</text><text x='140' y='128' text-anchor='middle' fill='#374151' font-size='11'>Grandes entreprises</text><rect x='290' y='35' width='260' height='105' rx='6' fill='#dcfce7' stroke='#22c55e' stroke-width='1.5'/><text x='420' y='55' text-anchor='middle' font-weight='bold' fill='#1f2937'>Polling + Collector</text><rect x='300' y='62' width='60' height='28' rx='4' fill='#94a3b8'/><text x='330' y='80' text-anchor='middle' fill='white' font-size='11'>DC (WMI)</text><text x='370' y='79' fill='#1f2937'>→</text><rect x='380' y='62' width='70' height='28' rx='4' fill='#22c55e'/><text x='415' y='80' text-anchor='middle' fill='white' font-size='11'>Collector</text><text x='460' y='79' fill='#1f2937'>→</text><rect x='470' y='62' width='65' height='28' rx='4' fill='#f59e0b'/><text x='503' y='80' text-anchor='middle' fill='white' font-size='11'>FortiGate</text><text x='420' y='110' text-anchor='middle' fill='#374151' font-size='11'>WMI / WinSecLog / NetAPI</text><text x='420' y='128' text-anchor='middle' fill='#374151' font-size='11'>Peut manquer des événements</text><rect x='10' y='155' width='260' height='110' rx='6' fill='#fef3c7' stroke='#f59e0b' stroke-width='1.5'/><text x='140' y='175' text-anchor='middle' font-weight='bold' fill='#1f2937'>Agentless Polling</text><rect x='20' y='182' width='60' height='28' rx='4' fill='#94a3b8'/><text x='50' y='200' text-anchor='middle' fill='white' font-size='11'>DC</text><text x='90' y='199' fill='#1f2937'>←polls</text><rect x='150' y='182' width='100' height='28' rx='4' fill='#f59e0b'/><text x='200' y='200' text-anchor='middle' fill='white' font-size='11'>FortiGate (collector)</text><text x='140' y='232' text-anchor='middle' fill='#374151' font-size='11'>Event IDs 4768 / 4769</text><text x='140' y='250' text-anchor='middle' fill='#374151' font-size='11'>Petits réseaux uniquement</text><rect x='290' y='155' width='260' height='110' rx='6' fill='#f1f5f9' stroke='#94a3b8' stroke-width='1.5'/><text x='420' y='175' text-anchor='middle' font-weight='bold' fill='#1f2937'>TS Agent (Citrix)</text><rect x='300' y='182' width='75' height='28' rx='4' fill='#3b82f6'/><text x='337' y='200' text-anchor='middle' fill='white' font-size='11'>TS Agent</text><text x='385' y='199' fill='#1f2937'>→</text><rect x='395' y='182' width='70' height='28' rx='4' fill='#22c55e'/><text x='430' y='200' text-anchor='middle' fill='white' font-size='11'>Collector</text><text x='475' y='199' fill='#1f2937'>→</text><rect x='485' y='182' width='55' height='28' rx='4' fill='#f59e0b'/><text x='513' y='200' text-anchor='middle' fill='white' font-size='11'>FGT</text><text x='420' y='232' text-anchor='middle' fill='#374151' font-size='11'>IP partagée — obligatoire</text><text x='420' y='250' text-anchor='middle' fill='#374151' font-size='11'>Citrix / Terminal Services</text></svg>"
+      }
+    ],
+    "questionPool": [
+      {
+        "q": "Dans un déploiement FSSO, qui authentifie l'utilisateur ?",
         "choices": [
-          "FortiGate",
-          "Le contrÃ´leur de domaine",
+          "Le FortiGate via RADIUS",
+          "Le contrôleur de domaine (DC)",
           "Le Collector Agent",
-          "Le DC agent"
+          "Le FortiAuthenticator"
         ],
         "answer": 1,
-        "explain": "Le DC authentifie ; FortiGate consomme juste l'info."
+        "explain": "Dans FSSO, c'est toujours le contrôleur de domaine qui authentifie l'utilisateur. Le FortiGate consomme simplement les événements de connexion sans procéder lui-même à l'authentification."
       },
       {
-        "q": "Quel mode FSSO est recommandÃ© pour la scalabilitÃ© ?",
+        "q": "Quel mode de déploiement FSSO est recommandé pour les grandes entreprises nécessitant scalabilité et fiabilité ?",
         "choices": [
           "Agentless polling",
-          "Polling NetAPI",
-          "DC agent mode",
-          "RSSO"
+          "Polling avec Collector sans agent",
+          "DC Agent mode",
+          "TS Agent mode"
         ],
         "answer": 2,
-        "explain": "DC agent mode est le plus scalable et fiable."
+        "explain": "Le mode DC Agent est le mode recommandé pour les environnements de grande taille. Un agent installé sur chaque DC intercepte les événements en temps réel, ce qui le rend scalable et fiable."
       },
       {
-        "q": "Quelle mÃ©thode de polling est la plus rapide mais peut manquer des events sous charge ?",
+        "q": "Quelle méthode de polling est recommandée dans le mode Polling avec Collector ?",
         "choices": [
-          "WMI",
-          "WinSecLog",
           "NetAPI",
-          "SMB"
+          "WinSecLog",
+          "WMI (Windows Management Instrumentation)",
+          "LDAP polling"
         ],
         "answer": 2,
-        "explain": "NetAPI lit des sessions volatiles dans la RAM du DC."
+        "explain": "WMI (Windows Management Instrumentation) est la méthode de polling recommandée dans le mode Polling avec Collector. WinSecLog et NetAPI sont des alternatives mais moins recommandées."
       },
       {
-        "q": "Pourquoi un TS agent est-il nÃ©cessaire sur un serveur Citrix ?",
+        "q": "Dans quel contexte le TS Agent est-il obligatoire ?",
         "choices": [
-          "Pour chiffrer les sessions",
-          "Pour distinguer plusieurs utilisateurs partageant la mÃªme IP source",
-          "Pour remplacer LDAP",
-          "Pour activer le 2FA"
+          "Lorsque le réseau comporte plus de 1000 utilisateurs",
+          "Lorsque plusieurs utilisateurs partagent la même adresse IP (Citrix/Terminal Services)",
+          "Lorsque le DC Agent n'est pas disponible",
+          "Lorsque le FortiGate est en mode transparent"
         ],
         "answer": 1,
-        "explain": "Sur TS/Citrix les utilisateurs partagent l'IP : il faut tracker les ports source."
+        "explain": "Le TS Agent est obligatoire dans un environnement Citrix ou Terminal Services où plusieurs utilisateurs partagent la même adresse IP. Sans TS Agent, le FortiGate ne peut pas distinguer les utilisateurs."
       },
       {
-        "q": "Le mode agentless polling utilise quels event IDs principalement ?",
+        "q": "Quels event IDs Windows le mode agentless surveille-t-il pour détecter les authentifications ?",
         "choices": [
-          "4624 et 4625",
+          "4624 et 4634",
+          "4720 et 4722",
           "4768 et 4769",
-          "528 et 540",
-          "1102 et 1100"
+          "4776 et 4778"
+        ],
+        "answer": 2,
+        "explain": "En mode agentless, le FortiGate surveille les event IDs 4768 (Kerberos TGT) et 4769 (Kerberos service ticket) pour détecter les authentifications des utilisateurs sur le DC."
+      },
+      {
+        "q": "Quelle information le Collector Agent transmet-il au FortiGate ?",
+        "choices": [
+          "Uniquement le nom d'utilisateur",
+          "Le nom d'utilisateur, l'adresse IP et les groupes",
+          "Le nom d'utilisateur et le mot de passe hashé",
+          "L'adresse MAC et le VLAN de l'utilisateur"
         ],
         "answer": 1,
-        "explain": "Agentless polling regarde les events Kerberos 4768 et 4769."
+        "explain": "Le Collector Agent envoie au FortiGate trois informations essentielles : le nom d'utilisateur, l'adresse IP associée et les groupes d'appartenance de l'utilisateur."
+      },
+      {
+        "q": "Quel mode de déploiement FSSO est adapté uniquement aux petits réseaux ?",
+        "choices": [
+          "DC Agent mode",
+          "TS Agent mode",
+          "Polling avec Collector (WMI)",
+          "Agentless polling"
+        ],
+        "answer": 3,
+        "explain": "Le mode agentless polling est réservé aux petits réseaux car le FortiGate joue lui-même le rôle de collector et interroge directement le DC, ce qui consomme beaucoup de ressources sur le FortiGate."
+      },
+      {
+        "q": "Dans le mode DC Agent, quel est le rôle du Collector Agent ?",
+        "choices": [
+          "Authentifier les utilisateurs à la place du DC",
+          "Recevoir les événements des DC Agents, résoudre le DNS et les groupes, puis envoyer l'info au FortiGate",
+          "Installer automatiquement les agents sur les DC",
+          "Surveiller les événements de déconnexion Windows"
+        ],
+        "answer": 1,
+        "explain": "Le Collector Agent reçoit les événements des DC Agents, effectue la résolution DNS pour obtenir les adresses IP, vérifie les appartenances aux groupes, puis transmet ces informations au FortiGate."
+      },
+      {
+        "q": "Lequel des éléments suivants N'EST PAS un avantage du mode DC Agent par rapport au mode Polling ?",
+        "choices": [
+          "Moins d'événements manqués",
+          "Détection en temps réel",
+          "Déploiement plus simple sans installation sur les DC",
+          "Meilleure scalabilité pour les grandes entreprises"
+        ],
+        "answer": 2,
+        "explain": "Le mode DC Agent nécessite l'installation d'un agent sur chaque contrôleur de domaine, ce qui le rend plus complexe à déployer. C'est le mode Polling qui est plus simple car il ne nécessite pas d'agent sur les DC."
+      },
+      {
+        "q": "Comment le FortiGate identifie-t-il un utilisateur dans un flux FSSO ?",
+        "choices": [
+          "En interceptant les paquets NTLM sur le réseau",
+          "En faisant correspondre l'adresse IP source du trafic avec les informations reçues du Collector",
+          "En consultant Active Directory via LDAP à chaque nouvelle connexion",
+          "En demandant à l'utilisateur de s'authentifier via un portail captif"
+        ],
+        "answer": 1,
+        "explain": "Le FortiGate fait correspondre l'adresse IP source du trafic réseau avec les couples (IP, utilisateur, groupes) reçus du Collector Agent. C'est ainsi qu'il identifie l'utilisateur sans nouvelle authentification."
+      },
+      {
+        "q": "Quelles sont les trois méthodes disponibles dans le mode Polling avec Collector ?",
+        "choices": [
+          "LDAP, RADIUS, TACACS+",
+          "WMI, WinSecLog, NetAPI",
+          "SMB, NFS, RDP",
+          "Kerberos, NTLM, OAuth"
+        ],
+        "answer": 1,
+        "explain": "Le mode Polling avec Collector offre trois méthodes pour interroger le DC : WMI (recommandée), WinSecLog (lecture du journal de sécurité Windows) et NetAPI (API réseau Windows)."
+      },
+      {
+        "q": "Lequel de ces composants N'EXISTE PAS dans un déploiement FSSO en mode Agentless ?",
+        "choices": [
+          "Le FortiGate",
+          "Le contrôleur de domaine",
+          "Le Collector Agent",
+          "LDAP pour la résolution des groupes"
+        ],
+        "answer": 2,
+        "explain": "En mode Agentless, il n'y a ni DC Agent ni Collector Agent. Le FortiGate joue directement le rôle de collector et interroge le DC via SMB/LDAP, ce qui élimine le besoin d'un Collector Agent séparé."
+      },
+      {
+        "q": "Pourquoi le mode Polling peut-il manquer certains événements d'authentification ?",
+        "choices": [
+          "Parce que WMI ne fonctionne qu'avec Windows Server 2019",
+          "Parce que le Collector interroge le DC périodiquement et non en temps réel",
+          "Parce que le Collector ne peut pas lire les groupes Active Directory",
+          "Parce que TCP 8000 est souvent bloqué par le pare-feu"
+        ],
+        "answer": 1,
+        "explain": "En mode Polling, le Collector interroge le DC à intervalles réguliers (et non en temps réel comme le DC Agent). Des événements peuvent donc se produire entre deux polls et être manqués ou détectés avec un délai."
+      },
+      {
+        "q": "Dans un environnement Citrix, quel problème surgit si le TS Agent n'est pas installé ?",
+        "choices": [
+          "Les utilisateurs ne peuvent pas accéder à Internet",
+          "Le Collector Agent ne peut pas communiquer avec le FortiGate",
+          "Le FortiGate ne peut pas distinguer les différents utilisateurs partageant la même IP",
+          "Les événements 4768/4769 ne sont pas générés"
+        ],
+        "answer": 2,
+        "explain": "Sur un serveur Citrix ou Terminal Services, tous les utilisateurs partagent la même adresse IP. Sans TS Agent, le FortiGate voit toutes les sessions avec la même IP et ne peut pas appliquer des politiques par utilisateur."
+      },
+      {
+        "q": "Quelle est la principale différence entre WMI et WinSecLog en mode Polling ?",
+        "choices": [
+          "WMI utilise TCP 8000 tandis que WinSecLog utilise UDP 514",
+          "WMI interroge le DC via l'API de gestion Windows tandis que WinSecLog lit directement le journal de sécurité",
+          "WMI ne fonctionne que sur les DC primaires, WinSecLog sur tous les DC",
+          "WMI est gratuit, WinSecLog nécessite une licence supplémentaire"
+        ],
+        "answer": 1,
+        "explain": "WMI (Windows Management Instrumentation) interroge le DC via l'API de gestion Windows, offrant une méthode standardisée et recommandée. WinSecLog lit directement le journal de sécurité Windows (Security Event Log), une alternative fonctionnelle mais moins recommandée."
       }
     ]
   },
@@ -1667,63 +1784,180 @@
     "id": "ch06-l2",
     "module": "Fortinet Single Sign-On (FSSO)",
     "title": "Flux DC agent vs polling",
-    "durationMin": 5,
-    "content": "Comprendre les flux de communication entre le DC, l'agent, le collector et le FortiGate est essentiel pour configurer correctement FSSO et le dÃ©panner.\n\nFlux en DC agent mode :\n1. L'utilisateur s'authentifie auprÃ¨s du contrÃ´leur de domaine.\n2. Le DC agent (installÃ© sur le DC) intercepte l'Ã©vÃ©nement de login et envoie le NetBIOS/DNS du poste au collector agent (par dÃ©faut sur le port UDP 8002).\n3. Le collector agent agrÃ¨ge les events, rÃ©sout l'IP via DNS si nÃ©cessaire, vÃ©rifie l'appartenance aux groupes, puis transmet Ã  FortiGate via TCP 8000 (port par dÃ©faut, configurable). Les informations envoyÃ©es : nom d'utilisateur, nom de poste, IP et groupes.\n4. Quand l'utilisateur gÃ©nÃ¨re du trafic, FortiGate compare l'IP source Ã  sa liste FSSO active : la correspondance est trouvÃ©e et la politique appropriÃ©e est appliquÃ©e sans prompt.\n\nFlux en polling mode (avec collector) :\n1. L'utilisateur s'authentifie auprÃ¨s du DC.\n2. Le collector interroge pÃ©riodiquement chaque DC (TCP 445 en SMB pour Event Log Polling) pour rÃ©cupÃ©rer les events.\n3. Il reformate les events et les envoie Ã  FortiGate sur TCP 8000, comme en DC agent mode.\n4. FortiGate applique les politiques sur la base de l'IP source et des groupes connus.\n\nFlux en agentless polling :\n1. L'utilisateur s'authentifie auprÃ¨s du DC.\n2. FortiGate (qui joue lui-mÃªme le rÃ´le de collector) interroge directement le DC sur TCP 445 pour lire les journaux d'Ã©vÃ©nements ; il interroge ensuite via LDAP les groupes de l'utilisateur.\n3. Quand le trafic arrive, l'utilisateur est dÃ©jÃ  connu, pas de prompt.\n\nPrÃ©requis communs Ã  toutes les mÃ©thodes :\n- Un serveur DNS interne fiable et rÃ©actif : les events Windows contiennent le nom de poste, pas l'IP. C'est le collector (ou FortiGate en agentless) qui rÃ©sout. Un DNS obsolÃ¨te conduit Ã  des erreurs d'identification.\n- ConnectivitÃ© du collector vers tous les postes : Windows ne gÃ©nÃ¨re pas d'event de logout. Le collector vÃ©rifie pÃ©riodiquement (via WMI sur les postes) si l'utilisateur est toujours connectÃ©.\n- Lors d'un login en DC agent mode, le DC agent peut rÃ©soudre le DNS du client et envoie l'info au collector, qui peut refaire une rÃ©solution pour vÃ©rifier que l'IP n'a pas changÃ©. Si la double rÃ©solution pose problÃ¨me, on peut dÃ©sactiver via la clÃ© registre `donot_resolve = 1` dans `HKLM/Software/Fortinet/FSAE/dcagent`.\n\nComparaison rapide :\n- DC agent : plus complexe Ã  installer (un DC agent par DC + un collector), mais plus scalable et n'oublie pas d'events.\n- Polling : plus simple, mais charge rÃ©seau et risque de perte/retard d'events. Avec deux collectors redondants, chaque collector polle chaque DC indÃ©pendamment.\n\nÃ€ retenir : ports UDP 8002 (DC agent â†’ collector), TCP 8000 (collector â†’ FortiGate), TCP 445 (polling SMB), TCP 389/636 (LDAP/LDAPS).\n\n> Pour éviter la double résolution DNS du DC agent : **définir** `donot_resolve=1` dans le **registre** Windows du DC agent.",
-    "quiz": [
+    "durationMin": 7,
+    "content": "## Flux détaillé : Mode DC Agent\n\n### Les 4 étapes du flux DC Agent\n\n1. **Authentification** : l'utilisateur s'authentifie auprès du contrôleur de domaine (DC)\n2. **Interception** : le DC Agent installé sur le DC intercepte l'événement d'authentification en temps réel\n3. **Transmission au Collector** : le DC Agent envoie l'événement (utilisateur + nom de machine) au Collector Agent via **UDP 8002**\n4. **Traitement et envoi au FortiGate** : le Collector résout le DNS (nom → IP), vérifie les appartenances aux groupes Active Directory, puis envoie au FortiGate via **TCP 8000** le tuple (utilisateur + hostname + IP + groupes)\n\n> Le FortiGate fait correspondre l'adresse IP source du trafic avec les informations reçues du Collector pour identifier l'utilisateur en temps réel.\n\n---\n\n## Flux détaillé : Mode Polling\n\nDans ce mode, **aucun DC Agent n'est installé** sur les contrôleurs de domaine.\n\n1. Le Collector Agent interroge périodiquement le DC via **TCP 445 (SMB)** pour lire les journaux d'authentification\n2. Le Collector traite les résultats, résout les groupes et envoie l'info au FortiGate via **TCP 8000**\n\n**Inconvénient** : comme le polling n'est pas en temps réel, certains événements peuvent être manqués ou détectés avec un délai.\n\n---\n\n## Flux détaillé : Mode Agentless\n\nLe **FortiGate lui-même** interroge directement le DC :\n\n- Interrogation du DC via **TCP 445 (SMB)** pour les events 4768/4769\n- Interrogation **LDAP (TCP 389 / LDAPS TCP 636)** pour résoudre les groupes\n- Aucun Collector Agent, aucun DC Agent\n\n---\n\n## Prérequis communs et points critiques\n\n### DNS interne fiable — obligatoire\n\nLes événements FSSO contiennent le **nom d'hôte** de la machine, pas son adresse IP. Le Collector Agent doit donc résoudre le nom d'hôte en adresse IP via DNS.\n\n> Sans DNS interne fiable, le FSSO ne peut pas associer correctement un utilisateur à une adresse IP.\n\n### Détection des déconnexions — WMI sur les postes\n\nWindows **ne génère pas d'événement de déconnexion** de session réseau exploitable. Le Collector Agent doit donc **interroger les postes de travail via WMI** périodiquement pour détecter si un utilisateur est encore connecté (vérification de session active).\n\n### Clé de registre donot_resolve=1\n\nLors de l'utilisation du mode DC Agent, une double résolution DNS peut se produire (DC Agent résout, puis Collector résout à nouveau). Pour éviter cela :\n\n```\nHKLM\\Software\\Fortinet\\FSAE\\dcagent\nValeur : donot_resolve = 1\n```\n\nAvec cette clé, le DC Agent **n'effectue pas de résolution DNS** et laisse cette tâche au Collector uniquement.\n\n---\n\n## Récapitulatif des ports\n\n| Port | Protocole | Direction | Usage |\n|---|---|---|---|\n| **UDP 8002** | UDP | DC Agent → Collector | Transmission des événements d'auth |\n| **TCP 8000** | TCP | Collector → FortiGate | Envoi utilisateur+IP+groupes |\n| **TCP 445** | TCP (SMB) | Collector/FGT → DC | Polling des journaux Windows |\n| **TCP 389** | TCP (LDAP) | Collector/FGT → AD | Résolution des groupes |\n| **TCP 636** | TCP (LDAPS) | Collector/FGT → AD | Résolution des groupes (chiffré) |\n\n---\n\n## Comparaison DC Agent vs Polling\n\n| Critère | DC Agent | Polling |\n|---|---|---|\n| Installation sur DC | Oui (agent requis) | Non |\n| Temps réel | Oui | Non (périodique) |\n| Événements manqués | Non | Possible |\n| Scalabilité | Élevée | Moyenne |\n| Complexité déploiement | Plus complexe | Plus simple |\n| Ressources FortiGate | Faibles | Faibles |\n\n---\n\n## Points clés NSE4 à retenir\n\n- **UDP 8002** : DC Agent → Collector (et non TCP)\n- **TCP 8000** : Collector → FortiGate\n- **TCP 445** : polling SMB du DC\n- **DNS fiable obligatoire** : les événements contiennent des noms d'hôtes, pas des IPs\n- **WMI sur postes** : nécessaire pour détecter les déconnexions (pas d'événement Windows natif)\n- **donot_resolve=1** : évite la double résolution DNS par le DC Agent\n- Le Collector envoie à FortiGate : **utilisateur + hostname + IP + groupes**\n- Mode agentless : FortiGate consomme plus de ressources (collecte + résolution lui-même)",
+    "diagrams": [
       {
-        "q": "Sur quel port par dÃ©faut le Collector Agent envoie-t-il les events Ã  FortiGate ?",
+        "caption": "Flux du mode DC Agent avec ports (UDP 8002 et TCP 8000)",
+        "height": 200,
+        "svg": "<svg xmlns='http://www.w3.org/2000/svg' width='580' height='200' font-family='sans-serif' font-size='12'><rect width='580' height='200' fill='#f8fafc' rx='8'/><text x='290' y='22' text-anchor='middle' font-size='14' font-weight='bold' fill='#1f2937'>Flux Mode DC Agent</text><rect x='10' y='40' width='90' height='50' rx='6' fill='#94a3b8'/><text x='55' y='62' text-anchor='middle' fill='white' font-weight='bold'>Utilisateur</text><text x='55' y='78' text-anchor='middle' fill='white' font-size='11'>poste AD</text><line x1='100' y1='65' x2='140' y2='65' stroke='#1f2937' stroke-width='1.5' marker-end='url(#arr)'/><text x='120' y='58' text-anchor='middle' fill='#374151' font-size='10'>auth</text><rect x='140' y='40' width='90' height='50' rx='6' fill='#3b82f6'/><text x='185' y='62' text-anchor='middle' fill='white' font-weight='bold'>DC</text><text x='185' y='78' text-anchor='middle' fill='white' font-size='11'>Contrôleur</text><rect x='140' y='110' width='90' height='50' rx='6' fill='#3b82f6' opacity='0.75'/><text x='185' y='130' text-anchor='middle' fill='white' font-weight='bold'>DC Agent</text><text x='185' y='147' text-anchor='middle' fill='white' font-size='10'>sur le DC</text><line x1='185' y1='90' x2='185' y2='110' stroke='#1f2937' stroke-width='1.5' stroke-dasharray='4 3'/><text x='195' y='103' fill='#374151' font-size='10'>intercepte</text><line x1='230' y1='135' x2='290' y2='135' stroke='#1f2937' stroke-width='1.5' marker-end='url(#arr)'/><text x='260' y='126' text-anchor='middle' fill='#374151' font-size='10'>UDP 8002</text><rect x='290' y='110' width='100' height='50' rx='6' fill='#22c55e'/><text x='340' y='130' text-anchor='middle' fill='white' font-weight='bold'>Collector</text><text x='340' y='147' text-anchor='middle' fill='white' font-size='10'>DNS + groupes</text><line x1='390' y1='135' x2='450' y2='135' stroke='#1f2937' stroke-width='1.5' marker-end='url(#arr)'/><text x='420' y='126' text-anchor='middle' fill='#374151' font-size='10'>TCP 8000</text><rect x='450' y='110' width='110' height='50' rx='6' fill='#f59e0b'/><text x='505' y='130' text-anchor='middle' fill='white' font-weight='bold'>FortiGate</text><text x='505' y='147' text-anchor='middle' fill='white' font-size='10'>IP → Utilisateur</text><rect x='290' y='40' width='270' height='42' rx='6' fill='#f1f5f9' stroke='#94a3b8' stroke-width='1'/><text x='425' y='57' text-anchor='middle' fill='#374151' font-size='11'>Collector envoie à FortiGate :</text><text x='425' y='74' text-anchor='middle' fill='#1f2937' font-size='11' font-weight='bold'>utilisateur + hostname + IP + groupes</text><defs><marker id='arr' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#1f2937'/></marker></defs></svg>"
+      }
+    ],
+    "questionPool": [
+      {
+        "q": "Quel port est utilisé par le DC Agent pour envoyer les événements au Collector Agent ?",
+        "choices": [
+          "TCP 8000",
+          "TCP 445",
+          "UDP 8002",
+          "TCP 389"
+        ],
+        "answer": 2,
+        "explain": "Le DC Agent utilise UDP 8002 pour transmettre les événements d'authentification au Collector Agent. Ne pas confondre avec TCP 8000 qui est le port utilisé par le Collector pour communiquer avec le FortiGate."
+      },
+      {
+        "q": "Sur quel port le Collector Agent envoie-t-il les informations utilisateur au FortiGate ?",
         "choices": [
           "UDP 8002",
           "TCP 8000",
           "TCP 445",
-          "UDP 514"
+          "TCP 636"
         ],
         "answer": 1,
-        "explain": "Le collector parle au FortiGate sur TCP 8000."
+        "explain": "Le Collector Agent utilise TCP 8000 pour envoyer les informations (utilisateur + hostname + IP + groupes) au FortiGate. Ce port est distinct de UDP 8002 utilisé entre le DC Agent et le Collector."
       },
       {
-        "q": "Quel port utilise le polling SMB du collector vers les DCs ?",
+        "q": "Pourquoi le DNS interne est-il critique pour le fonctionnement du FSSO ?",
+        "choices": [
+          "Le FortiGate utilise le DNS pour vérifier les certificats du Collector",
+          "Les événements FSSO contiennent des noms d'hôtes et non des adresses IP — le Collector doit résoudre ces noms",
+          "Le Collector Agent utilise le DNS pour s'authentifier auprès du DC",
+          "Le port UDP 8002 nécessite une entrée DNS pour fonctionner"
+        ],
+        "answer": 1,
+        "explain": "Les événements d'authentification Windows contiennent le nom d'hôte de la machine et non son adresse IP. Le Collector Agent doit donc résoudre ce nom via DNS interne pour associer l'utilisateur à une adresse IP exploitable par le FortiGate."
+      },
+      {
+        "q": "Pourquoi le Collector Agent interroge-t-il les postes de travail via WMI dans FSSO ?",
+        "choices": [
+          "Pour installer le DC Agent à distance sur les contrôleurs de domaine",
+          "Windows ne génère pas d'événement de déconnexion exploitable — WMI sert à détecter les déconnexions",
+          "Pour synchroniser l'heure avec les postes et éviter les erreurs Kerberos",
+          "Pour récupérer les groupes Active Directory des utilisateurs connectés"
+        ],
+        "answer": 1,
+        "explain": "Windows ne génère pas d'événement réseau natif exploitable lors d'une déconnexion de session. Le Collector utilise WMI pour interroger périodiquement les postes de travail et détecter si un utilisateur est encore connecté."
+      },
+      {
+        "q": "Quel est l'effet de la valeur de registre donot_resolve=1 dans HKLM\\Software\\Fortinet\\FSAE\\dcagent ?",
+        "choices": [
+          "Il désactive complètement la résolution DNS dans FSSO",
+          "Il empêche le DC Agent d'effectuer la résolution DNS, laissant cette tâche au Collector uniquement",
+          "Il force le Collector à utiliser LDAPS au lieu de LDAP",
+          "Il désactive le polling WMI sur les postes de travail"
+        ],
+        "answer": 1,
+        "explain": "La clé donot_resolve=1 indique au DC Agent de ne pas effectuer de résolution DNS lui-même. Cela évite une double résolution DNS (DC Agent + Collector) et laisse uniquement le Collector résoudre les noms d'hôtes."
+      },
+      {
+        "q": "Quelles informations le Collector Agent envoie-t-il au FortiGate via TCP 8000 ?",
+        "choices": [
+          "Le nom d'utilisateur et le hash du mot de passe",
+          "L'adresse MAC et le VLAN de l'utilisateur",
+          "Le nom d'utilisateur, le hostname, l'adresse IP et les groupes",
+          "Uniquement l'adresse IP et le nom d'utilisateur"
+        ],
+        "answer": 2,
+        "explain": "Le Collector Agent envoie au FortiGate le tuple complet : utilisateur + hostname + IP + groupes. Ces informations permettent au FortiGate d'appliquer des politiques basées sur l'identité de l'utilisateur."
+      },
+      {
+        "q": "Quel protocole et port le mode Polling utilise-t-il pour interroger les journaux du DC ?",
+        "choices": [
+          "LDAP sur TCP 389",
+          "SMB sur TCP 445",
+          "RPC sur TCP 135",
+          "HTTP sur TCP 80"
+        ],
+        "answer": 1,
+        "explain": "Le mode Polling utilise SMB (Server Message Block) sur TCP 445 pour interroger périodiquement les journaux d'événements Windows sur le contrôleur de domaine."
+      },
+      {
+        "q": "Quelle est la principale différence entre le mode DC Agent et le mode Polling concernant la détection des événements ?",
+        "choices": [
+          "Le DC Agent ne supporte que l'authentification Kerberos, le Polling supporte NTLM",
+          "Le DC Agent est en temps réel sans événement manqué ; le Polling est périodique et peut manquer des événements",
+          "Le DC Agent utilise TCP, le Polling utilise UDP",
+          "Le DC Agent nécessite LDAPS, le Polling fonctionne avec LDAP standard"
+        ],
+        "answer": 1,
+        "explain": "Le DC Agent intercepte les événements en temps réel directement sur le DC, garantissant qu'aucun événement n'est manqué. Le Polling interroge périodiquement le DC, ce qui peut entraîner des délais ou des événements manqués entre deux cycles de polling."
+      },
+      {
+        "q": "Dans le mode Agentless, quel composant consomme davantage de ressources par rapport au mode DC Agent ?",
+        "choices": [
+          "Le contrôleur de domaine",
+          "Le serveur DNS interne",
+          "Le FortiGate (qui joue lui-même le rôle de collector)",
+          "Les postes de travail des utilisateurs"
+        ],
+        "answer": 2,
+        "explain": "En mode Agentless, le FortiGate joue lui-même le rôle de collector : il interroge directement le DC via SMB et résout les groupes via LDAP. Cette charge supplémentaire consomme davantage de ressources CPU/mémoire sur le FortiGate."
+      },
+      {
+        "q": "Dans quel sens s'établit la connexion TCP 8000 dans FSSO ?",
+        "choices": [
+          "FortiGate → Collector Agent",
+          "DC → Collector Agent",
+          "Collector Agent → FortiGate",
+          "DC Agent → FortiGate"
+        ],
+        "answer": 2,
+        "explain": "La connexion TCP 8000 est établie du Collector Agent vers le FortiGate. C'est le Collector qui initie la connexion pour envoyer les informations d'authentification au FortiGate."
+      },
+      {
+        "q": "Quelle est la première étape du flux en mode DC Agent ?",
+        "choices": [
+          "Le DC Agent envoie un événement au Collector via UDP 8002",
+          "L'utilisateur s'authentifie auprès du contrôleur de domaine",
+          "Le Collector résout le nom d'hôte en adresse IP",
+          "Le FortiGate consulte le Collector pour vérifier l'identité de l'utilisateur"
+        ],
+        "answer": 1,
+        "explain": "La première étape est l'authentification de l'utilisateur auprès du contrôleur de domaine. C'est cet événement d'authentification que le DC Agent intercepte ensuite pour déclencher le flux FSSO."
+      },
+      {
+        "q": "Quel port est utilisé pour la résolution des groupes Active Directory via LDAP sécurisé (LDAPS) ?",
         "choices": [
           "TCP 389",
           "TCP 445",
-          "TCP 636",
-          "UDP 53"
+          "TCP 8000",
+          "TCP 636"
         ],
-        "answer": 1,
-        "explain": "Le polling Event Log se fait via SMB/TCP 445."
+        "answer": 3,
+        "explain": "LDAPS (LDAP over SSL/TLS) utilise le port TCP 636 pour la résolution sécurisée des groupes Active Directory. TCP 389 est utilisé pour LDAP standard non chiffré."
       },
       {
-        "q": "Pourquoi le collector doit-il faire une rÃ©solution DNS ?",
+        "q": "Lequel des ports suivants N'EST PAS utilisé dans un déploiement FSSO standard ?",
         "choices": [
-          "Pour chiffrer les events",
-          "Les events Windows contiennent le nom du poste, pas l'IP",
-          "Pour valider les certificats",
-          "Pour pinger FortiGate"
+          "UDP 8002",
+          "TCP 8000",
+          "TCP 445",
+          "TCP 1812"
         ],
-        "answer": 1,
-        "explain": "L'IP doit Ãªtre dÃ©duite du nom du poste via DNS."
+        "answer": 3,
+        "explain": "TCP 1812 est le port RADIUS, qui n'est pas utilisé dans FSSO. Les ports FSSO sont : UDP 8002 (DC Agent → Collector), TCP 8000 (Collector → FortiGate), TCP 445 (SMB polling) et TCP 389/636 (LDAP/LDAPS)."
       },
       {
-        "q": "Pourquoi le collector polle-t-il pÃ©riodiquement les postes via WMI ?",
+        "q": "Pourquoi le mode DC Agent est-il plus complexe à déployer que le mode Polling ?",
         "choices": [
-          "Pour distribuer les politiques",
-          "Pour vÃ©rifier qu'un utilisateur est toujours connectÃ© (pas de logout event)",
-          "Pour mettre Ã  jour Windows",
-          "Pour synchroniser l'horloge"
+          "Il nécessite une licence supplémentaire sur chaque DC",
+          "Un agent doit être déployé et maintenu sur chaque DC du domaine",
+          "Il requiert une configuration BGP entre le Collector et le FortiGate",
+          "Il impose l'utilisation de LDAPS au lieu de LDAP standard"
         ],
         "answer": 1,
-        "explain": "Windows ne gÃ©nÃ¨re pas d'event de logout, d'oÃ¹ la vÃ©rification pÃ©riodique."
+        "explain": "Le mode DC Agent nécessite l'installation d'un agent logiciel (FSSO DC Agent) sur chaque contrôleur de domaine de l'environnement. Cette installation et maintenance supplémentaire le rend plus complexe que le mode Polling qui ne nécessite pas d'agent sur les DC."
       },
       {
-        "q": "Comment Ã©viter une double rÃ©solution DNS du DC agent ?",
+        "q": "Dans le flux DC Agent, quelle opération effectue le Collector avant d'envoyer l'info au FortiGate ?",
         "choices": [
-          "Activer LDAPS",
-          "DÃ©finir donot_resolve=1 dans le registre",
-          "DÃ©sactiver le collector",
-          "Utiliser NetAPI"
+          "Il authentifie l'utilisateur auprès d'un serveur RADIUS",
+          "Il résout le nom d'hôte en adresse IP via DNS et vérifie les appartenances aux groupes AD",
+          "Il vérifie la politique de mot de passe de l'utilisateur",
+          "Il installe un certificat temporaire sur le poste de l'utilisateur"
         ],
         "answer": 1,
-        "explain": "La clÃ© donot_resolve dÃ©sactive la rÃ©solution sur le DC agent."
+        "explain": "Après avoir reçu l'événement du DC Agent, le Collector effectue deux opérations : il résout le nom d'hôte de la machine en adresse IP via le DNS interne, et il vérifie les appartenances aux groupes Active Directory de l'utilisateur avant d'envoyer le tuple complet au FortiGate."
       }
     ]
   },
@@ -1731,191 +1965,542 @@
     "id": "ch06-l3",
     "module": "Fortinet Single Sign-On (FSSO)",
     "title": "Configuration de FortiGate et des agents",
-    "durationMin": 5,
-    "content": "CÃ´tÃ© FortiGate, la configuration FSSO se fait sous Security Fabric > External Connectors. Deux options principales :\n\n- Si FortiGate fait du agentless polling, on choisit `Poll Active Directory Server` et on saisit l'IP, les credentials administrateur AD et les paramÃ¨tres LDAP de chaque DC. FortiGate utilise LDAP pour rÃ©cupÃ©rer les groupes des utilisateurs, donc il faut bien configurer le serveur LDAP associÃ© dans la mÃªme section.\n\n- Si on utilise des collector agents (DC agent mode ou polling), on choisit `Fortinet Single-Sign-On Agent` et on dÃ©clare l'IP et le mot de passe de chaque collector. Le collector peut accÃ©der Ã  AD selon deux modes :\n  - Collector Agent mode : les filtres de groupes sont dÃ©finis sur le collector lui-mÃªme.\n  - Local mode : les filtres sont dÃ©finis sur FortiGate via LDAP. Dans ce cas, le collector doit obligatoirement Ãªtre en Advanced mode, sinon il ignorera les filtres envoyÃ©s par FortiGate.\n\nInstallation des agents (tÃ©lÃ©chargeables depuis le site Fortinet Support) :\n- DC agent (Ã  installer sur chaque DC Ã  monitorer).\n- Collector agent pour Windows : `FSSO_Setup`.\n- Collector pour Novell : `FSSO_Setup_edirectory`.\n- TS agent pour Citrix/Terminal Services : `TSAgent_Setup`.\n\nLes versions de DC agent et de collector doivent correspondre entre elles, mais elles n'ont pas besoin de matcher exactement la version FortiOS. Ã€ l'installation, l'assistant demande le compte de service utilisÃ© (format `DOMAIN\\Username`), le dossier (par dÃ©faut FSAE) et le mode d'accÃ¨s AD. Bonnes pratiques : installer en Advanced mode pour profiter des fonctionnalitÃ©s Ã©tendues, et cocher `Launch DC Agent Install Wizard` pour enchaÃ®ner sur l'installation des DC agents.\n\nL'assistant DC agent demande ensuite : l'IP du collector, les domaines Ã  monitorer, les utilisateurs Ã  ignorer (Ignore User List â€” utile pour les comptes de service ou de sauvegarde qui peuvent gÃ©nÃ©rer des events parasites), les DCs sur lesquels installer l'agent, et le mode de fonctionnement (DC Agent Mode ou Polling Mode). Un redÃ©marrage du DC est requis pour que l'agent commence Ã  capter les events.\n\nMode d'accÃ¨s AD â€” Standard vs Advanced :\n- Standard : convention NetBIOS (`Domain\\groups`) ; on ne peut filtrer que sur les groupes, pas sur des utilisateurs ou OUs individuels.\n- Advanced : convention LDAP (`CN=user,OU=name,DC=domain`) ; supporte les groupes imbriquÃ©s, les filtres sur utilisateurs, groupes et OUs.\n\nSi on change de mode (Standard â†” Advanced), il faut recrÃ©er les filtres car la syntaxe diffÃ¨re. Recommandation : crÃ©er les filtres sur le collector â€” si LDAP cÃ´tÃ© FortiGate Ã©choue, le collector continue de collecter ; l'inverse n'est pas vrai.\n\nAttention : tout FortiGate possÃ¨de un groupe prÃ©configurÃ© `SSO_Guest_Users` qui contient automatiquement les utilisateurs sans correspondance FSSO. Utile pour donner un accÃ¨s limitÃ© aux invitÃ©s quand seule l'auth passive est utilisÃ©e. Ne pas l'inclure dans les politiques si on combine actif + passif.",
-    "quiz": [
+    "durationMin": 7,
+    "content": "## Configuration FSSO côté FortiGate\n\nLa configuration FSSO sur FortiGate se fait dans **Security Fabric > External Connectors**. Deux types de connecteurs sont disponibles :\n\n- **Poll Active Directory Server** : mode sans agent (agentless), FortiGate interroge directement le DC\n- **Fortinet Single-Sign-On Agent** : pour les collector agents Windows\n\n### Configuration Agentless (Poll AD)\n\nEn mode agentless, il faut configurer :\n- L'adresse IP du contrôleur de domaine\n- Les identifiants administrateur (compte de service)\n- Un serveur LDAP associé (indispensable pour la résolution des groupes)\n\n### Configuration avec Collector Agent\n\nEn mode collector, FortiGate déclare :\n- L'adresse IP du collector\n- Le mot de passe partagé (shared secret)\n\n**Modes d'accès** :\n| Mode | Filtrage | Prérequis collector |\n|------|----------|---------------------|\n| Collector Agent mode | Filtres définis sur le collector | Mode Standard ou Advanced |\n| Local mode | Filtres définis sur FortiGate via LDAP | Collector DOIT être en mode Advanced |\n\n> **Bonne pratique** : définir les filtres sur le collector (pas via LDAP sur FortiGate). Si le serveur LDAP tombe, le collector continue à collecter les événements de connexion.\n\n## Téléchargement et versions des agents\n\nLes agents se téléchargent depuis **Fortinet Support** (support.fortinet.com) :\n\n| Fichier | Description |\n|---------|-------------|\n| `DC_Agent_Setup` | Agent installé sur chaque contrôleur de domaine |\n| `FSSO_Setup` | Collector agent pour environnement Windows/AD |\n| `FSSO_Setup_edirectory` | Collector agent pour Novell eDirectory |\n| `TSAgent_Setup` | Agent pour serveurs Citrix / Terminal Services |\n\n> **Important** : la version du DC agent et du collector doivent correspondre entre eux. Il n'est pas nécessaire qu'elles correspondent à la version FortiOS.\n\n## Installation du Collector Agent\n\nLors de l'installation :\n- Le compte de service doit être au format `DOMAIN\\Username`\n- Le mode **Advanced** est recommandé\n- Lancer le **DC Agent Install Wizard** depuis l'interface du collector\n\n### Assistant DC Agent Install Wizard\n\nL'assistant demande de configurer :\n1. L'adresse IP du collector\n2. Les domaines à surveiller\n3. La **Ignore User List** : comptes de service à exclure (antivirus, sauvegardes…)\n4. Les DCs sur lesquels installer l'agent\n5. Le mode : **DC Agent Mode** (agent sur DC) ou **Polling Mode** (sans agent sur DC)\n\n> **Redémarrage du DC requis** après l'installation du DC agent.\n\n## Modes AD : Standard vs Advanced\n\n| Critère | Mode Standard | Mode Advanced |\n|---------|---------------|---------------|\n| Protocole | NetBIOS | LDAP |\n| Syntaxe des groupes | `DOMAIN\\GroupName` | `CN=GroupName,OU=...,DC=...` |\n| Groupes imbriqués | Non | Oui |\n| OUs | Non | Oui |\n| Utilisateurs individuels | Non | Oui |\n| Recommandé | Non | Oui |\n\n> **Attention** : si vous passez du mode Standard au mode Advanced (ou inversement), vous devez **recréer tous les filtres de groupes**. Les filtres existants ne sont pas compatibles.\n\n## SSO_Guest_Users\n\n**SSO_Guest_Users** est un groupe pré-configuré sur FortiGate qui regroupe les utilisateurs dont le groupe AD n'a pas été reconnu par FSSO.\n\n**Règle absolue** : n'inclure SSO_Guest_Users dans une politique de sécurité **que si l'authentification passive est utilisée seule**. Ne **JAMAIS** inclure ce groupe dans des politiques combinant authentification active et passive.\n\n> Le DC Agent Install Wizard configure : IP du collector, domaines, Ignore User List, DCs cibles, mode. Il ne configure pas la **licence** FortiGate — celle-ci est gérée séparément dans le GUI FortiGate.",
+    "diagrams": [
       {
-        "q": "Quel mode AD permet le filtrage sur des OUs et utilisateurs individuels ?",
+        "caption": "Comparaison Mode Standard vs Mode Advanced AD",
+        "height": 180,
+        "svg": "<svg xmlns='http://www.w3.org/2000/svg' width='700' height='180' font-family='monospace' font-size='13'><rect width='700' height='180' fill='#f8f9fa' rx='8'/><rect x='20' y='20' width='300' height='140' fill='#fff3cd' rx='6' stroke='#ffc107' stroke-width='2'/><text x='170' y='42' text-anchor='middle' font-weight='bold' fill='#856404'>Mode Standard (NetBIOS)</text><text x='35' y='68' fill='#333'>Syntaxe : DOMAIN\\GroupName</text><text x='35' y='90' fill='#333'>Groupes imbriqués : NON</text><text x='35' y='112' fill='#333'>OUs : NON</text><text x='35' y='134' fill='#333'>Utilisateurs : NON</text><text x='35' y='156' fill='#c0392b' font-weight='bold'>Non recommandé</text><rect x='380' y='20' width='300' height='140' fill='#d1e7dd' rx='6' stroke='#198754' stroke-width='2'/><text x='530' y='42' text-anchor='middle' font-weight='bold' fill='#0f5132'>Mode Advanced (LDAP)</text><text x='395' y='68' fill='#333'>Syntaxe : CN=...,OU=...,DC=...</text><text x='395' y='90' fill='#333'>Groupes imbriqués : OUI</text><text x='395' y='112' fill='#333'>OUs : OUI</text><text x='395' y='134' fill='#333'>Utilisateurs : OUI</text><text x='395' y='156' fill='#0f5132' font-weight='bold'>Recommandé</text><text x='350' y='100' text-anchor='middle' font-size='22' fill='#6c757d'>⇄</text></svg>"
+      }
+    ],
+    "questionPool": [
+      {
+        "q": "Dans l'interface FortiGate, où configure-t-on les connecteurs FSSO ?",
         "choices": [
-          "Standard",
-          "Advanced",
-          "Local",
-          "NetBIOS"
+          "User & Authentication > LDAP Servers",
+          "Security Fabric > External Connectors",
+          "Network > Interfaces",
+          "Policy & Objects > Firewall Policy"
         ],
         "answer": 1,
-        "explain": "Advanced utilise la syntaxe LDAP et supporte OUs et utilisateurs."
+        "explain": "La configuration FSSO se fait dans Security Fabric > External Connectors, où l'on choisit entre Poll Active Directory Server (agentless) et Fortinet Single-Sign-On Agent (collector)."
       },
       {
-        "q": "Si les filtres sont dÃ©finis sur FortiGate, dans quel mode doit Ãªtre le collector ?",
+        "q": "Quel type de connecteur FortiGate utilise-t-on pour le mode sans agent (agentless) FSSO ?",
         "choices": [
-          "Standard",
-          "Advanced",
-          "Local",
-          "Polling"
+          "Fortinet Single-Sign-On Agent",
+          "Poll Active Directory Server",
+          "RADIUS Single Sign-On",
+          "LDAP Connector"
         ],
         "answer": 1,
-        "explain": "Le collector doit Ãªtre en Advanced pour interprÃ©ter les filtres FortiGate."
+        "explain": "Le connecteur Poll Active Directory Server correspond au mode agentless : FortiGate interroge directement le DC sans nécessiter de collector agent."
       },
       {
-        "q": "Pourquoi ajouter les comptes de service Ã  la Ignore User List ?",
+        "q": "En mode Local mode FSSO, quel prérequis s'applique au collector agent ?",
         "choices": [
-          "Pour leur donner plus de droits",
-          "Pour qu'ils ne gÃ©nÃ¨rent pas d'events FSSO parasites",
-          "Pour les masquer dans AD",
-          "Pour activer le 2FA"
+          "Le collector doit être installé sur le DC",
+          "Le collector doit être en mode Advanced",
+          "Le collector doit utiliser RADIUS",
+          "Le collector doit avoir un certificat SSL"
         ],
         "answer": 1,
-        "explain": "Les comptes de service Ã©crasent souvent les events des vrais utilisateurs."
+        "explain": "En Local mode, les filtres sont définis sur FortiGate via LDAP. Pour que cela fonctionne, le collector DOIT être configuré en mode Advanced."
       },
       {
-        "q": "Que faire si on change le mode AD de Standard Ã  Advanced ?",
+        "q": "Quel fichier d'installation faut-il utiliser pour le collector agent dans un environnement Novell eDirectory ?",
         "choices": [
-          "Rien, c'est transparent",
-          "RecrÃ©er les filtres car la syntaxe diffÃ¨re",
-          "RÃ©installer le DC agent",
-          "DÃ©sactiver LDAP"
+          "DC_Agent_Setup",
+          "FSSO_Setup",
+          "FSSO_Setup_edirectory",
+          "TSAgent_Setup"
         ],
-        "answer": 1,
-        "explain": "La syntaxe NetBIOS et LDAP Ã©tant diffÃ©rentes, les filtres doivent Ãªtre refaits."
+        "answer": 2,
+        "explain": "FSSO_Setup_edirectory est le fichier spécifique au collector agent pour les environnements Novell eDirectory."
       },
       {
-        "q": "Quel est le rÃ´le du groupe SSO_Guest_Users ?",
+        "q": "Concernant les versions des agents FSSO, quelle affirmation est correcte ?",
         "choices": [
-          "Bloquer tous les invitÃ©s",
-          "Accueillir les utilisateurs sans correspondance FSSO en mode passif uniquement",
-          "Authentifier les administrateurs",
-          "Forcer le 2FA"
+          "DC agent et collector doivent correspondre à la version FortiOS",
+          "DC agent et collector doivent correspondre entre eux",
+          "Seul le collector doit correspondre à FortiOS",
+          "Les versions n'ont pas d'importance"
         ],
         "answer": 1,
-        "explain": "Pratique en passif uniquement pour donner un accÃ¨s limitÃ© aux invitÃ©s."
+        "explain": "La version du DC agent et du collector doivent correspondre entre eux. Il n'est pas nécessaire qu'elles correspondent à la version FortiOS."
+      },
+      {
+        "q": "Quel format doit utiliser le compte de service lors de l'installation du collector agent ?",
+        "choices": [
+          "Username@domain.com",
+          "domain/Username",
+          "DOMAIN\\Username",
+          "Username:DOMAIN"
+        ],
+        "answer": 2,
+        "explain": "Le compte de service doit être au format DOMAIN\\Username (format NetBIOS backslash) lors de l'installation du collector agent."
+      },
+      {
+        "q": "Après l'installation du DC agent via l'assistant, que faut-il obligatoirement faire ?",
+        "choices": [
+          "Redémarrer le collector agent",
+          "Redémarrer FortiGate",
+          "Redémarrer le contrôleur de domaine",
+          "Relancer le service FSSO sur le collector"
+        ],
+        "answer": 2,
+        "explain": "Un redémarrage du contrôleur de domaine (DC) est requis après l'installation du DC agent."
+      },
+      {
+        "q": "Quelle est la bonne pratique concernant la définition des filtres FSSO ?",
+        "choices": [
+          "Toujours définir les filtres sur FortiGate via LDAP",
+          "Définir les filtres sur le collector, pas sur FortiGate via LDAP",
+          "Définir les filtres sur le DC agent",
+          "Ne pas utiliser de filtres en production"
+        ],
+        "answer": 1,
+        "explain": "Il est recommandé de définir les filtres sur le collector. Si le serveur LDAP tombe, le collector continue à collecter les événements de connexion sans interruption."
+      },
+      {
+        "q": "Que se passe-t-il si on passe du mode Standard au mode Advanced dans la configuration FSSO ?",
+        "choices": [
+          "Les filtres existants sont automatiquement convertis",
+          "Seuls les filtres de groupes imbriqués doivent être recréés",
+          "Tous les filtres de groupes doivent être recréés",
+          "Aucun impact sur les filtres existants"
+        ],
+        "answer": 2,
+        "explain": "En changeant de mode (Standard ↔ Advanced), la syntaxe des groupes change complètement (NetBIOS vs LDAP CN=...). Tous les filtres existants doivent être recréés."
+      },
+      {
+        "q": "Quel mode AD supporte les groupes imbriqués (nested groups) ?",
+        "choices": [
+          "Mode Standard uniquement",
+          "Les deux modes supportent les groupes imbriqués",
+          "Mode Advanced uniquement",
+          "Aucun des deux modes"
+        ],
+        "answer": 2,
+        "explain": "Seul le mode Advanced supporte les groupes imbriqués (nested groups), les OUs et les utilisateurs individuels. Le mode Standard (NetBIOS) est limité aux groupes plats."
+      },
+      {
+        "q": "À quoi sert la Ignore User List dans la configuration FSSO ?",
+        "choices": [
+          "À bloquer des utilisateurs spécifiques sur le réseau",
+          "À exclure des comptes de service (antivirus, sauvegardes) de FSSO",
+          "À définir les utilisateurs autorisés à s'authentifier",
+          "À lister les administrateurs FortiGate"
+        ],
+        "answer": 1,
+        "explain": "La Ignore User List permet d'exclure des comptes de service (antivirus, sauvegardes…) qui pollueraient FSSO avec des connexions non-humaines."
+      },
+      {
+        "q": "Quel fichier installer sur les serveurs Citrix ou Terminal Services ?",
+        "choices": [
+          "DC_Agent_Setup",
+          "FSSO_Setup",
+          "FSSO_Setup_edirectory",
+          "TSAgent_Setup"
+        ],
+        "answer": 3,
+        "explain": "TSAgent_Setup est l'agent destiné aux serveurs Citrix et Terminal Services (TS). Il transmet les informations utilisateur+IP+port range au collector."
+      },
+      {
+        "q": "Lequel des éléments suivants N'EST PAS configuré via le DC Agent Install Wizard ?",
+        "choices": [
+          "L'adresse IP du collector",
+          "Les domaines à surveiller",
+          "La clé de licence FortiGate",
+          "La Ignore User List"
+        ],
+        "answer": 2,
+        "explain": "La clé de licence FortiGate n'est pas configurée via le DC Agent Install Wizard. L'assistant configure : IP du collector, domaines, Ignore User List, DCs cibles et le mode DC Agent/Polling."
+      },
+      {
+        "q": "Dans quel cas doit-on utiliser SSO_Guest_Users dans une politique de sécurité ?",
+        "choices": [
+          "Toujours, pour couvrir tous les utilisateurs",
+          "Uniquement avec authentification passive seule",
+          "Uniquement avec authentification active seule",
+          "Jamais, ce groupe est réservé à l'administration"
+        ],
+        "answer": 1,
+        "explain": "SSO_Guest_Users ne doit être inclus dans une politique que si l'authentification passive est utilisée seule. Ne JAMAIS l'inclure dans des politiques combinant active et passive."
+      },
+      {
+        "q": "En mode Collector Agent mode, où sont définis les filtres de groupes FSSO ?",
+        "choices": [
+          "Sur FortiGate via LDAP",
+          "Sur le contrôleur de domaine",
+          "Sur le collector agent",
+          "Dans l'annuaire Active Directory"
+        ],
+        "answer": 2,
+        "explain": "En Collector Agent mode, les filtres sont définis sur le collector agent lui-même. En Local mode, les filtres sont définis sur FortiGate via LDAP (nécessitant le mode Advanced sur le collector)."
       }
     ]
   },
   {
     "id": "ch06-l4",
     "module": "Fortinet Single Sign-On (FSSO)",
-    "title": "Timers, filtres et options avancÃ©es",
-    "durationMin": 5,
-    "content": "Le bon fonctionnement de FSSO repose en grande partie sur les filtres et les timers configurÃ©s sur le collector agent.\n\nGroup filters (filtres de groupes) : sur un AD volumineux, monitorer tous les groupes serait inefficace. Le collector permet de dÃ©finir, pour chaque FortiGate enregistrÃ©, les groupes dont les events seront transmis. Au minimum, crÃ©er un filtre par dÃ©faut qui s'applique aux FortiGate sans filtre spÃ©cifique. Limites importantes : les FortiGate bas de gamme acceptent jusqu'Ã  256 groupes AD ; les modÃ¨les milieu/haut de gamme bien plus, par VDOM si les VDOMs sont activÃ©s.\n\nLes filtres peuvent porter sur : groupes de sÃ©curitÃ©, groupes universels, groupes contenus dans des OUs, et groupes locaux/universels contenant des groupes universels d'autres domaines (Global Catalog requis dans ce dernier cas).\n\nIgnore User List : liste de comptes que le collector ignore complÃ¨tement. Indispensable pour les comptes de service (antivirus, sauvegardes) qui se connectent en permanence et peuvent Ã©craser l'identitÃ© rÃ©elle. Trois moyens d'ajout : saisie manuelle, sÃ©lection d'utilisateurs, ou ajout par OU (attention : tous les utilisateurs de l'OU sÃ©lectionnÃ©e seront ignorÃ©s).\n\nTimers du collector â€” ils sont essentiels :\n- Workstation verify interval : intervalle auquel le collector se connecte aux postes (port 139 ou 445, remote registry) pour vÃ©rifier que l'utilisateur est toujours connectÃ©. Si la connexion Ã©choue, l'entrÃ©e passe en `not verified`. Activer le service Remote Registry sur les postes membres du domaine est recommandÃ©. Ne jamais mettre cet intervalle Ã  0 : le collector ne nettoiera plus les entrÃ©es obsolÃ¨tes, ce qui est dangereux dans les environnements DHCP partagÃ©s.\n- Dead entry timeout interval : durÃ©e aprÃ¨s laquelle une entrÃ©e `not verified` est purgÃ©e. FortiGate considÃ¨re `OK` et `not verified` comme valides â€” tant que le timer n'a pas expirÃ©.\n- IP address change verify interval : vÃ©rifie pÃ©riodiquement si l'IP des utilisateurs connectÃ©s a changÃ©. Crucial en environnement DHCP. Suppose un DNS Ã  jour.\n- Cache user group lookup result : met en cache les groupes pour une durÃ©e donnÃ©e, sans tenir compte des changements d'AD.\n\nIntÃ©grations avancÃ©es :\n- TS agent : indispensable sur Citrix/Terminal Services pour suivre les utilisateurs partageant une mÃªme IP. Il transmet utilisateur + IP + plage de ports source au collector.\n- RADIUS accounting : un serveur RADIUS peut envoyer ses messages d'accounting au collector pour alimenter FSSO.\n- Syslog : intÃ©gration possible pour ingÃ©rer des events depuis d'autres sources.\n- Event IDs personnalisables : on peut spÃ©cifier les event IDs Ã  poller dans les journaux Windows.\n\nLogs du collector :\n- Niveau Debug : maximal, pour le dÃ©pannage actif.\n- Information : recommandÃ© pour le diagnostic standard (events de login, vÃ©rifications de poste).\n- Warning : niveau par dÃ©faut.\n- Error : uniquement les erreurs critiques.\n\nÃ€ retenir : ne jamais mettre Workstation verify interval Ã  0 ; utiliser TS agent en Citrix/TS ; le cache des groupes ne se met pas Ã  jour automatiquement quand AD change.\n\n**Dead entry timeout** : **purge** les entrées en **statut** *not verified* après **expiration** du timer.\n\n**Cache user group lookup** : **est immuable** (figé) **pendant** la durée **configurée**.",
-    "quiz": [
+    "title": "Timers, filtres et options avancées",
+    "durationMin": 7,
+    "content": "## Filtres de groupes FSSO\n\nLes filtres de groupes définissent, par FortiGate, quels groupes AD le collector doit transmettre. Règles importantes :\n\n- Un **filtre par défaut** est obligatoire\n- Les FortiGate d'entrée de gamme (low-end) supportent un **maximum de 256 groupes AD**\n- Types de filtres supportés :\n  - Groupes de sécurité (security groups)\n  - Groupes universels (universal groups)\n  - Unités organisationnelles (OUs)\n  - **Global Catalog** : indispensable pour les groupes universels dans un environnement multi-domaines (cross-domain)\n\n## Ignore User List\n\nLa **Ignore User List** permet d'exclure des comptes qui pollueraient FSSO. Méthodes d'ajout :\n\n1. **Saisie manuelle** : entrer le nom du compte directement\n2. **Sélection d'utilisateur** : parcourir l'annuaire et sélectionner un compte\n3. **Sélection d'OU** : ignorer tous les comptes d'une unité organisationnelle entière\n\nCas d'usage typiques : comptes de service antivirus, agents de sauvegarde, comptes d'administration automatisée.\n\n## Les Timers FSSO (critique NSE4)\n\nLes timers contrôlent le cycle de vie des entrées FSSO. Leur configuration est critique.\n\n### 1. Workstation Verify Interval\n\nLe collector se connecte périodiquement aux postes de travail (**TCP 139/445**, remote registry) pour vérifier si l'utilisateur est toujours connecté.\n\n- Si la connexion au poste réussit → entrée reste en état **OK**\n- Si la connexion échoue → entrée passe en état **not verified**\n\n> **RÈGLE ABSOLUE : ne JAMAIS mettre ce timer à 0.** Si le timer est à 0, le collector ne vérifie jamais les postes et ne purge jamais les entrées obsolètes. Dangereux dans les environnements avec DHCP (une même IP peut être réattribuée à un autre utilisateur).\n\nPrérequis : activer le service **Remote Registry** sur les membres du domaine.\n\n### 2. Dead Entry Timeout\n\nCe timer purge les entrées qui sont restées en état **not verified** au-delà du délai configuré.\n\n| État de l'entrée | Comportement FortiGate |\n|-----------------|------------------------|\n| OK | Considérée valide |\n| not verified | Considérée valide jusqu'à expiration du Dead Entry Timeout |\n| Expirée (purgée) | Entrée supprimée, utilisateur non reconnu |\n\n### 3. IP Address Change Verify Interval\n\nVérifie périodiquement si les adresses IP des utilisateurs ont changé. **Critique dans les environnements DHCP.** Nécessite un **DNS à jour** pour fonctionner correctement.\n\n### 4. Cache User Group Lookup Result\n\nMet en cache les résultats de résolution de groupes pour la durée configurée.\n\n> **Important** : le cache est **immuable** (non rafraîchi) pendant toute la durée configurée. Si les groupes AD changent, FortiGate continue d'utiliser les anciennes valeurs jusqu'à l'expiration du cache.\n\n## Résumé des timers\n\n| Timer | Rôle | Valeur à éviter |\n|-------|------|------------------|\n| Workstation verify interval | Vérifie si utilisateur encore connecté | 0 (dangereux) |\n| Dead entry timeout | Purge les entrées not verified | Trop élevée |\n| IP change verify interval | Détecte changements IP (DHCP) | Trop élevée |\n| Cache group lookup | Met en cache les groupes AD | Trop élevée si AD change souvent |\n\n## Intégrations avancées\n\n- **TS Agent** (Citrix / Terminal Services) : transmet utilisateur + IP + plage de ports au collector. Indispensable pour distinguer plusieurs utilisateurs sur un même serveur.\n- **RADIUS Accounting** : le collector écoute les messages RADIUS Start/Stop\n- **Syslog** : intégration avec des sources syslog tierces\n- **Custom event IDs** : surveiller des ID d'événements Windows personnalisés\n\n## Niveaux de log du collector\n\n| Niveau | Usage |\n|--------|-------|\n| Debug | Dépannage actif (verbose) |\n| Information | Standard recommandé en production |\n| Warning | Niveau par défaut (recommandé minimal) |\n| Error | Uniquement les erreurs critiques |\n\n> Utiliser **Information** en production. Passer en **Debug** uniquement lors d'un dépannage actif.\n\n> Les intégrations avancées du collector FSSO supportées : TS agent, RADIUS accounting, Syslog, event IDs personnalisables. Le **filtrage DNS dynamique par FortiGuard** n'est pas une intégration collector.",
+    "diagrams": [
       {
-        "q": "Pourquoi ne faut-il jamais mettre Workstation verify interval Ã  0 ?",
+        "caption": "Cycle de vie d'une entrée FSSO : timers et états",
+        "height": 160,
+        "svg": "<svg xmlns='http://www.w3.org/2000/svg' width='700' height='160' font-family='Arial,sans-serif' font-size='12'><rect width='700' height='160' fill='#f8f9fa' rx='8'/><rect x='30' y='50' width='130' height='50' fill='#d1e7dd' rx='6' stroke='#198754' stroke-width='2'/><text x='95' y='72' text-anchor='middle' font-weight='bold' fill='#0f5132'>Utilisateur</text><text x='95' y='90' text-anchor='middle' fill='#0f5132'>connecté (OK)</text><rect x='270' y='50' width='150' height='50' fill='#fff3cd' rx='6' stroke='#ffc107' stroke-width='2'/><text x='345' y='72' text-anchor='middle' font-weight='bold' fill='#856404'>not verified</text><text x='345' y='90' text-anchor='middle' fill='#856404'>(poste inaccessible)</text><rect x='540' y='50' width='130' height='50' fill='#f8d7da' rx='6' stroke='#dc3545' stroke-width='2'/><text x='605' y='72' text-anchor='middle' font-weight='bold' fill='#842029'>Purgée</text><text x='605' y='90' text-anchor='middle' fill='#842029'>(dead entry)</text><line x1='160' y1='75' x2='268' y2='75' stroke='#6c757d' stroke-width='2' marker-end='url(#arr)'/><text x='214' y='65' text-anchor='middle' fill='#495057' font-size='10'>Workstation verify</text><text x='214' y='95' text-anchor='middle' fill='#495057' font-size='10'>interval échoue</text><line x1='420' y1='75' x2='538' y2='75' stroke='#dc3545' stroke-width='2' marker-end='url(#arr2)'/><text x='479' y='65' text-anchor='middle' fill='#842029' font-size='10'>Dead entry timeout</text><text x='479' y='95' text-anchor='middle' fill='#842029' font-size='10'>expiré</text><text x='350' y='140' text-anchor='middle' fill='#495057' font-size='11'>FortiGate traite OK et not verified comme valides jusqu'à expiration du Dead Entry Timeout</text><defs><marker id='arr' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#6c757d'/></marker><marker id='arr2' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#dc3545'/></marker></defs></svg>"
+      }
+    ],
+    "questionPool": [
+      {
+        "q": "Pourquoi ne faut-il JAMAIS mettre le Workstation Verify Interval à 0 ?",
         "choices": [
-          "Cela ralentit le collector",
-          "Le collector n'effacera plus les entrÃ©es obsolÃ¨tes",
-          "Cela dÃ©sactive WMI",
-          "Cela bloque LDAP"
+          "Cela provoque un redémarrage du collector",
+          "Le collector ne vérifie plus les postes et ne purge jamais les entrées obsolètes",
+          "FortiGate perd la connexion avec le DC",
+          "Le cache des groupes n'est plus mis à jour"
         ],
         "answer": 1,
-        "explain": "Sans vÃ©rification, les entrÃ©es obsolÃ¨tes restent et crÃ©ent des incohÃ©rences."
+        "explain": "Si le Workstation Verify Interval est à 0, le collector ne se connecte jamais aux postes pour vérifier les sessions. Les entrées obsolètes ne passent jamais en état 'not verified' et ne sont jamais purgées. Dangereux dans les environnements DHCP où une IP peut être réattribuée."
       },
       {
-        "q": "Combien de groupes AD un FortiGate bas de gamme supporte-t-il en FSSO ?",
+        "q": "Quel est le nombre maximum de groupes AD supportés par les FortiGate d'entrée de gamme (low-end) ?",
         "choices": [
-          "64",
           "128",
+          "512",
           "256",
           "1024"
         ],
         "answer": 2,
-        "explain": "Limite de 256 groupes AD sur les modÃ¨les bas de gamme."
+        "explain": "Les FortiGate d'entrée de gamme (low-end) supportent un maximum de 256 groupes AD dans les filtres FSSO."
       },
       {
-        "q": "Que fait le timer Dead entry timeout ?",
+        "q": "Que signifie l'état 'not verified' d'une entrée FSSO du point de vue de FortiGate ?",
         "choices": [
-          "Limite la durÃ©e d'authentification",
-          "Purge les entrÃ©es en statut not verified aprÃ¨s expiration",
-          "Bloque les connexions inactives",
-          "Synchronise l'horloge"
+          "L'entrée est immédiatement supprimée",
+          "L'utilisateur est bloqué sur les politiques FSSO",
+          "L'entrée est encore considérée valide jusqu'à l'expiration du Dead Entry Timeout",
+          "FortiGate demande une ré-authentification active"
         ],
-        "answer": 1,
-        "explain": "Il Ã©vacue les entrÃ©es non confirmÃ©es."
+        "answer": 2,
+        "explain": "FortiGate considère les entrées en état 'not verified' comme encore valides. C'est seulement après l'expiration du Dead Entry Timeout que l'entrée est purgée et l'utilisateur n'est plus reconnu."
       },
       {
-        "q": "Quel agent est obligatoire sur un serveur Citrix avec utilisateurs partageant la mÃªme IP ?",
+        "q": "Quel timer FSSO doit être surveillé en priorité dans un environnement avec beaucoup de DHCP ?",
         "choices": [
-          "DC agent",
-          "TS agent",
-          "Collector seul",
-          "Aucun"
+          "Dead entry timeout",
+          "Cache user group lookup result",
+          "IP address change verify interval",
+          "Workstation verify interval"
         ],
-        "answer": 1,
-        "explain": "Le TS agent gÃ¨re les plages de ports source par utilisateur."
+        "answer": 2,
+        "explain": "L'IP address change verify interval est critique dans les environnements DHCP car il permet de détecter rapidement si l'adresse IP d'un utilisateur a changé (réattribution DHCP)."
       },
       {
-        "q": "Le cache user group lookup :",
+        "q": "Quel agent FSSO est indispensable sur un serveur Citrix pour distinguer les utilisateurs entre eux ?",
         "choices": [
-          "Se met Ã  jour Ã  chaque event AD",
-          "Est immuable pendant la durÃ©e configurÃ©e",
-          "DÃ©sactive LDAP",
-          "Stocke les mots de passe"
+          "DC Agent",
+          "Collector Agent",
+          "TS Agent",
+          "LDAP Agent"
+        ],
+        "answer": 2,
+        "explain": "Le TS Agent (TSAgent_Setup) est indispensable sur les serveurs Citrix ou Terminal Services. Il transmet l'identité de chaque utilisateur avec son IP et une plage de ports au collector, permettant de distinguer plusieurs utilisateurs sur un même serveur."
+      },
+      {
+        "q": "Que se passe-t-il si les groupes AD changent pendant la durée de validité du cache 'Cache user group lookup result' ?",
+        "choices": [
+          "FortiGate détecte le changement et met à jour le cache immédiatement",
+          "Le collector notifie FortiGate du changement",
+          "FortiGate continue d'utiliser les anciennes valeurs jusqu'à l'expiration du cache",
+          "L'utilisateur est forcé de se reconnecter"
+        ],
+        "answer": 2,
+        "explain": "Le cache 'Cache user group lookup result' est immuable pendant toute sa durée de validité. Il n'est pas rafraîchi même si les groupes AD changent. FortiGate utilise les valeurs en cache jusqu'à leur expiration."
+      },
+      {
+        "q": "Quel niveau de log est recommandé pour le collector en production (standard) ?",
+        "choices": [
+          "Debug",
+          "Information",
+          "Warning",
+          "Error"
         ],
         "answer": 1,
-        "explain": "Le cache n'est pas rafraÃ®chi par les changements AD pendant la durÃ©e."
+        "explain": "Le niveau Information est recommandé en production comme niveau standard. Warning est le niveau par défaut (minimal acceptable). Debug est réservé au dépannage actif car il génère beaucoup de logs."
+      },
+      {
+        "q": "Combien de méthodes permettent d'ajouter des entrées dans la Ignore User List ?",
+        "choices": [
+          "1 (saisie manuelle uniquement)",
+          "2 (manuelle ou par utilisateur)",
+          "3 (manuelle, par utilisateur, ou par OU)",
+          "4 (manuelle, utilisateur, OU, ou groupe)"
+        ],
+        "answer": 2,
+        "explain": "La Ignore User List accepte 3 méthodes d'ajout : saisie manuelle du nom de compte, sélection d'un utilisateur depuis l'annuaire, ou sélection d'une OU entière (tous les comptes de l'OU sont ignorés)."
+      },
+      {
+        "q": "Quel port le collector utilise-t-il pour vérifier si un utilisateur est encore connecté à un poste de travail ?",
+        "choices": [
+          "TCP 389 et TCP 636",
+          "TCP 8000 et UDP 8002",
+          "TCP 139 et TCP 445",
+          "UDP 53 et TCP 443"
+        ],
+        "answer": 2,
+        "explain": "Le collector utilise TCP 139 et TCP 445 (ainsi que le service Remote Registry) pour se connecter aux postes de travail et vérifier si l'utilisateur est toujours connecté."
+      },
+      {
+        "q": "Quel service doit être activé sur les membres du domaine pour que le Workstation Verify Interval fonctionne ?",
+        "choices": [
+          "Windows Management Instrumentation (WMI)",
+          "Remote Registry",
+          "Remote Desktop Services",
+          "Windows Firewall"
+        ],
+        "answer": 1,
+        "explain": "Le service Remote Registry doit être activé sur les membres du domaine pour que le collector puisse se connecter aux postes (TCP 139/445) et vérifier les sessions actives."
+      },
+      {
+        "q": "Quel élément est obligatoire dans la configuration des filtres de groupes FSSO ?",
+        "choices": [
+          "Au moins un groupe universel",
+          "Un filtre par défaut",
+          "La configuration du Global Catalog",
+          "Un filtre d'OU"
+        ],
+        "answer": 1,
+        "explain": "Un filtre par défaut est obligatoire dans la définition des filtres de groupes FSSO. Sans filtre par défaut, la configuration est incomplète."
+      },
+      {
+        "q": "Dans quel cas le Global Catalog est-il nécessaire dans les filtres FSSO ?",
+        "choices": [
+          "Pour tous les environnements AD",
+          "Uniquement en mode Standard",
+          "Pour les groupes universels dans un environnement multi-domaines",
+          "Pour les comptes de service uniquement"
+        ],
+        "answer": 2,
+        "explain": "Le Global Catalog est nécessaire pour résoudre les groupes universels dans un environnement multi-domaines (cross-domain). Sans lui, les groupes universels d'autres domaines ne seront pas résolus."
+      },
+      {
+        "q": "Quel timer FSSO contrôle la suppression définitive des entrées dont le poste est inaccessible ?",
+        "choices": [
+          "Workstation verify interval",
+          "IP address change verify interval",
+          "Dead entry timeout",
+          "Cache user group lookup result"
+        ],
+        "answer": 2,
+        "explain": "Le Dead Entry Timeout purge définitivement les entrées restées en état 'not verified' au-delà de la durée configurée. Une entrée 'not verified' n'est pas immédiatement supprimée — elle attend l'expiration de ce timer."
+      },
+      {
+        "q": "Lequel des éléments suivants N'EST PAS une intégration avancée supportée par le collector FSSO ?",
+        "choices": [
+          "RADIUS Accounting",
+          "Syslog",
+          "TS Agent (Citrix)",
+          "Filtrage DNS dynamique par FortiGuard"
+        ],
+        "answer": 3,
+        "explain": "802.1X EAP-TLS n'est pas une intégration collector FSSO. Les intégrations avancées supportées sont : TS Agent (Citrix/TS), RADIUS Accounting, Syslog, et custom event IDs Windows."
+      },
+      {
+        "q": "Quel niveau de log du collector doit être activé pendant un dépannage actif ?",
+        "choices": [
+          "Warning",
+          "Error",
+          "Information",
+          "Debug"
+        ],
+        "answer": 3,
+        "explain": "Le niveau Debug est utilisé pour le dépannage actif (troubleshooting). Il génère des logs très détaillés (verbose). En production, il est recommandé de revenir en Information après le dépannage."
       }
     ]
   },
   {
     "id": "ch06-l5",
     "module": "Fortinet Single Sign-On (FSSO)",
-    "title": "Monitoring et dÃ©pannage FSSO",
-    "durationMin": 5,
-    "content": "Le dÃ©pannage FSSO suit un parcours mÃ©thodique : vÃ©rifier la connectivitÃ© rÃ©seau et les ports, valider la configuration des agents, puis utiliser les commandes de diagnostic.\n\nPorts Ã  autoriser Ã  travers tous les pare-feu intermÃ©diaires :\n- TCP 139 et 445 : workstation verification et event log polling (SMB).\n- TCP 389 : LDAP.\n- TCP 636 : LDAPS.\n- TCP 8000 : collector â†’ FortiGate (par dÃ©faut).\n- UDP 8002 : DC agent â†’ collector (par dÃ©faut).\n\nBonnes pratiques de dÃ©ploiement :\n- Garantir 64 Kbps minimum par DC en bande passante (sinon des events peuvent Ãªtre perdus).\n- Vider les sessions inactives en environnement Windows pour Ã©viter qu'une IP DHCP recyclÃ©e soit attribuÃ©e par erreur Ã  un utilisateur authentifiÃ©.\n- DNS strictement Ã  jour : les changements d'IP des postes doivent se propager rapidement.\n- Si l'auth passive est seule utilisÃ©e, inclure SSO_Guest_Users dans une politique pour donner un accÃ¨s limitÃ© aux invitÃ©s. Si l'on combine actif + passif, ne JAMAIS inclure SSO_Guest_Users (incompatibilitÃ©).\n\nLogs FSSO cÃ´tÃ© FortiGate : rÃ©gler le niveau de log Ã  Notification ou Information minimum pour capter les Ã©vÃ©nements d'authentification (logins, logouts, NTLM). Plus on descend (vers Debug), plus on a de dÃ©tails utiles au dÃ©pannage.\n\nLogs cÃ´tÃ© collector agent : configurables sous la section Logging. Niveau Debug pour le dÃ©pannage actif, Information recommandÃ© en exploitation, Warning par dÃ©faut. Option utile : `Log login events in separate logs` pour sÃ©parer les events de login dans une vue dÃ©diÃ©e (View login Events).\n\nCommandes CLI FortiGate Ã  connaÃ®tre pour le NSE4 :\n- `diagnose debug authd fsso list` : liste tous les utilisateurs FSSO actuellement connectÃ©s (utilisateur, groupe, IP, poste, MemberOf).\n- `diagnose debug authd fsso server-status` : Ã©tat de la communication entre FortiGate et chaque collector agent.\n- `execute fsso refresh` : force la rafraÃ®chissement des informations de groupe depuis les serveurs.\n- `diagnose debug authd fsso` propose aussi des sous-commandes pour purger le cache, filtrer la liste ou rafraÃ®chir les logins.\n- `diagnose debug fsso-polling detail` : statistiques pour le mode agentless. Si `read log offset` augmente mais qu'aucun login n'apparaÃ®t, vÃ©rifier le filtre de groupes et les event IDs Ã©mis par le DC.\n- `diagnose debug fsso-polling refresh-user` : flush des utilisateurs FSSO actifs en mode agentless.\n- `diagnose debug application fssod -1` : active le debug temps rÃ©el du daemon `fssod` (agentless polling). On peut aussi sniffer le trafic sur TCP 445 pour voir le polling.\n\nÃ€ retenir : connaÃ®tre les ports FSSO, savoir lire `diagnose debug authd fsso list` (incluant le champ MemberOf qui doit correspondre au groupe crÃ©Ã© sur FortiGate), et identifier les bons commandes selon le mode (collector vs agentless).\n\n> **SSO** (FSSO) bonne pratique : ne jamais inclure `SSO_Guest_Users` dans les politiques firewall.",
-    "quiz": [
+    "title": "Monitoring et dépannage FSSO",
+    "durationMin": 7,
+    "content": "## Ports FSSO à autoriser\n\nLors d'un déploiement FSSO avec des pare-feux intermédiaires, les ports suivants doivent être autorisés :\n\n| Port | Protocole | Direction | Usage |\n|------|-----------|-----------|-------|\n| TCP 139 | TCP | Collector ↔ Workstations | Vérification sessions + SMB |\n| TCP 445 | TCP | Collector ↔ Workstations | Vérification sessions + lecture event log |\n| TCP 389 | TCP | Collector ↔ DC | LDAP (résolution groupes) |\n| TCP 636 | TCP | Collector ↔ DC | LDAPS (LDAP sécurisé) |\n| TCP 8000 | TCP | Collector → FortiGate | Envoi des données FSSO |\n| UDP 8002 | UDP | DC Agent → Collector | Envoi des événements de connexion |\n\n## Bonnes pratiques de déploiement\n\n- **Bande passante minimale** : 64 Kbps par contrôleur de domaine\n- **Vider les sessions inactives** : indispensable dans les environnements DHCP pour éviter la réutilisation d'IP\n- **DNS strictement à jour** : requis pour l'IP address change verify interval et la résolution de noms\n- **SSO_Guest_Users** : inclure dans une politique UNIQUEMENT avec authentification passive seule. **JAMAIS** avec une combinaison active + passive\n\n## Logs et niveaux sur FortiGate\n\nPour capturer les événements d'authentification FSSO, le niveau de log FortiGate doit être configuré en **Notification** ou **Information** au minimum. Utiliser **Debug** pour un dépannage actif.\n\n## Logs sur le collector\n\nDans la section **Logging** du collector :\n- Niveaux disponibles : Debug, Information, Warning, Error\n- Option **\"Log login events in separate logs\"** : active un fichier dédié consultable via **View Login Events**\n\n## Commandes CLI FortiGate pour NSE4\n\n### Mode collector agent\n\n```\ndiagnose debug authd fsso list\n```\nListe tous les utilisateurs FSSO actifs avec : nom d'utilisateur, groupe, adresse IP, nom du poste de travail, et champ **MemberOf** (groupes AD). Le champ **MemberOf** doit correspondre aux groupes configurés dans les politiques FortiGate.\n\n```\ndiagnose debug authd fsso server-status\n```\nAffiche le statut de la communication entre FortiGate et le(s) collector(s). Indique si la connexion est établie (Connected) ou non.\n\n```\nexecute fsso refresh\n```\nForce un rafraîchissement des informations de groupe depuis les serveurs. À utiliser après un changement d'appartenance à un groupe AD.\n\n### Mode agentless (Poll AD)\n\n```\ndiagnose debug fsso-polling detail\n```\nAffiche les statistiques du mode agentless : nombre de connexions détectées, offset de lecture du journal d'événements (read log offset). **Si read log offset augmente mais aucun login n'est détecté** → vérifier le filtre de groupes et les event IDs surveillés sur le DC.\n\n```\ndiagnose debug fsso-polling refresh-user\n```\nVide (flush) tous les utilisateurs FSSO en mode agentless. Équivalent d'un reset des sessions FSSO pour ce mode.\n\n```\ndiagnose debug application fssod -1\n```\nActive le debug en temps réel du daemon **fssod** (FSSO daemon). Spécifique au mode agentless. Permet de voir en direct le traitement des événements.\n\n## Récapitulatif des commandes\n\n| Commande | Mode | Usage |\n|----------|------|-------|\n| `diagnose debug authd fsso list` | Collector | Voir utilisateurs actifs + MemberOf |\n| `diagnose debug authd fsso server-status` | Collector | Statut connexion FGT ↔ collector |\n| `execute fsso refresh` | Collector | Forcer refresh groupes |\n| `diagnose debug fsso-polling detail` | Agentless | Statistiques polling DC |\n| `diagnose debug fsso-polling refresh-user` | Agentless | Vider les utilisateurs FSSO |\n| `diagnose debug application fssod -1` | Agentless | Debug daemon fssod temps réel |\n\n## Points clés pour l'examen NSE4\n\n- Connaître **tous les ports FSSO** et leurs directions\n- Savoir lire `diagnose debug authd fsso list` : le champ **MemberOf** doit correspondre au groupe configuré dans la politique\n- Distinguer les commandes **collector** vs **agentless**\n- `execute fsso refresh` est différent d'un diagnose : c'est une action active (force refresh)\n- Ne **JAMAIS** inclure SSO_Guest_Users dans une politique combinant authentification active et passive\n- Bande passante minimale : **64 Kbps** par DC",
+    "diagrams": [
       {
-        "q": "Quelle commande liste les utilisateurs FSSO actifs sur le FortiGate ?",
-        "choices": [
-          "diagnose sniffer fsso",
-          "diagnose debug authd fsso list",
-          "execute fsso show",
-          "get user fsso"
-        ],
-        "answer": 1,
-        "explain": "C'est la commande clÃ© pour visualiser les sessions FSSO."
-      },
+        "caption": "Cartographie des ports FSSO et directions de flux",
+        "height": 180,
+        "svg": "<svg xmlns='http://www.w3.org/2000/svg' width='700' height='180' font-family='Arial,sans-serif' font-size='12'><rect width='700' height='180' fill='#f0f4f8' rx='8'/><rect x='10' y='60' width='110' height='50' fill='#cfe2ff' rx='6' stroke='#0d6efd' stroke-width='2'/><text x='65' y='82' text-anchor='middle' font-weight='bold' fill='#084298'>DC Agent</text><text x='65' y='100' text-anchor='middle' fill='#084298' font-size='11'>(sur DC)</text><rect x='280' y='30' width='130' height='50' fill='#d1e7dd' rx='6' stroke='#198754' stroke-width='2'/><text x='345' y='52' text-anchor='middle' font-weight='bold' fill='#0f5132'>Collector</text><text x='345' y='70' text-anchor='middle' fill='#0f5132' font-size='11'>Agent</text><rect x='575' y='60' width='110' height='50' fill='#fff3cd' rx='6' stroke='#ffc107' stroke-width='2'/><text x='630' y='82' text-anchor='middle' font-weight='bold' fill='#856404'>FortiGate</text><rect x='280' y='120' width='130' height='40' fill='#e2d9f3' rx='6' stroke='#6f42c1' stroke-width='2'/><text x='345' y='136' text-anchor='middle' font-weight='bold' fill='#3d0a91'>Workstations</text><text x='345' y='152' text-anchor='middle' fill='#3d0a91' font-size='11'>et DC (LDAP)</text><line x1='120' y1='80' x2='278' y2='58' stroke='#0d6efd' stroke-width='2' marker-end='url(#a1)'/><text x='185' y='60' text-anchor='middle' fill='#0d6efd' font-size='10'>UDP 8002</text><line x1='410' y1='58' x2='573' y2='78' stroke='#198754' stroke-width='2' marker-end='url(#a2)'/><text x='500' y='58' text-anchor='middle' fill='#198754' font-size='10'>TCP 8000</text><line x1='345' y1='80' x2='345' y2='118' stroke='#6f42c1' stroke-width='1.5' stroke-dasharray='5,3'/><text x='370' y='105' fill='#6f42c1' font-size='10'>TCP 445/139</text><text x='370' y='117' fill='#6f42c1' font-size='10'>TCP 389/636</text><defs><marker id='a1' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#0d6efd'/></marker><marker id='a2' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#198754'/></marker></defs></svg>"
+      }
+    ],
+    "questionPool": [
       {
-        "q": "Quel port doit Ãªtre ouvert pour la vÃ©rification des postes par le collector ?",
+        "q": "Quel port le DC agent utilise-t-il pour envoyer les événements de connexion au collector ?",
         "choices": [
-          "TCP 80",
+          "TCP 8000",
+          "UDP 8002",
           "TCP 445",
-          "UDP 514",
-          "TCP 22"
+          "TCP 389"
         ],
         "answer": 1,
-        "explain": "TCP 445 (SMB) sert Ã  la vÃ©rification et au polling des events."
+        "explain": "Le DC agent utilise UDP 8002 pour envoyer les événements de connexion au collector. TCP 8000 est utilisé dans l'autre sens : du collector vers FortiGate."
       },
       {
-        "q": "Quelle commande dÃ©clenche un refresh manuel des groupes utilisateurs ?",
+        "q": "Sur quel port le collector envoie-t-il les données FSSO à FortiGate ?",
         "choices": [
+          "UDP 8002",
+          "TCP 389",
+          "TCP 8000",
+          "TCP 445"
+        ],
+        "answer": 2,
+        "explain": "Le collector envoie les données FSSO à FortiGate sur TCP 8000. La direction est collector → FortiGate."
+      },
+      {
+        "q": "Quelle commande CLI liste tous les utilisateurs FSSO actifs avec leur groupe et adresse IP ?",
+        "choices": [
+          "diagnose debug fsso-polling detail",
           "execute fsso refresh",
-          "diagnose fsso reload",
-          "execute update-now",
-          "config user refresh"
+          "diagnose debug authd fsso list",
+          "diagnose debug application fssod -1"
+        ],
+        "answer": 2,
+        "explain": "La commande 'diagnose debug authd fsso list' liste tous les utilisateurs FSSO actifs avec leur nom, groupe, IP, poste de travail et le champ MemberOf."
+      },
+      {
+        "q": "Quelle commande vérifie le statut de la connexion entre FortiGate et le collector ?",
+        "choices": [
+          "diagnose debug authd fsso server-status",
+          "diagnose debug fsso-polling detail",
+          "execute fsso refresh",
+          "diagnose debug authd fsso list"
         ],
         "answer": 0,
-        "explain": "execute fsso refresh force le rafraÃ®chissement."
+        "explain": "La commande 'diagnose debug authd fsso server-status' affiche le statut de la communication entre FortiGate et le(s) collector(s) (Connected ou non)."
       },
       {
-        "q": "En mode agentless, quel daemon FortiGate gÃ¨re le polling ?",
+        "q": "Quelle commande est spécifique au mode agentless (Poll AD) pour voir les statistiques de polling ?",
         "choices": [
-          "authd",
-          "fssod",
-          "ipsd",
-          "wad"
+          "diagnose debug authd fsso list",
+          "execute fsso refresh",
+          "diagnose debug authd fsso server-status",
+          "diagnose debug fsso-polling detail"
         ],
-        "answer": 1,
-        "explain": "Le daemon fssod gÃ¨re le polling agentless."
+        "answer": 3,
+        "explain": "La commande 'diagnose debug fsso-polling detail' est spécifique au mode agentless. Elle affiche les statistiques de polling, dont le read log offset, utile pour diagnostiquer pourquoi des logins ne sont pas détectés."
       },
       {
-        "q": "Que faire si auth passive et active sont combinÃ©es ?",
+        "q": "Que signifie un read log offset qui augmente dans 'diagnose debug fsso-polling detail' mais sans login détecté ?",
         "choices": [
-          "Inclure SSO_Guest_Users dans les politiques",
-          "Ne jamais inclure SSO_Guest_Users dans les politiques",
-          "DÃ©sactiver les filtres",
-          "Mettre Workstation verify Ã  0"
+          "Le collector est déconnecté",
+          "Vérifier le filtre de groupes et les event IDs surveillés sur le DC",
+          "Le DNS n'est pas à jour",
+          "La bande passante est insuffisante"
         ],
         "answer": 1,
-        "explain": "SSO_Guest_Users et auth active sont mutuellement exclusifs."
+        "explain": "Si le read log offset augmente (les événements sont lus) mais aucun login n'est détecté, cela indique que les événements sont filtrés. Il faut vérifier le filtre de groupes et les event IDs configurés sur le DC."
+      },
+      {
+        "q": "Quelle commande force un rafraîchissement actif des informations de groupe FSSO depuis les serveurs ?",
+        "choices": [
+          "diagnose debug authd fsso list",
+          "diagnose debug fsso-polling refresh-user",
+          "execute fsso refresh",
+          "diagnose debug application fssod -1"
+        ],
+        "answer": 2,
+        "explain": "La commande 'execute fsso refresh' est une action active qui force le rafraîchissement des informations de groupe depuis les serveurs. À utiliser après un changement d'appartenance de groupe AD."
+      },
+      {
+        "q": "Quelle commande active le debug en temps réel du daemon fssod en mode agentless ?",
+        "choices": [
+          "diagnose debug authd fsso server-status",
+          "diagnose debug application fssod -1",
+          "execute fsso refresh",
+          "diagnose debug fsso-polling detail"
+        ],
+        "answer": 1,
+        "explain": "La commande 'diagnose debug application fssod -1' active le debug temps réel du daemon fssod (FSSO daemon), spécifique au mode agentless. Elle permet de voir en direct le traitement des événements."
+      },
+      {
+        "q": "Quelle est la bande passante minimale recommandée par contrôleur de domaine pour FSSO ?",
+        "choices": [
+          "1 Mbps",
+          "256 Kbps",
+          "64 Kbps",
+          "512 Kbps"
+        ],
+        "answer": 2,
+        "explain": "La bande passante minimale recommandée est de 64 Kbps par contrôleur de domaine pour assurer le bon fonctionnement des communications FSSO."
+      },
+      {
+        "q": "Dans 'diagnose debug authd fsso list', quel champ doit correspondre aux groupes configurés dans les politiques FortiGate ?",
+        "choices": [
+          "Le champ IP",
+          "Le champ Workstation",
+          "Le champ MemberOf",
+          "Le champ Username"
+        ],
+        "answer": 2,
+        "explain": "Le champ MemberOf affiche les groupes AD auxquels appartient l'utilisateur. Ce champ doit correspondre aux groupes configurés dans les politiques de sécurité FortiGate pour que la correspondance FSSO fonctionne."
+      },
+      {
+        "q": "Quel port est utilisé pour LDAPS (LDAP sécurisé) dans un déploiement FSSO ?",
+        "choices": [
+          "TCP 389",
+          "TCP 8000",
+          "TCP 636",
+          "UDP 8002"
+        ],
+        "answer": 2,
+        "explain": "TCP 636 est le port standard pour LDAPS (LDAP over SSL/TLS). TCP 389 est utilisé pour LDAP non chiffré."
+      },
+      {
+        "q": "Dans quel cas SSO_Guest_Users peut-il être inclus dans une politique de sécurité FortiGate ?",
+        "choices": [
+          "Quand l'authentification active et passive sont combinées",
+          "Quand seule l'authentification passive est active (sans auth actif)",
+          "Toujours, pour couvrir les utilisateurs non reconnus",
+          "Jamais, ce groupe est réservé à l'administration système"
+        ],
+        "answer": 1,
+        "explain": "SSO_Guest_Users ne doit être inclus dans une politique que lorsque l'authentification passive est utilisée seule. Ne JAMAIS l'inclure dans des politiques combinant authentification active et passive."
+      },
+      {
+        "q": "Quel niveau de log FortiGate est le minimum requis pour capturer les événements d'authentification FSSO ?",
+        "choices": [
+          "Critical",
+          "Warning",
+          "Notification ou Information",
+          "Emergency"
+        ],
+        "answer": 2,
+        "explain": "Le niveau de log FortiGate doit être configuré en Notification ou Information au minimum pour capturer les événements d'authentification FSSO. Debug est utilisé pour un dépannage actif."
+      },
+      {
+        "q": "Quelle option dans les logs du collector permet d'avoir un fichier dédié aux événements de connexion FSSO ?",
+        "choices": [
+          "Enable debug logging",
+          "Log login events in separate logs",
+          "Export to syslog",
+          "Enable verbose mode"
+        ],
+        "answer": 1,
+        "explain": "L'option 'Log login events in separate logs' crée un fichier de log dédié aux événements de connexion, consultable via la fonctionnalité 'View Login Events' dans l'interface du collector."
+      },
+      {
+        "q": "Lequel des ports suivants N'EST PAS utilisé dans un déploiement FSSO standard ?",
+        "choices": [
+          "TCP 8000",
+          "UDP 8002",
+          "TCP 443",
+          "TCP 389"
+        ],
+        "answer": 2,
+        "explain": "TCP 443 (HTTPS) n'est pas un port FSSO standard. Les ports FSSO sont : TCP 139, TCP 445 (workstations), TCP 389 (LDAP), TCP 636 (LDAPS), TCP 8000 (collector→FGT), UDP 8002 (DC agent→collector)."
       }
     ]
   },
@@ -2321,7 +2906,7 @@
     "module": "Certificate Operations",
     "title": "Gestion : import, CRL et store",
     "durationMin": 6,
-    "content": "## Centralisation dans System > Certificates\n\nFortiGate centralise tous les certificats sous **System > Certificates** : import, export, génération et supervision des certificats utilisés par le boîtier.\n\n### Certificat de l'interface GUI\n\nPar défaut, FortiGate présente un **certificat self-signed** lors de la première connexion → avertissement navigateur. Trois options :\n1. Accepter une fois et laisser le navigateur mémoriser.\n2. Configurer FortiGate avec **`Fortinet_GUI_Server`** + déployer `Fortinet_CA_SSL` dans le store racine des postes admins.\n3. Générer un certificat signé par la **CA interne de l'entreprise** pour chaque FortiGate.\n\n## Import de certificats\n\n### Certificat d'entreprise (CA signing)\n\nDeux méthodes pour importer la CA de l'organisation :\n- **SCEP** (*Simple Certificate Enrollment Protocol*) — protocole standard d'enrôlement automatisé.\n- **Import depuis fichier** — import manuel.\n\n### Certificat local (serveur ou utilisateur)\n\n![Trois méthodes d'import d'un certificat local](diagram:0)\n\n**Trois méthodes** :\n1. **CSR (Certificate Signing Request)** — générer le CSR sur FortiGate, le faire signer par la CA, puis importer uniquement le fichier CER. **La clé privée ne sort jamais du FortiGate** → méthode la plus sûre.\n2. **Fichier certificat + clé privée séparée** — import de deux fichiers distincts.\n3. **PKCS#12 / PFX** — format unique contenant **à la fois le certificat et la clé privée** (extension `.pfx` ou `.p12`).\n\n> **Bonne pratique** : préférer la méthode CSR — la clé privée reste sur FortiGate et ne transite jamais sur le réseau.\n\n## CRL — Certificate Revocation List\n\nUn certificat révoqué ne peut pas être rappelé physiquement → la CA publie une **liste des certificats révoqués** (CRL).\n\nFortiGate gère les CRL de deux façons :\n\n| Méthode | Avantage |\n|---|---|\n| **Import d'un fichier CRL** | Contrôle total, mais mise à jour manuelle |\n| **Pointer vers un dépôt CRL** (HTTP, LDAP ou SCEP) | **Recommandé** — mise à jour automatique |\n\nLe **Distribution Point** de la CRL est généralement renseigné dans le champ **CRL endpoints** du certificat.\n\n> La section CRL de la GUI n'apparaît qu'une fois qu'au moins une CRL a été chargée. Une CRL ne s'affiche que si la **CA correspondante est aussi importée** dans le store.\n\n## Vue d'ensemble du store System > Certificates\n\n| Section | Contenu |\n|---|---|\n| **Local CA Certificate** | `Fortinet_CA_SSL`, `Fortinet_CA_Untrusted`, CA d'entreprise importées |\n| **Local Certificate** | Certificats du boîtier / utilisateurs (statut `Pending` pour les CSR en attente) |\n| **Remote CA Certificate** | CA tiers importées, non utilisées comme signing CA |\n| **CRL** | Listes de révocation chargées |\n\n**Colonne Source** : `Factory` (certificats livrés d'usine) ou `User` (importés par un admin).\n\n### Stores navigateurs — attention\n\nTous les navigateurs ne partagent pas le même store :\n- **Firefox** — store propre (séparé de l'OS)\n- **Chrome / Edge** — store de l'OS Windows\n- **Mac / Linux** — leur propre logique d'OS\n\nImporter le certificat racine dans le bon store : **Autorités de certification racines de confiance**.\n\n> Dépôt HTTP/LDAP/SCEP vs fichier statique : les **CRLs** sont **mises** à jour **automatiquement** depuis le dépôt — approche recommandée.",
+    "content": "## Centralisation dans System > Certificates\n\nFortiGate centralise tous les certificats sous **System > Certificates** : import, export, génération et supervision des certificats utilisés par le boîtier.\n\n### Certificat de l'interface GUI\n\nPar défaut, FortiGate présente un **certificat self-signed** lors de la première connexion → avertissement navigateur. Trois options :\n1. Accepter une fois et laisser le navigateur mémoriser.\n2. Configurer FortiGate avec **`Fortinet_GUI_Server`** + déployer `Fortinet_CA_SSL` dans le store racine des postes admins.\n3. Générer un certificat signé par la **CA interne de l'entreprise** pour chaque FortiGate.\n\n## Import de certificats\n\n### Certificat d'entreprise (CA signing)\n\nDeux méthodes pour importer la CA de l'organisation :\n- **SCEP** (*Simple Certificate Enrollment Protocol*) — protocole standard d'enrôlement automatisé.\n- **Import depuis fichier** — import manuel.\n\n### Certificat local (serveur ou utilisateur)\n\n![Trois méthodes d'import d'un certificat local](diagram:0)\n\n**Trois méthodes** :\n1. **CSR (Certificate Signing Request)** — générer le CSR sur FortiGate, le faire signer par la CA, puis importer uniquement le fichier CER. **La clé privée ne sort jamais du FortiGate** → méthode la plus sûre.\n2. **Fichier certificat + clé privée séparée** — import de deux fichiers distincts.\n3. **PKCS#12 / PFX** — format unique contenant **à la fois le certificat et la clé privée** (extension `.pfx` ou `.p12`).\n\n> **Bonne pratique** : préférer la méthode CSR — la clé privée reste sur FortiGate et ne transite jamais sur le réseau.\n\n## CRL — Certificate Revocation List\n\nUn certificat révoqué ne peut pas être rappelé physiquement → la CA publie une **liste des certificats révoqués** (CRL).\n\nFortiGate gère les CRL de deux façons :\n\n| Méthode | Avantage |\n|---|---|\n| **Import d'un fichier CRL** | Contrôle total, mais mise à jour manuelle |\n| **Pointer vers un dépôt CRL** (HTTP, LDAP ou SCEP) | **Recommandé** — mise à jour automatique |\n\nLe **Distribution Point** de la CRL est généralement renseigné dans le champ **CRL endpoints** du certificat.\n\n> La section CRL de la GUI n'apparaît qu'une fois qu'au moins une CRL a été chargée. Une CRL ne s'affiche que si la **CA correspondante est aussi importée** dans le store.\n\n## Vue d'ensemble du store System > Certificates\n\n| Section | Contenu |\n|---|---|\n| **Local CA Certificate** | `Fortinet_CA_SSL`, `Fortinet_CA_Untrusted`, CA d'entreprise importées |\n| **Local Certificate** | Certificats du boîtier / utilisateurs (statut `Pending` pour les CSR en attente) |\n| **Remote CA Certificate** | CA tiers importées, non utilisées comme signing CA |\n| **CRL** | Listes de révocation chargées |\n\n**Colonne Source** : `Factory` (certificats livrés d'usine) ou `User` (importés par un admin).\n\n### Stores navigateurs — attention\n\nTous les navigateurs ne partagent pas le même store :\n- **Firefox** — store propre (séparé de l'OS)\n- **Chrome / Edge** — store de l'OS Windows\n- **Mac / Linux** — leur propre logique d'OS\n\nImporter le certificat racine dans le bon store : **Autorités de certification racines de confiance**.\n\n> Dépôt HTTP/LDAP/SCEP vs fichier statique : les **CRLs** sont **mises** à jour **automatiquement** — approche **recommandée**.",
     "diagrams": [
       {
         "caption": "Trois méthodes d'import d'un certificat local sur FortiGate, de la plus sûre à la moins sûre.",
@@ -2587,7 +3172,7 @@
     "module": "Antivirus",
     "title": "Techniques de détection avancées",
     "durationMin": 6,
-    "content": "## Au-delà des signatures classiques\n\nFortiGate propose plusieurs mécanismes complémentaires aux signatures AV standard pour détecter les menaces avancées et les malwares récents.\n\n## Virus Outbreak Prevention Service (VOS)\n\nEnrichit la base AV locale avec des **hashes de malwares récents** issus du **Global Threat Intelligence de FortiGuard**.\n\n- FortiGate envoie le **hash du fichier scanné** à FortiGuard.\n- Si le hash est connu comme malveillant → le fichier est bloqué.\n- Nécessite une **licence VOS** active.\n\n## External malware block list\n\nListes de hashes (**MD5**, **SHA1**, **SHA256**) hébergées sur un **serveur HTTP/HTTPS** externe.\n\n1. Créer un connecteur dans la **Security Fabric**.\n2. Sélectionner le connecteur dans le **profil AV**.\n\n> ⚠️ **CRC32 n'est pas un format de hash supporté** par l'external malware block list.\n\n## EMS threat feed\n\nFortiGate reçoit des **hashes détectés par les FortiClient** via **FortiClient EMS**. Partage en temps réel des menaces détectées sur les endpoints.\n\n## Ordre de vérification\n\nQuand plusieurs sources sont actives, FortiGate les consulte dans cet ordre :\n\n```\n1. Base AV locale\n2. EMS threat feed\n3. External malware block list\n4. FortiGuard VOS\n```\n\n![Ordre de vérification des sources AV](diagram:0)\n\n## Content Disarm and Reconstruction (CDR)\n\nNettoie les documents **Office** et **PDF** (y compris dans les archives **ZIP**) en retirant :\n- Macros\n- JavaScript embarqué\n- Hyperliens actifs\n- Médias embarqués\n\nLe **contenu textuel** reste intact. Seuls les éléments actifs potentiellement dangereux sont supprimés.\n\n**Protocoles supportés** : HTTP, SMTP, POP3, IMAP.\n\n> ⚠️ **CDR est disponible uniquement en mode proxy-based.** Il n'est pas disponible en flow-based.\n\n## Behavior-based detection\n\nEnvoie les fichiers suspects à **FortiSandbox** pour une **analyse comportementale**. Le fichier est exécuté dans un environnement isolé pour observer son comportement réel.\n\n## CIFS scanning\n\nPermet le **scan AV** et le **file filter** sur le trafic **CIFS** (partages Windows — protocole SMB).\n\n## À retenir\n\n- **CDR** et **FortiNDR** sont disponibles uniquement en **proxy-based**.\n- Hashes supportés par l'external block list : **MD5, SHA1, SHA256** (pas CRC32).\n- Ordre de vérification : **base locale → EMS → external blocklist → FortiGuard VOS**.\n\n> **CDR** : **retire** les **contenus** actifs (macros, **scripts**, hyperliens) des documents en **conservant** le **texte** et la structure. Le résultat est inoffensif.",
+    "content": "## Au-delà des signatures classiques\n\nFortiGate propose plusieurs mécanismes complémentaires aux signatures AV standard pour détecter les menaces avancées et les malwares récents.\n\n## Virus Outbreak Prevention Service (VOS)\n\nEnrichit la base AV locale avec des **hashes de malwares récents** issus du **Global Threat Intelligence de FortiGuard**.\n\n- FortiGate envoie le **hash du fichier scanné** à FortiGuard.\n- Si le hash est connu comme malveillant → le fichier est bloqué.\n- Nécessite une **licence VOS** active.\n\n## External malware block list\n\nListes de hashes (**MD5**, **SHA1**, **SHA256**) hébergées sur un **serveur HTTP/HTTPS** externe.\n\n1. Créer un connecteur dans la **Security Fabric**.\n2. Sélectionner le connecteur dans le **profil AV**.\n\n> ⚠️ **CRC32 n'est pas un format de hash supporté** par l'external malware block list.\n\n## EMS threat feed\n\nFortiGate reçoit des **hashes détectés par les FortiClient** via **FortiClient EMS**. Partage en temps réel des menaces détectées sur les endpoints.\n\n## Ordre de vérification\n\nQuand plusieurs sources sont actives, FortiGate les consulte dans cet ordre :\n\n```\n1. Base AV locale\n2. EMS threat feed\n3. External malware block list\n4. FortiGuard VOS\n```\n\n![Ordre de vérification des sources AV](diagram:0)\n\n## Content Disarm and Reconstruction (CDR)\n\nNettoie les documents **Office** et **PDF** (y compris dans les archives **ZIP**) en retirant :\n- Macros\n- JavaScript embarqué\n- Hyperliens actifs\n- Médias embarqués\n\nLe **contenu textuel** reste intact. Seuls les éléments actifs potentiellement dangereux sont supprimés.\n\n**Protocoles supportés** : HTTP, SMTP, POP3, IMAP.\n\n> ⚠️ **CDR est disponible uniquement en mode proxy-based.** Il n'est pas disponible en flow-based.\n\n## Behavior-based detection\n\nEnvoie les fichiers suspects à **FortiSandbox** pour une **analyse comportementale**. Le fichier est exécuté dans un environnement isolé pour observer son comportement réel.\n\n## CIFS scanning\n\nPermet le **scan AV** et le **file filter** sur le trafic **CIFS** (partages Windows — protocole SMB).\n\n## À retenir\n\n- **CDR** et **FortiNDR** sont disponibles uniquement en **proxy-based**.\n- Hashes supportés par l'external block list : **MD5, SHA1, SHA256** (pas CRC32).\n- Ordre de vérification : **base locale → EMS → external blocklist → FortiGuard VOS**.\n\n> **CDR** : **retire** les **contenus** actifs (macros, **scripts**, hyperliens) des documents en **conservant** le **texte** et la structure.",
     "diagrams": [
       {
         "caption": "Ordre de vérification quand toutes les sources de détection AV avancée sont actives.",
@@ -2971,7 +3556,7 @@
     "module": "Web Filtering",
     "title": "Composants du filtrage web",
     "durationMin": 6,
-    "content": "## Objectif du filtrage web\n\nLe filtrage web FortiGate a deux buts :\n1. **Empêcher les utilisateurs d'atteindre des sites malveillants**.\n2. **Bloquer les communications sortantes** si un poste est déjà infecté.\n\nAprès l'établissement d'une connexion TCP, le navigateur envoie une requête **HTTP GET**. FortiGate intercepte cette requête, extrait les informations clés (URL, hostname…) et consulte FortiGuard pour catégoriser le site. L'action appliquée dépend du profil web filter rattaché à la politique pare-feu.\n\n## Les trois composants principaux\n\n![Composants du filtrage web](diagram:0)\n\n### 1. Web content filtering\n\nBloque les pages contenant des **mots-clés ou des motifs** définis par l'administrateur. Idéal pour bloquer des thèmes précis indépendamment du domaine.\n\n### 2. URL filtering\n\nUtilise des **URL ou des patterns** pour bloquer ou exempter des pages de sources spécifiques. Peut aussi bloquer des URL malveillantes détectées par FortiSandbox.\n\n> **Limiter le filtrage par domaine** : filtrer `tumblr.com` entier bloquerait tous les blogs, y compris les légitimes. On peut cibler `tumblr.com/hacking` pour rester précis.\n\n### 3. FortiGuard Web Filtering\n\nService cloud qui **classifie dynamiquement** les URL dans des catégories. FortiGate envoie une **requête temps réel** aux serveurs FortiGuard pour obtenir la catégorie, puis applique l'action configurée dans le profil.\n\n## Inspection du trafic chiffré (HTTPS)\n\n### SSL certificate inspection\n\nFortiGate n'a **pas besoin de déchiffrer le payload** pour filtrer — il inspecte uniquement la couche SSL/TLS.\n\nPour identifier le site demandé, FortiGate utilise :\n1. Le **SNI** (*Server Name Indication*) présent dans le **Client Hello** — c'est la source préférée.\n2. Si le SNI est absent → FortiGate consulte le **champ CN** (*Common Name*) du **certificat serveur**.\n\n> ⚠️ **Le CN peut ne pas correspondre au FQDN demandé.** Exemple : le CN de `youtube.com` est `google.com`. Si le navigateur ne supporte pas SNI, FortiGate peut catégoriser incorrectement le site.\n\n### Handshake TLS — les 4 étapes\n\n1. **Client Hello** — avec le SNI (extension TLS)\n2. **Server Hello**\n3. **Authentification serveur** (envoi du certificat)\n4. **Server Hello Done**\n\nPour le filtrage web, l'inspection de certificat SSL est généralement suffisante — FortiGate n'a pas besoin de lire le payload HTTP.\n\n> Filtrer par domaine seul peut être insuffisant : un domaine peut **héberger** des **contenus hétérogènes** provenant d'**auteurs différents** (ex: sites UGC).",
+    "content": "## Objectif du filtrage web\n\nLe filtrage web FortiGate a deux buts :\n1. **Empêcher les utilisateurs d'atteindre des sites malveillants**.\n2. **Bloquer les communications sortantes** si un poste est déjà infecté.\n\nAprès l'établissement d'une connexion TCP, le navigateur envoie une requête **HTTP GET**. FortiGate intercepte cette requête, extrait les informations clés (URL, hostname…) et consulte FortiGuard pour catégoriser le site. L'action appliquée dépend du profil web filter rattaché à la politique pare-feu.\n\n## Les trois composants principaux\n\n![Composants du filtrage web](diagram:0)\n\n### 1. Web content filtering\n\nBloque les pages contenant des **mots-clés ou des motifs** définis par l'administrateur. Idéal pour bloquer des thèmes précis indépendamment du domaine.\n\n### 2. URL filtering\n\nUtilise des **URL ou des patterns** pour bloquer ou exempter des pages de sources spécifiques. Peut aussi bloquer des URL malveillantes détectées par FortiSandbox.\n\n> **Limiter le filtrage par domaine** : filtrer `tumblr.com` entier bloquerait tous les blogs, y compris les légitimes. On peut cibler `tumblr.com/hacking` pour rester précis.\n\n### 3. FortiGuard Web Filtering\n\nService cloud qui **classifie dynamiquement** les URL dans des catégories. FortiGate envoie une **requête temps réel** aux serveurs FortiGuard pour obtenir la catégorie, puis applique l'action configurée dans le profil.\n\n## Inspection du trafic chiffré (HTTPS)\n\n### SSL certificate inspection\n\nFortiGate n'a **pas besoin de déchiffrer le payload** pour filtrer — il inspecte uniquement la couche SSL/TLS.\n\nPour identifier le site demandé, FortiGate utilise :\n1. Le **SNI** (*Server Name Indication*) présent dans le **Client Hello** — c'est la source préférée.\n2. Si le SNI est absent → FortiGate consulte le **champ CN** (*Common Name*) du **certificat serveur**.\n\n> ⚠️ **Le CN peut ne pas correspondre au FQDN demandé.** Exemple : le CN de `youtube.com` est `google.com`. Si le navigateur ne supporte pas SNI, FortiGate peut catégoriser incorrectement le site.\n\n### Handshake TLS — les 4 étapes\n\n1. **Client Hello** — avec le SNI (extension TLS)\n2. **Server Hello**\n3. **Authentification serveur** (envoi du certificat)\n4. **Server Hello Done**\n\nPour le filtrage web, l'inspection de certificat SSL est généralement suffisante — FortiGate n'a pas besoin de lire le payload HTTP.\n\n> Filtrer par domaine seul peut être insuffisant : un domaine peut **héberger** des **contenus hétérogènes** provenant d'**auteurs différents**.",
     "diagrams": [
       {
         "caption": "Les trois composants du filtrage web FortiGate et leur interaction avec FortiGuard.",
@@ -3714,7 +4299,7 @@
     "module": "Intrusion Prevention and Application Control",
     "title": "Composants de l'IPS FortiGate",
     "durationMin": 6,
-    "content": "## Rôle de l'IPS\n\nL'**Intrusion Prevention System (IPS)** de FortiGate détecte les attaques réseau et empêche la compromission des hôtes protégés. Il combine plusieurs techniques :\n- Signatures d'exploits connus\n- Décodeurs de protocole\n- Heuristique (analyse comportementale)\n- Threat intelligence FortiGuard Labs\n- Détection avancée (zero-day)\n\nL'IPS peut effectuer du **deep packet inspection** sur du trafic chiffré.\n\n## Les trois composants principaux\n\n![Composants IPS FortiGate](diagram:0)\n\n### 1. Signatures IPS\n\nFortiGate s'appuie sur des bases de **signatures** pour détecter des exploits connus.\n\n**Signatures rate-based** : détectent les **anomalies comportementales** — par exemple une montée en CPU anormale ou un volume de trafic atypique. Elles font partie de l'analyse comportementale, au même titre que :\n- Les **politiques DoS**\n- L'**inspection des contraintes de protocole**\n\nLes signatures rate-based peuvent parfois bloquer ou atténuer une nouvelle attaque non encore répertoriée.\n\n### 2. Protocol decoders\n\nAnalysent chaque paquet selon les **spécifications du protocole** (RFC). En comprenant le protocole, ils peuvent détecter des anomalies cachées sous un comportement légitime.\n\nExemple : si un paquet envoie des **commandes invalides** non prévues par la RFC, le decoder le signale.\n\n### 3. IPS engine\n\nLe **moteur IPS** est responsable de :\n- L'IPS lui-même\n- Les protocol decoders\n- L'**application control**\n- L'**antivirus flow-based**\n- Le **filtrage web** (flow-based)\n- Le **filtrage email** (flow-based)\n\n## Mises à jour et gestion des signatures\n\nLes mises à jour arrivent via le **package FortiGuard IPS**. Après téléchargement, chaque signature dispose d'une **action par défaut** :\n\n| Action | Description |\n|---|---|\n| **Block** | Bloque le paquet |\n| **Allow** | Laisse passer |\n| **Monitor** (pass) | Laisse passer + log |\n| **Quarantine** | Isole le source |\n| **Reset** | Réinitialise la connexion TCP |\n\nL'action par défaut est généralement correcte. On la modifie dans deux cas :\n1. **L'éditeur a publié un patch** : continuer à scanner gaspille des ressources.\n2. **Faux positif** : une application interne déclenche la signature → on ajuste l'action en attendant la correction FortiGuard.\n\nLes signatures rate-based se distinguent des signatures classiques en ciblant des **comportements anormaux** (volume, **fréquence**, débit) **plutôt** que des **patterns** d'exploits précis.",
+    "content": "## Rôle de l'IPS\n\nL'**Intrusion Prevention System (IPS)** de FortiGate détecte les attaques réseau et empêche la compromission des hôtes protégés. Il combine plusieurs techniques :\n- Signatures d'exploits connus\n- Décodeurs de protocole\n- Heuristique (analyse comportementale)\n- Threat intelligence FortiGuard Labs\n- Détection avancée (zero-day)\n\nL'IPS peut effectuer du **deep packet inspection** sur du trafic chiffré.\n\n## Les trois composants principaux\n\n![Composants IPS FortiGate](diagram:0)\n\n### 1. Signatures IPS\n\nFortiGate s'appuie sur des bases de **signatures** pour détecter des exploits connus.\n\n**Signatures rate-based** : détectent les **anomalies comportementales** — par exemple une montée en CPU anormale ou un volume de trafic atypique. Elles font partie de l'analyse comportementale, au même titre que :\n- Les **politiques DoS**\n- L'**inspection des contraintes de protocole**\n\nLes signatures rate-based peuvent parfois bloquer ou atténuer une nouvelle attaque non encore répertoriée.\n\n### 2. Protocol decoders\n\nAnalysent chaque paquet selon les **spécifications du protocole** (RFC). En comprenant le protocole, ils peuvent détecter des anomalies cachées sous un comportement légitime.\n\nExemple : si un paquet envoie des **commandes invalides** non prévues par la RFC, le decoder le signale.\n\n### 3. IPS engine\n\nLe **moteur IPS** est responsable de :\n- L'IPS lui-même\n- Les protocol decoders\n- L'**application control**\n- L'**antivirus flow-based**\n- Le **filtrage web** (flow-based)\n- Le **filtrage email** (flow-based)\n\n## Mises à jour et gestion des signatures\n\nLes mises à jour arrivent via le **package FortiGuard IPS**. Après téléchargement, chaque signature dispose d'une **action par défaut** :\n\n| Action | Description |\n|---|---|\n| **Block** | Bloque le paquet |\n| **Allow** | Laisse passer |\n| **Monitor** (pass) | Laisse passer + log |\n| **Quarantine** | Isole le source |\n| **Reset** | Réinitialise la connexion TCP |\n\nL'action par défaut est généralement correcte. On la modifie dans deux cas :\n1. **L'éditeur a publié un patch** : continuer à scanner gaspille des ressources.\n2. **Faux positif** : une application interne déclenche la signature → on ajuste l'action en attendant la correction FortiGuard.\n\nLes signatures rate-based ciblent des **comportements anormaux** (volume, **fréquence**, débit) **plutôt** que des **patterns** d'exploits précis.",
     "diagrams": [
       {
         "caption": "Les trois composants IPS et les autres fonctions qui s'appuient sur le moteur IPS.",
@@ -5501,7 +6086,7 @@
     "module": "High Availability",
     "title": "Synchronisation du cluster",
     "durationMin": 6,
-    "content": "## Deux modes de synchronisation\n\nUn cluster HA ne peut basculer proprement que si le secondaire dispose d'une configuration et de données opérationnelles à jour. FortiGate utilise deux mécanismes complémentaires.\n\n![Synchro complète vs incrémentale](diagram:0)\n\n### Synchronisation complète (full sync)\n\nDéclenchée quand **un nouveau membre rejoint le cluster**.\n\n1. Le primaire calcule son **checksum de configuration**.\n2. Il le compare avec celui du nouveau membre.\n3. Si les checksums diffèrent → le primaire envoie **l'intégralité de sa configuration** au secondaire qui l'écrase.\n\n### Synchronisation incrémentale (delta sync)\n\nDéclenchée **après chaque modification de configuration**.\n\n- Seul le **delta** (l'objet modifié) est propagé via le lien heartbeat.\n- Exemple : si vous créez une adresse objet, seul ce nouvel objet est envoyé, pas toute la config.\n- Fonctionne qu'on modifie depuis le primaire **ou** depuis un secondaire.\n\n> **Bonne pratique** : toujours modifier depuis le primaire. Si la synchro échoue temporairement et que la modification a été faite depuis un secondaire, elle pourrait être perdue au prochain full sync.\n\n## Données runtime synchronisées\n\nEn plus de la configuration, le primaire pousse en continu :\n\n| Données | Commentaire |\n|---|---|\n| Entrées FIB | Table de routage active |\n| Définitions FortiGuard | Signatures AV, IPS… |\n| Baux DHCP | Continuité après failover |\n| Table ARP | Résolution des adresses |\n| SA IPsec | Tunnels VPN actifs |\n| Sessions actives | Uniquement si **session pickup** est activé |\n\n### Session pickup\n\nSi activé, les sessions actives qualifiantes sont synchronisées. Après un failover, le nouveau primaire peut les **reprendre sans interruption visible** pour les utilisateurs.\n\n**Limitation** : les sessions **terminées sur le FortiGate lui-même** (SSL VPN, sessions proxy) ne peuvent pas être reprises — elles doivent être relancées par les clients.\n\n## Cycle de vérification de la synchronisation\n\n```\nToutes les 60 s → compare les checksums\nDésynchronisé détecté → re-check toutes les 15 s\n5 vérifications consécutives en désaccord → full resync\n```\n\nPour vérifier manuellement :\n\n```\ndiagnose sys ha checksum cluster  ← interroge tous les membres\ndiagnose sys ha checksum show      ← affiche le checksum local uniquement\ndiagnose sys ha checksum recalculate  ← force un recalcul\n```\n\n## Ce qui N'est PAS synchronisé\n\nCes éléments restent **propres à chaque membre** (à configurer manuellement) :\n\n- **Hostname**\n- **HA priority** et **HA override**\n- Interfaces de management HA réservées + leurs routes\n- Licences (sauf FortiToken)\n- Cache GUI / widgets dashboard\n- HA priority des ping servers (dead gateway detection)\n\n## Rôles du primaire et des secondaires\n\n| Tâche | Primaire | Secondaire |\n|---|---|---|\n| Envoyer/recevoir hello packets | ✓ | ✓ |\n| Synchroniser données opérationnelles | ✓ (source) | ✓ (destination) |\n| Traiter le trafic | ✓ | Actif-actif uniquement |\n| Distribuer les sessions | ✓ (actif-actif) | ✗ |\n\n> L'intervalle de synchronisation par défaut est de **60 secondes** entre le primaire et les secondaires.",
+    "content": "## Deux modes de synchronisation\n\nUn cluster HA ne peut basculer proprement que si le secondaire dispose d'une configuration et de données opérationnelles à jour. FortiGate utilise deux mécanismes complémentaires.\n\n![Synchro complète vs incrémentale](diagram:0)\n\n### Synchronisation complète (full sync)\n\nDéclenchée quand **un nouveau membre rejoint le cluster**.\n\n1. Le primaire calcule son **checksum de configuration**.\n2. Il le compare avec celui du nouveau membre.\n3. Si les checksums diffèrent → le primaire envoie **l'intégralité de sa configuration** au secondaire qui l'écrase.\n\n### Synchronisation incrémentale (delta sync)\n\nDéclenchée **après chaque modification de configuration**.\n\n- Seul le **delta** (l'objet modifié) est propagé via le lien heartbeat.\n- Exemple : si vous créez une adresse objet, seul ce nouvel objet est envoyé, pas toute la config.\n- Fonctionne qu'on modifie depuis le primaire **ou** depuis un secondaire.\n\n> **Bonne pratique** : toujours modifier depuis le primaire. Si la synchro échoue temporairement et que la modification a été faite depuis un secondaire, elle pourrait être perdue au prochain full sync.\n\n## Données runtime synchronisées\n\nEn plus de la configuration, le primaire pousse en continu :\n\n| Données | Commentaire |\n|---|---|\n| Entrées FIB | Table de routage active |\n| Définitions FortiGuard | Signatures AV, IPS… |\n| Baux DHCP | Continuité après failover |\n| Table ARP | Résolution des adresses |\n| SA IPsec | Tunnels VPN actifs |\n| Sessions actives | Uniquement si **session pickup** est activé |\n\n### Session pickup\n\nSi activé, les sessions actives qualifiantes sont synchronisées. Après un failover, le nouveau primaire peut les **reprendre sans interruption visible** pour les utilisateurs.\n\n**Limitation** : les sessions **terminées sur le FortiGate lui-même** (SSL VPN, sessions proxy) ne peuvent pas être reprises — elles doivent être relancées par les clients.\n\n## Cycle de vérification de la synchronisation\n\n```\nToutes les 60 s → compare les checksums\nDésynchronisé détecté → re-check toutes les 15 s\n5 vérifications consécutives en désaccord → full resync\n```\n\nPour vérifier manuellement :\n\n```\ndiagnose sys ha checksum cluster  ← interroge tous les membres\ndiagnose sys ha checksum show      ← affiche le checksum local uniquement\ndiagnose sys ha checksum recalculate  ← force un recalcul\n```\n\n## Ce qui N'est PAS synchronisé\n\nCes éléments restent **propres à chaque membre** (à configurer manuellement) :\n\n- **Hostname**\n- **HA priority** et **HA override**\n- Interfaces de management HA réservées + leurs routes\n- Licences (sauf FortiToken)\n- Cache GUI / widgets dashboard\n- HA priority des ping servers (dead gateway detection)\n\n## Rôles du primaire et des secondaires\n\n| Tâche | Primaire | Secondaire |\n|---|---|---|\n| Envoyer/recevoir hello packets | ✓ | ✓ |\n| Synchroniser données opérationnelles | ✓ (source) | ✓ (destination) |\n| Traiter le trafic | ✓ | Actif-actif uniquement |\n| Distribuer les sessions | ✓ (actif-actif) | ✗ |\n\n> Intervalle de synchronisation par défaut : **60 secondes**.",
     "diagrams": [
       {
         "caption": "Full sync au premier join vs delta sync incrémentale pour chaque changement de config.",
@@ -5717,7 +6302,7 @@
     "module": "High Availability",
     "title": "Types de failover et virtual MAC",
     "durationMin": 7,
-    "content": "## Les types de failover\n\nUn failover HA se déclenche quand le cluster détecte qu'un membre n'est plus en mesure de traiter le trafic. Il existe plusieurs causes.\n\n### Device failover\n\nLes secondaires arrêtent de recevoir les **hello packets** du primaire (panne matérielle, plantage logiciel, coupure d'alimentation). L'absence de hello packets déclenche une élection et un nouveau primaire est élu.\n\n### Link failover\n\nUne **interface monitorée** du primaire passe en `down`. On configure une ou plusieurs interfaces à surveiller (monitored interfaces) : si l'une tombe, le failover est déclenché.\n\n> **Bonne pratique** : monitorer les interfaces connectées aux switches et routeurs critiques — pas les interfaces heartbeat elles-mêmes.\n\n### Remote link failover\n\nUtilise le **link health monitor** pour vérifier la santé de liens vers des serveurs distants (« balises »). Si la pénalité cumulée des interfaces en défaut atteint le seuil configuré, le failover est déclenché. Utile quand la liaison montante est OK physiquement mais inaccessible logiquement.\n\n### Memory-based failover\n\nSe déclenche quand l'utilisation mémoire du primaire dépasse un **seuil configurable** pendant une durée de monitoring définie. Protège contre les situations où le primaire est tellement saturé qu'il ne peut plus traiter le trafic correctement.\n\n### SSD failover\n\nDéclenché si FortiOS détecte des **erreurs Ext-fs** sur le SSD du primaire. Évite qu'un disque défaillant n'affecte le service.\n\n### Failover manuel\n\nUn administrateur peut déclencher un failover explicitement (via CLI ou en modifiant les priorités HA).\n\n## Logs et alertes au failover\n\nÀ chaque failover, FortiGate génère un **event log**. On peut configurer :\n- Des **SNMP traps** pour notifier les outils de supervision.\n- Des **alertes e-mail** pour l'équipe réseau.\n\n## Virtual MAC (vMAC)\n\n![Failover et vMAC](diagram:0)\n\nQuand un primaire rejoint un cluster, chaque interface se voit assigner une **adresse MAC virtuelle** (vMAC) en plus de sa MAC physique. C'est la vMAC que le réseau voit.\n\n### Calcul de la vMAC\n\nLa vMAC est calculée à partir de :\n- Le **HA group ID**\n- Le **virtual cluster ID** (si les virtual clusters sont activés)\n- L'**index de l'interface**\n\n### Pourquoi les vMAC sont essentielles\n\nSans vMAC, après un failover le nouveau primaire aurait une MAC physique différente → les switches auraient leur table MAC obsolète → le trafic serait perdu le temps que la table se mette à jour.\n\nAvec vMAC :\n1. Le nouveau primaire **adopte les mêmes vMAC** sur ses interfaces équivalentes.\n2. Il envoie des **ARP gratuits** (Gratuitous ARP) pour annoncer au réseau : « ces vMAC sont maintenant joignables via moi ».\n3. Les switches mettent à jour leur table MAC → trafic restauré en quelques millisecondes.\n\n### Exception\n\nL'interface de **management HA réservée** conserve sa **MAC physique d'origine** (pas une vMAC). Cela permet de l'atteindre individuellement quel que soit son rôle dans le cluster.\n\n### Conflits de vMAC\n\nSi deux clusters partagent le **même HA group ID** dans le même domaine de broadcast → conflit MAC → comportement imprévisible.\n\n> ⚠️ **Toujours attribuer des group IDs différents** à des clusters distincts dans le même segment réseau.\n\n> Déclencheurs de failover : perte heartbeat, interface **monitorée** (MONITORED) en down, dépassement de seuil mémoire, ou erreur filesystem.",
+    "content": "## Les types de failover\n\nUn failover HA se déclenche quand le cluster détecte qu'un membre n'est plus en mesure de traiter le trafic. Il existe plusieurs causes.\n\n### Device failover\n\nLes secondaires arrêtent de recevoir les **hello packets** du primaire (panne matérielle, plantage logiciel, coupure d'alimentation). L'absence de hello packets déclenche une élection et un nouveau primaire est élu.\n\n### Link failover\n\nUne **interface monitorée** du primaire passe en `down`. On configure une ou plusieurs interfaces à surveiller (monitored interfaces) : si l'une tombe, le failover est déclenché.\n\n> **Bonne pratique** : monitorer les interfaces connectées aux switches et routeurs critiques — pas les interfaces heartbeat elles-mêmes.\n\n### Remote link failover\n\nUtilise le **link health monitor** pour vérifier la santé de liens vers des serveurs distants (« balises »). Si la pénalité cumulée des interfaces en défaut atteint le seuil configuré, le failover est déclenché. Utile quand la liaison montante est OK physiquement mais inaccessible logiquement.\n\n### Memory-based failover\n\nSe déclenche quand l'utilisation mémoire du primaire dépasse un **seuil configurable** pendant une durée de monitoring définie. Protège contre les situations où le primaire est tellement saturé qu'il ne peut plus traiter le trafic correctement.\n\n### SSD failover\n\nDéclenché si FortiOS détecte des **erreurs Ext-fs** sur le SSD du primaire. Évite qu'un disque défaillant n'affecte le service.\n\n### Failover manuel\n\nUn administrateur peut déclencher un failover explicitement (via CLI ou en modifiant les priorités HA).\n\n## Logs et alertes au failover\n\nÀ chaque failover, FortiGate génère un **event log**. On peut configurer :\n- Des **SNMP traps** pour notifier les outils de supervision.\n- Des **alertes e-mail** pour l'équipe réseau.\n\n## Virtual MAC (vMAC)\n\n![Failover et vMAC](diagram:0)\n\nQuand un primaire rejoint un cluster, chaque interface se voit assigner une **adresse MAC virtuelle** (vMAC) en plus de sa MAC physique. C'est la vMAC que le réseau voit.\n\n### Calcul de la vMAC\n\nLa vMAC est calculée à partir de :\n- Le **HA group ID**\n- Le **virtual cluster ID** (si les virtual clusters sont activés)\n- L'**index de l'interface**\n\n### Pourquoi les vMAC sont essentielles\n\nSans vMAC, après un failover le nouveau primaire aurait une MAC physique différente → les switches auraient leur table MAC obsolète → le trafic serait perdu le temps que la table se mette à jour.\n\nAvec vMAC :\n1. Le nouveau primaire **adopte les mêmes vMAC** sur ses interfaces équivalentes.\n2. Il envoie des **ARP gratuits** (Gratuitous ARP) pour annoncer au réseau : « ces vMAC sont maintenant joignables via moi ».\n3. Les switches mettent à jour leur table MAC → trafic restauré en quelques millisecondes.\n\n### Exception\n\nL'interface de **management HA réservée** conserve sa **MAC physique d'origine** (pas une vMAC). Cela permet de l'atteindre individuellement quel que soit son rôle dans le cluster.\n\n### Conflits de vMAC\n\nSi deux clusters partagent le **même HA group ID** dans le même domaine de broadcast → conflit MAC → comportement imprévisible.\n\n> ⚠️ **Toujours attribuer des group IDs différents** à des clusters distincts dans le même segment réseau.",
     "diagrams": [
       {
         "caption": "Failover avec vMAC : le nouveau primaire adopte les mêmes vMAC et envoie des ARP gratuits pour mettre à jour les tables MAC des switches.",
@@ -5922,7 +6507,7 @@
     "module": "High Availability",
     "title": "Surveiller et gérer le cluster",
     "durationMin": 7,
-    "content": "## Surveiller le cluster depuis la GUI\n\nLa page **System > HA** offre un panorama de la santé du cluster. Pour chaque membre, on voit :\n\n- Statut de synchronisation\n- Rôle (primary / secondary)\n- Hostname et numéro de série (SN)\n- Priorité HA\n- HA uptime\n- Nombre de sessions actives\n\nOn peut également ajouter des colonnes (checksum, CPU, mémoire) et retirer un membre du cluster (il repasse en mode standalone).\n\nLe **widget HA Status** sur le dashboard offre un résumé rapide.\n\n## Surveiller le cluster depuis le CLI\n\n### Commande principale : `get system ha status`\n\n```\nget system ha status\n```\n\nAffiche :\n- Statut du cluster et mode HA en cours\n- HA uptime du cluster\n- Derniers événements d'élection (résultat + raison)\n- Statut de configuration de chaque membre\n- Stats système : nombre de sessions, CPU moyen, mémoire moyenne\n- Interfaces heartbeat, monitorées et remote link\n- Rôle, hostname, numéro de série, ID de chaque membre\n\n> Note : le champ `sessions` compte **toutes** les sessions traitées, pas uniquement celles distribuées en actif-actif.\n\n## Vérifier la synchronisation des configurations\n\n![Flux de vérification checksum](diagram:0)\n\n| Commande | Usage |\n|---|---|\n| `diagnose sys ha checksum cluster` | Interroge TOUS les membres via heartbeat — affiche leurs checksums |\n| `diagnose sys ha checksum show` | Affiche le checksum LOCAL uniquement |\n| `diagnose sys ha checksum recalculate` | Force un recalcul du checksum local |\n\n**Trois scopes** de hash sont calculés :\n- `global` — paramètres globaux, FortiGuard…\n- `root` — paramètres du VDOM root (+ chaque VDOM supplémentaire)\n- `all` — global + tous les VDOMs\n\nSi tous les membres ont les **mêmes valeurs de hash** pour chaque scope → configuration synchronisée.\n\n> Si `checksum cluster` ne montre que le checksum local (problème heartbeat), se connecter **individuellement** à chaque membre et lancer `diagnose sys ha checksum show`.\n\n## Administrer les membres secondaires\n\nAprès synchronisation, les secondaires partagent les mêmes IPs que le primaire mais **ne répondent pas directement** sur le réseau.\n\n### Option 1 — Tunnel CLI via le primaire\n\n```\nexecute ha manage <member-id> <admin-username>\n```\n\n- `member-id` : un `?` liste les IDs disponibles\n- Ouvre un tunnel CLI vers le secondaire\n- `exit` ramène au CLI du primaire\n\n### Option 2 — Interface de management dédiée\n\nDeux variantes :\n\n| Variante | Description |\n|---|---|\n| **Reserved HA management interface** | Interface out-of-band dédiée (jusqu'à 4), avec adresse IP unique par membre. Routes dans une table séparée (isolation data/management). |\n| **In-band HA management** | Adresse de management unique assignée à une interface utilisateur existante. |\n\n> ⚠️ La configuration de management **n'est PAS synchronisée** — chaque membre a ses propres IPs et routes de management.\n\n> La page **System > HA** affiche pour chaque membre : statut sync, rôle, hostname, **SN** (numéro de série), priorité, HA uptime, sessions actives.",
+    "content": "## Surveiller le cluster depuis la GUI\n\nLa page **System > HA** offre un panorama de la santé du cluster. Pour chaque membre, on voit :\n\n- Statut de synchronisation\n- Rôle (primary / secondary)\n- Hostname et numéro de série (SN)\n- Priorité HA\n- HA uptime\n- Nombre de sessions actives\n\nOn peut également ajouter des colonnes (checksum, CPU, mémoire) et retirer un membre du cluster (il repasse en mode standalone).\n\nLe **widget HA Status** sur le dashboard offre un résumé rapide.\n\n## Surveiller le cluster depuis le CLI\n\n### Commande principale : `get system ha status`\n\n```\nget system ha status\n```\n\nAffiche :\n- Statut du cluster et mode HA en cours\n- HA uptime du cluster\n- Derniers événements d'élection (résultat + raison)\n- Statut de configuration de chaque membre\n- Stats système : nombre de sessions, CPU moyen, mémoire moyenne\n- Interfaces heartbeat, monitorées et remote link\n- Rôle, hostname, numéro de série, ID de chaque membre\n\n> Note : le champ `sessions` compte **toutes** les sessions traitées, pas uniquement celles distribuées en actif-actif.\n\n## Vérifier la synchronisation des configurations\n\n![Flux de vérification checksum](diagram:0)\n\n| Commande | Usage |\n|---|---|\n| `diagnose sys ha checksum cluster` | Interroge TOUS les membres via heartbeat — affiche leurs checksums |\n| `diagnose sys ha checksum show` | Affiche le checksum LOCAL uniquement |\n| `diagnose sys ha checksum recalculate` | Force un recalcul du checksum local |\n\n**Trois scopes** de hash sont calculés :\n- `global` — paramètres globaux, FortiGuard…\n- `root` — paramètres du VDOM root (+ chaque VDOM supplémentaire)\n- `all` — global + tous les VDOMs\n\nSi tous les membres ont les **mêmes valeurs de hash** pour chaque scope → configuration synchronisée.\n\n> Si `checksum cluster` ne montre que le checksum local (problème heartbeat), se connecter **individuellement** à chaque membre et lancer `diagnose sys ha checksum show`.\n\n## Administrer les membres secondaires\n\nAprès synchronisation, les secondaires partagent les mêmes IPs que le primaire mais **ne répondent pas directement** sur le réseau.\n\n### Option 1 — Tunnel CLI via le primaire\n\n```\nexecute ha manage <member-id> <admin-username>\n```\n\n- `member-id` : un `?` liste les IDs disponibles\n- Ouvre un tunnel CLI vers le secondaire\n- `exit` ramène au CLI du primaire\n\n### Option 2 — Interface de management dédiée\n\nDeux variantes :\n\n| Variante | Description |\n|---|---|\n| **Reserved HA management interface** | Interface out-of-band dédiée (jusqu'à 4), avec adresse IP unique par membre. Routes dans une table séparée (isolation data/management). |\n| **In-band HA management** | Adresse de management unique assignée à une interface utilisateur existante. |\n\n> ⚠️ La configuration de management **n'est PAS synchronisée** — chaque membre a ses propres IPs et routes de management.",
     "diagrams": [
       {
         "caption": "Flux de vérification des checksums HA. Si checksum cluster ne montre qu'un résultat local, c'est signe de problème heartbeat.",

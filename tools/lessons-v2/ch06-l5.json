@@ -1,0 +1,181 @@
+{
+  "id": "ch06-l5",
+  "module": "Fortinet Single Sign-On (FSSO)",
+  "title": "Monitoring et dépannage FSSO",
+  "durationMin": 7,
+  "content": "## Ports FSSO à autoriser\n\nLors d'un déploiement FSSO avec des pare-feux intermédiaires, les ports suivants doivent être autorisés :\n\n| Port | Protocole | Direction | Usage |\n|------|-----------|-----------|-------|\n| TCP 139 | TCP | Collector ↔ Workstations | Vérification sessions + SMB |\n| TCP 445 | TCP | Collector ↔ Workstations | Vérification sessions + lecture event log |\n| TCP 389 | TCP | Collector ↔ DC | LDAP (résolution groupes) |\n| TCP 636 | TCP | Collector ↔ DC | LDAPS (LDAP sécurisé) |\n| TCP 8000 | TCP | Collector → FortiGate | Envoi des données FSSO |\n| UDP 8002 | UDP | DC Agent → Collector | Envoi des événements de connexion |\n\n## Bonnes pratiques de déploiement\n\n- **Bande passante minimale** : 64 Kbps par contrôleur de domaine\n- **Vider les sessions inactives** : indispensable dans les environnements DHCP pour éviter la réutilisation d'IP\n- **DNS strictement à jour** : requis pour l'IP address change verify interval et la résolution de noms\n- **SSO_Guest_Users** : inclure dans une politique UNIQUEMENT avec authentification passive seule. **JAMAIS** avec une combinaison active + passive\n\n## Logs et niveaux sur FortiGate\n\nPour capturer les événements d'authentification FSSO, le niveau de log FortiGate doit être configuré en **Notification** ou **Information** au minimum. Utiliser **Debug** pour un dépannage actif.\n\n## Logs sur le collector\n\nDans la section **Logging** du collector :\n- Niveaux disponibles : Debug, Information, Warning, Error\n- Option **\"Log login events in separate logs\"** : active un fichier dédié consultable via **View Login Events**\n\n## Commandes CLI FortiGate pour NSE4\n\n### Mode collector agent\n\n```\ndiagnose debug authd fsso list\n```\nListe tous les utilisateurs FSSO actifs avec : nom d'utilisateur, groupe, adresse IP, nom du poste de travail, et champ **MemberOf** (groupes AD). Le champ **MemberOf** doit correspondre aux groupes configurés dans les politiques FortiGate.\n\n```\ndiagnose debug authd fsso server-status\n```\nAffiche le statut de la communication entre FortiGate et le(s) collector(s). Indique si la connexion est établie (Connected) ou non.\n\n```\nexecute fsso refresh\n```\nForce un rafraîchissement des informations de groupe depuis les serveurs. À utiliser après un changement d'appartenance à un groupe AD.\n\n### Mode agentless (Poll AD)\n\n```\ndiagnose debug fsso-polling detail\n```\nAffiche les statistiques du mode agentless : nombre de connexions détectées, offset de lecture du journal d'événements (read log offset). **Si read log offset augmente mais aucun login n'est détecté** → vérifier le filtre de groupes et les event IDs surveillés sur le DC.\n\n```\ndiagnose debug fsso-polling refresh-user\n```\nVide (flush) tous les utilisateurs FSSO en mode agentless. Équivalent d'un reset des sessions FSSO pour ce mode.\n\n```\ndiagnose debug application fssod -1\n```\nActive le debug en temps réel du daemon **fssod** (FSSO daemon). Spécifique au mode agentless. Permet de voir en direct le traitement des événements.\n\n## Récapitulatif des commandes\n\n| Commande | Mode | Usage |\n|----------|------|-------|\n| `diagnose debug authd fsso list` | Collector | Voir utilisateurs actifs + MemberOf |\n| `diagnose debug authd fsso server-status` | Collector | Statut connexion FGT ↔ collector |\n| `execute fsso refresh` | Collector | Forcer refresh groupes |\n| `diagnose debug fsso-polling detail` | Agentless | Statistiques polling DC |\n| `diagnose debug fsso-polling refresh-user` | Agentless | Vider les utilisateurs FSSO |\n| `diagnose debug application fssod -1` | Agentless | Debug daemon fssod temps réel |\n\n## Points clés pour l'examen NSE4\n\n- Connaître **tous les ports FSSO** et leurs directions\n- Savoir lire `diagnose debug authd fsso list` : le champ **MemberOf** doit correspondre au groupe configuré dans la politique\n- Distinguer les commandes **collector** vs **agentless**\n- `execute fsso refresh` est différent d'un diagnose : c'est une action active (force refresh)\n- Ne **JAMAIS** inclure SSO_Guest_Users dans une politique combinant authentification active et passive\n- Bande passante minimale : **64 Kbps** par DC",
+  "diagrams": [
+    {
+      "caption": "Cartographie des ports FSSO et directions de flux",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' width='700' height='180' font-family='Arial,sans-serif' font-size='12'><rect width='700' height='180' fill='#f0f4f8' rx='8'/><rect x='10' y='60' width='110' height='50' fill='#cfe2ff' rx='6' stroke='#0d6efd' stroke-width='2'/><text x='65' y='82' text-anchor='middle' font-weight='bold' fill='#084298'>DC Agent</text><text x='65' y='100' text-anchor='middle' fill='#084298' font-size='11'>(sur DC)</text><rect x='280' y='30' width='130' height='50' fill='#d1e7dd' rx='6' stroke='#198754' stroke-width='2'/><text x='345' y='52' text-anchor='middle' font-weight='bold' fill='#0f5132'>Collector</text><text x='345' y='70' text-anchor='middle' fill='#0f5132' font-size='11'>Agent</text><rect x='575' y='60' width='110' height='50' fill='#fff3cd' rx='6' stroke='#ffc107' stroke-width='2'/><text x='630' y='82' text-anchor='middle' font-weight='bold' fill='#856404'>FortiGate</text><rect x='280' y='120' width='130' height='40' fill='#e2d9f3' rx='6' stroke='#6f42c1' stroke-width='2'/><text x='345' y='136' text-anchor='middle' font-weight='bold' fill='#3d0a91'>Workstations</text><text x='345' y='152' text-anchor='middle' fill='#3d0a91' font-size='11'>et DC (LDAP)</text><line x1='120' y1='80' x2='278' y2='58' stroke='#0d6efd' stroke-width='2' marker-end='url(#a1)'/><text x='185' y='60' text-anchor='middle' fill='#0d6efd' font-size='10'>UDP 8002</text><line x1='410' y1='58' x2='573' y2='78' stroke='#198754' stroke-width='2' marker-end='url(#a2)'/><text x='500' y='58' text-anchor='middle' fill='#198754' font-size='10'>TCP 8000</text><line x1='345' y1='80' x2='345' y2='118' stroke='#6f42c1' stroke-width='1.5' stroke-dasharray='5,3'/><text x='370' y='105' fill='#6f42c1' font-size='10'>TCP 445/139</text><text x='370' y='117' fill='#6f42c1' font-size='10'>TCP 389/636</text><defs><marker id='a1' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#0d6efd'/></marker><marker id='a2' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#198754'/></marker></defs></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel port le DC agent utilise-t-il pour envoyer les événements de connexion au collector ?",
+      "choices": [
+        "TCP 8000",
+        "UDP 8002",
+        "TCP 445",
+        "TCP 389"
+      ],
+      "answer": 1,
+      "explain": "Le DC agent utilise UDP 8002 pour envoyer les événements de connexion au collector. TCP 8000 est utilisé dans l'autre sens : du collector vers FortiGate."
+    },
+    {
+      "q": "Sur quel port le collector envoie-t-il les données FSSO à FortiGate ?",
+      "choices": [
+        "UDP 8002",
+        "TCP 389",
+        "TCP 8000",
+        "TCP 445"
+      ],
+      "answer": 2,
+      "explain": "Le collector envoie les données FSSO à FortiGate sur TCP 8000. La direction est collector → FortiGate."
+    },
+    {
+      "q": "Quelle commande CLI liste tous les utilisateurs FSSO actifs avec leur groupe et adresse IP ?",
+      "choices": [
+        "diagnose debug fsso-polling detail",
+        "execute fsso refresh",
+        "diagnose debug authd fsso list",
+        "diagnose debug application fssod -1"
+      ],
+      "answer": 2,
+      "explain": "La commande 'diagnose debug authd fsso list' liste tous les utilisateurs FSSO actifs avec leur nom, groupe, IP, poste de travail et le champ MemberOf."
+    },
+    {
+      "q": "Quelle commande vérifie le statut de la connexion entre FortiGate et le collector ?",
+      "choices": [
+        "diagnose debug authd fsso server-status",
+        "diagnose debug fsso-polling detail",
+        "execute fsso refresh",
+        "diagnose debug authd fsso list"
+      ],
+      "answer": 0,
+      "explain": "La commande 'diagnose debug authd fsso server-status' affiche le statut de la communication entre FortiGate et le(s) collector(s) (Connected ou non)."
+    },
+    {
+      "q": "Quelle commande est spécifique au mode agentless (Poll AD) pour voir les statistiques de polling ?",
+      "choices": [
+        "diagnose debug authd fsso list",
+        "execute fsso refresh",
+        "diagnose debug authd fsso server-status",
+        "diagnose debug fsso-polling detail"
+      ],
+      "answer": 3,
+      "explain": "La commande 'diagnose debug fsso-polling detail' est spécifique au mode agentless. Elle affiche les statistiques de polling, dont le read log offset, utile pour diagnostiquer pourquoi des logins ne sont pas détectés."
+    },
+    {
+      "q": "Que signifie un read log offset qui augmente dans 'diagnose debug fsso-polling detail' mais sans login détecté ?",
+      "choices": [
+        "Le collector est déconnecté",
+        "Vérifier le filtre de groupes et les event IDs surveillés sur le DC",
+        "Le DNS n'est pas à jour",
+        "La bande passante est insuffisante"
+      ],
+      "answer": 1,
+      "explain": "Si le read log offset augmente (les événements sont lus) mais aucun login n'est détecté, cela indique que les événements sont filtrés. Il faut vérifier le filtre de groupes et les event IDs configurés sur le DC."
+    },
+    {
+      "q": "Quelle commande force un rafraîchissement actif des informations de groupe FSSO depuis les serveurs ?",
+      "choices": [
+        "diagnose debug authd fsso list",
+        "diagnose debug fsso-polling refresh-user",
+        "execute fsso refresh",
+        "diagnose debug application fssod -1"
+      ],
+      "answer": 2,
+      "explain": "La commande 'execute fsso refresh' est une action active qui force le rafraîchissement des informations de groupe depuis les serveurs. À utiliser après un changement d'appartenance de groupe AD."
+    },
+    {
+      "q": "Quelle commande active le debug en temps réel du daemon fssod en mode agentless ?",
+      "choices": [
+        "diagnose debug authd fsso server-status",
+        "diagnose debug application fssod -1",
+        "execute fsso refresh",
+        "diagnose debug fsso-polling detail"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose debug application fssod -1' active le debug temps réel du daemon fssod (FSSO daemon), spécifique au mode agentless. Elle permet de voir en direct le traitement des événements."
+    },
+    {
+      "q": "Quelle est la bande passante minimale recommandée par contrôleur de domaine pour FSSO ?",
+      "choices": [
+        "1 Mbps",
+        "256 Kbps",
+        "64 Kbps",
+        "512 Kbps"
+      ],
+      "answer": 2,
+      "explain": "La bande passante minimale recommandée est de 64 Kbps par contrôleur de domaine pour assurer le bon fonctionnement des communications FSSO."
+    },
+    {
+      "q": "Dans 'diagnose debug authd fsso list', quel champ doit correspondre aux groupes configurés dans les politiques FortiGate ?",
+      "choices": [
+        "Le champ IP",
+        "Le champ Workstation",
+        "Le champ MemberOf",
+        "Le champ Username"
+      ],
+      "answer": 2,
+      "explain": "Le champ MemberOf affiche les groupes AD auxquels appartient l'utilisateur. Ce champ doit correspondre aux groupes configurés dans les politiques de sécurité FortiGate pour que la correspondance FSSO fonctionne."
+    },
+    {
+      "q": "Quel port est utilisé pour LDAPS (LDAP sécurisé) dans un déploiement FSSO ?",
+      "choices": [
+        "TCP 389",
+        "TCP 8000",
+        "TCP 636",
+        "UDP 8002"
+      ],
+      "answer": 2,
+      "explain": "TCP 636 est le port standard pour LDAPS (LDAP over SSL/TLS). TCP 389 est utilisé pour LDAP non chiffré."
+    },
+    {
+      "q": "Dans quel cas SSO_Guest_Users peut-il être inclus dans une politique de sécurité FortiGate ?",
+      "choices": [
+        "Quand l'authentification active et passive sont combinées",
+        "Quand seule l'authentification passive est active (sans auth actif)",
+        "Toujours, pour couvrir les utilisateurs non reconnus",
+        "Jamais, ce groupe est réservé à l'administration système"
+      ],
+      "answer": 1,
+      "explain": "SSO_Guest_Users ne doit être inclus dans une politique que lorsque l'authentification passive est utilisée seule. Ne JAMAIS l'inclure dans des politiques combinant authentification active et passive."
+    },
+    {
+      "q": "Quel niveau de log FortiGate est le minimum requis pour capturer les événements d'authentification FSSO ?",
+      "choices": [
+        "Critical",
+        "Warning",
+        "Notification ou Information",
+        "Emergency"
+      ],
+      "answer": 2,
+      "explain": "Le niveau de log FortiGate doit être configuré en Notification ou Information au minimum pour capturer les événements d'authentification FSSO. Debug est utilisé pour un dépannage actif."
+    },
+    {
+      "q": "Quelle option dans les logs du collector permet d'avoir un fichier dédié aux événements de connexion FSSO ?",
+      "choices": [
+        "Enable debug logging",
+        "Log login events in separate logs",
+        "Export to syslog",
+        "Enable verbose mode"
+      ],
+      "answer": 1,
+      "explain": "L'option 'Log login events in separate logs' crée un fichier de log dédié aux événements de connexion, consultable via la fonctionnalité 'View Login Events' dans l'interface du collector."
+    },
+    {
+      "q": "Lequel des ports suivants N'EST PAS utilisé dans un déploiement FSSO standard ?",
+      "choices": [
+        "TCP 8000",
+        "UDP 8002",
+        "TCP 443",
+        "TCP 389"
+      ],
+      "answer": 2,
+      "explain": "TCP 443 (HTTPS) n'est pas un port FSSO standard. Les ports FSSO sont : TCP 139, TCP 445 (workstations), TCP 389 (LDAP), TCP 636 (LDAPS), TCP 8000 (collector→FGT), UDP 8002 (DC agent→collector)."
+    }
+  ]
+}

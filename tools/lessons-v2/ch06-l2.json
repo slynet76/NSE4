@@ -1,0 +1,181 @@
+{
+  "id": "ch06-l2",
+  "module": "Fortinet Single Sign-On (FSSO)",
+  "title": "Flux DC agent vs polling",
+  "durationMin": 7,
+  "content": "## Flux détaillé : Mode DC Agent\n\n### Les 4 étapes du flux DC Agent\n\n1. **Authentification** : l'utilisateur s'authentifie auprès du contrôleur de domaine (DC)\n2. **Interception** : le DC Agent installé sur le DC intercepte l'événement d'authentification en temps réel\n3. **Transmission au Collector** : le DC Agent envoie l'événement (utilisateur + nom de machine) au Collector Agent via **UDP 8002**\n4. **Traitement et envoi au FortiGate** : le Collector résout le DNS (nom → IP), vérifie les appartenances aux groupes Active Directory, puis envoie au FortiGate via **TCP 8000** le tuple (utilisateur + hostname + IP + groupes)\n\n> Le FortiGate fait correspondre l'adresse IP source du trafic avec les informations reçues du Collector pour identifier l'utilisateur en temps réel.\n\n---\n\n## Flux détaillé : Mode Polling\n\nDans ce mode, **aucun DC Agent n'est installé** sur les contrôleurs de domaine.\n\n1. Le Collector Agent interroge périodiquement le DC via **TCP 445 (SMB)** pour lire les journaux d'authentification\n2. Le Collector traite les résultats, résout les groupes et envoie l'info au FortiGate via **TCP 8000**\n\n**Inconvénient** : comme le polling n'est pas en temps réel, certains événements peuvent être manqués ou détectés avec un délai.\n\n---\n\n## Flux détaillé : Mode Agentless\n\nLe **FortiGate lui-même** interroge directement le DC :\n\n- Interrogation du DC via **TCP 445 (SMB)** pour les events 4768/4769\n- Interrogation **LDAP (TCP 389 / LDAPS TCP 636)** pour résoudre les groupes\n- Aucun Collector Agent, aucun DC Agent\n\n---\n\n## Prérequis communs et points critiques\n\n### DNS interne fiable — obligatoire\n\nLes événements FSSO contiennent le **nom d'hôte** de la machine, pas son adresse IP. Le Collector Agent doit donc résoudre le nom d'hôte en adresse IP via DNS.\n\n> Sans DNS interne fiable, le FSSO ne peut pas associer correctement un utilisateur à une adresse IP.\n\n### Détection des déconnexions — WMI sur les postes\n\nWindows **ne génère pas d'événement de déconnexion** de session réseau exploitable. Le Collector Agent doit donc **interroger les postes de travail via WMI** périodiquement pour détecter si un utilisateur est encore connecté (vérification de session active).\n\n### Clé de registre donot_resolve=1\n\nLors de l'utilisation du mode DC Agent, une double résolution DNS peut se produire (DC Agent résout, puis Collector résout à nouveau). Pour éviter cela :\n\n```\nHKLM\\Software\\Fortinet\\FSAE\\dcagent\nValeur : donot_resolve = 1\n```\n\nAvec cette clé, le DC Agent **n'effectue pas de résolution DNS** et laisse cette tâche au Collector uniquement.\n\n---\n\n## Récapitulatif des ports\n\n| Port | Protocole | Direction | Usage |\n|---|---|---|---|\n| **UDP 8002** | UDP | DC Agent → Collector | Transmission des événements d'auth |\n| **TCP 8000** | TCP | Collector → FortiGate | Envoi utilisateur+IP+groupes |\n| **TCP 445** | TCP (SMB) | Collector/FGT → DC | Polling des journaux Windows |\n| **TCP 389** | TCP (LDAP) | Collector/FGT → AD | Résolution des groupes |\n| **TCP 636** | TCP (LDAPS) | Collector/FGT → AD | Résolution des groupes (chiffré) |\n\n---\n\n## Comparaison DC Agent vs Polling\n\n| Critère | DC Agent | Polling |\n|---|---|---|\n| Installation sur DC | Oui (agent requis) | Non |\n| Temps réel | Oui | Non (périodique) |\n| Événements manqués | Non | Possible |\n| Scalabilité | Élevée | Moyenne |\n| Complexité déploiement | Plus complexe | Plus simple |\n| Ressources FortiGate | Faibles | Faibles |\n\n---\n\n## Points clés NSE4 à retenir\n\n- **UDP 8002** : DC Agent → Collector (et non TCP)\n- **TCP 8000** : Collector → FortiGate\n- **TCP 445** : polling SMB du DC\n- **DNS fiable obligatoire** : les événements contiennent des noms d'hôtes, pas des IPs\n- **WMI sur postes** : nécessaire pour détecter les déconnexions (pas d'événement Windows natif)\n- **donot_resolve=1** : évite la double résolution DNS par le DC Agent\n- Le Collector envoie à FortiGate : **utilisateur + hostname + IP + groupes**\n- Mode agentless : FortiGate consomme plus de ressources (collecte + résolution lui-même)",
+  "diagrams": [
+    {
+      "caption": "Flux du mode DC Agent avec ports (UDP 8002 et TCP 8000)",
+      "height": 200,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' width='580' height='200' font-family='sans-serif' font-size='12'><rect width='580' height='200' fill='#f8fafc' rx='8'/><text x='290' y='22' text-anchor='middle' font-size='14' font-weight='bold' fill='#1f2937'>Flux Mode DC Agent</text><rect x='10' y='40' width='90' height='50' rx='6' fill='#94a3b8'/><text x='55' y='62' text-anchor='middle' fill='white' font-weight='bold'>Utilisateur</text><text x='55' y='78' text-anchor='middle' fill='white' font-size='11'>poste AD</text><line x1='100' y1='65' x2='140' y2='65' stroke='#1f2937' stroke-width='1.5' marker-end='url(#arr)'/><text x='120' y='58' text-anchor='middle' fill='#374151' font-size='10'>auth</text><rect x='140' y='40' width='90' height='50' rx='6' fill='#3b82f6'/><text x='185' y='62' text-anchor='middle' fill='white' font-weight='bold'>DC</text><text x='185' y='78' text-anchor='middle' fill='white' font-size='11'>Contrôleur</text><rect x='140' y='110' width='90' height='50' rx='6' fill='#3b82f6' opacity='0.75'/><text x='185' y='130' text-anchor='middle' fill='white' font-weight='bold'>DC Agent</text><text x='185' y='147' text-anchor='middle' fill='white' font-size='10'>sur le DC</text><line x1='185' y1='90' x2='185' y2='110' stroke='#1f2937' stroke-width='1.5' stroke-dasharray='4 3'/><text x='195' y='103' fill='#374151' font-size='10'>intercepte</text><line x1='230' y1='135' x2='290' y2='135' stroke='#1f2937' stroke-width='1.5' marker-end='url(#arr)'/><text x='260' y='126' text-anchor='middle' fill='#374151' font-size='10'>UDP 8002</text><rect x='290' y='110' width='100' height='50' rx='6' fill='#22c55e'/><text x='340' y='130' text-anchor='middle' fill='white' font-weight='bold'>Collector</text><text x='340' y='147' text-anchor='middle' fill='white' font-size='10'>DNS + groupes</text><line x1='390' y1='135' x2='450' y2='135' stroke='#1f2937' stroke-width='1.5' marker-end='url(#arr)'/><text x='420' y='126' text-anchor='middle' fill='#374151' font-size='10'>TCP 8000</text><rect x='450' y='110' width='110' height='50' rx='6' fill='#f59e0b'/><text x='505' y='130' text-anchor='middle' fill='white' font-weight='bold'>FortiGate</text><text x='505' y='147' text-anchor='middle' fill='white' font-size='10'>IP → Utilisateur</text><rect x='290' y='40' width='270' height='42' rx='6' fill='#f1f5f9' stroke='#94a3b8' stroke-width='1'/><text x='425' y='57' text-anchor='middle' fill='#374151' font-size='11'>Collector envoie à FortiGate :</text><text x='425' y='74' text-anchor='middle' fill='#1f2937' font-size='11' font-weight='bold'>utilisateur + hostname + IP + groupes</text><defs><marker id='arr' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#1f2937'/></marker></defs></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel port est utilisé par le DC Agent pour envoyer les événements au Collector Agent ?",
+      "choices": [
+        "TCP 8000",
+        "TCP 445",
+        "UDP 8002",
+        "TCP 389"
+      ],
+      "answer": 2,
+      "explain": "Le DC Agent utilise UDP 8002 pour transmettre les événements d'authentification au Collector Agent. Ne pas confondre avec TCP 8000 qui est le port utilisé par le Collector pour communiquer avec le FortiGate."
+    },
+    {
+      "q": "Sur quel port le Collector Agent envoie-t-il les informations utilisateur au FortiGate ?",
+      "choices": [
+        "UDP 8002",
+        "TCP 8000",
+        "TCP 445",
+        "TCP 636"
+      ],
+      "answer": 1,
+      "explain": "Le Collector Agent utilise TCP 8000 pour envoyer les informations (utilisateur + hostname + IP + groupes) au FortiGate. Ce port est distinct de UDP 8002 utilisé entre le DC Agent et le Collector."
+    },
+    {
+      "q": "Pourquoi le DNS interne est-il critique pour le fonctionnement du FSSO ?",
+      "choices": [
+        "Le FortiGate utilise le DNS pour vérifier les certificats du Collector",
+        "Les événements FSSO contiennent des noms d'hôtes et non des adresses IP — le Collector doit résoudre ces noms",
+        "Le Collector Agent utilise le DNS pour s'authentifier auprès du DC",
+        "Le port UDP 8002 nécessite une entrée DNS pour fonctionner"
+      ],
+      "answer": 1,
+      "explain": "Les événements d'authentification Windows contiennent le nom d'hôte de la machine et non son adresse IP. Le Collector Agent doit donc résoudre ce nom via DNS interne pour associer l'utilisateur à une adresse IP exploitable par le FortiGate."
+    },
+    {
+      "q": "Pourquoi le Collector Agent interroge-t-il les postes de travail via WMI dans FSSO ?",
+      "choices": [
+        "Pour installer le DC Agent à distance sur les contrôleurs de domaine",
+        "Windows ne génère pas d'événement de déconnexion exploitable — WMI sert à détecter les déconnexions",
+        "Pour synchroniser l'heure avec les postes et éviter les erreurs Kerberos",
+        "Pour récupérer les groupes Active Directory des utilisateurs connectés"
+      ],
+      "answer": 1,
+      "explain": "Windows ne génère pas d'événement réseau natif exploitable lors d'une déconnexion de session. Le Collector utilise WMI pour interroger périodiquement les postes de travail et détecter si un utilisateur est encore connecté."
+    },
+    {
+      "q": "Quel est l'effet de la valeur de registre donot_resolve=1 dans HKLM\\Software\\Fortinet\\FSAE\\dcagent ?",
+      "choices": [
+        "Il désactive complètement la résolution DNS dans FSSO",
+        "Il empêche le DC Agent d'effectuer la résolution DNS, laissant cette tâche au Collector uniquement",
+        "Il force le Collector à utiliser LDAPS au lieu de LDAP",
+        "Il désactive le polling WMI sur les postes de travail"
+      ],
+      "answer": 1,
+      "explain": "La clé donot_resolve=1 indique au DC Agent de ne pas effectuer de résolution DNS lui-même. Cela évite une double résolution DNS (DC Agent + Collector) et laisse uniquement le Collector résoudre les noms d'hôtes."
+    },
+    {
+      "q": "Quelles informations le Collector Agent envoie-t-il au FortiGate via TCP 8000 ?",
+      "choices": [
+        "Le nom d'utilisateur et le hash du mot de passe",
+        "L'adresse MAC et le VLAN de l'utilisateur",
+        "Le nom d'utilisateur, le hostname, l'adresse IP et les groupes",
+        "Uniquement l'adresse IP et le nom d'utilisateur"
+      ],
+      "answer": 2,
+      "explain": "Le Collector Agent envoie au FortiGate le tuple complet : utilisateur + hostname + IP + groupes. Ces informations permettent au FortiGate d'appliquer des politiques basées sur l'identité de l'utilisateur."
+    },
+    {
+      "q": "Quel protocole et port le mode Polling utilise-t-il pour interroger les journaux du DC ?",
+      "choices": [
+        "LDAP sur TCP 389",
+        "SMB sur TCP 445",
+        "RPC sur TCP 135",
+        "HTTP sur TCP 80"
+      ],
+      "answer": 1,
+      "explain": "Le mode Polling utilise SMB (Server Message Block) sur TCP 445 pour interroger périodiquement les journaux d'événements Windows sur le contrôleur de domaine."
+    },
+    {
+      "q": "Quelle est la principale différence entre le mode DC Agent et le mode Polling concernant la détection des événements ?",
+      "choices": [
+        "Le DC Agent ne supporte que l'authentification Kerberos, le Polling supporte NTLM",
+        "Le DC Agent est en temps réel sans événement manqué ; le Polling est périodique et peut manquer des événements",
+        "Le DC Agent utilise TCP, le Polling utilise UDP",
+        "Le DC Agent nécessite LDAPS, le Polling fonctionne avec LDAP standard"
+      ],
+      "answer": 1,
+      "explain": "Le DC Agent intercepte les événements en temps réel directement sur le DC, garantissant qu'aucun événement n'est manqué. Le Polling interroge périodiquement le DC, ce qui peut entraîner des délais ou des événements manqués entre deux cycles de polling."
+    },
+    {
+      "q": "Dans le mode Agentless, quel composant consomme davantage de ressources par rapport au mode DC Agent ?",
+      "choices": [
+        "Le contrôleur de domaine",
+        "Le serveur DNS interne",
+        "Le FortiGate (qui joue lui-même le rôle de collector)",
+        "Les postes de travail des utilisateurs"
+      ],
+      "answer": 2,
+      "explain": "En mode Agentless, le FortiGate joue lui-même le rôle de collector : il interroge directement le DC via SMB et résout les groupes via LDAP. Cette charge supplémentaire consomme davantage de ressources CPU/mémoire sur le FortiGate."
+    },
+    {
+      "q": "Dans quel sens s'établit la connexion TCP 8000 dans FSSO ?",
+      "choices": [
+        "FortiGate → Collector Agent",
+        "DC → Collector Agent",
+        "Collector Agent → FortiGate",
+        "DC Agent → FortiGate"
+      ],
+      "answer": 2,
+      "explain": "La connexion TCP 8000 est établie du Collector Agent vers le FortiGate. C'est le Collector qui initie la connexion pour envoyer les informations d'authentification au FortiGate."
+    },
+    {
+      "q": "Quelle est la première étape du flux en mode DC Agent ?",
+      "choices": [
+        "Le DC Agent envoie un événement au Collector via UDP 8002",
+        "L'utilisateur s'authentifie auprès du contrôleur de domaine",
+        "Le Collector résout le nom d'hôte en adresse IP",
+        "Le FortiGate consulte le Collector pour vérifier l'identité de l'utilisateur"
+      ],
+      "answer": 1,
+      "explain": "La première étape est l'authentification de l'utilisateur auprès du contrôleur de domaine. C'est cet événement d'authentification que le DC Agent intercepte ensuite pour déclencher le flux FSSO."
+    },
+    {
+      "q": "Quel port est utilisé pour la résolution des groupes Active Directory via LDAP sécurisé (LDAPS) ?",
+      "choices": [
+        "TCP 389",
+        "TCP 445",
+        "TCP 8000",
+        "TCP 636"
+      ],
+      "answer": 3,
+      "explain": "LDAPS (LDAP over SSL/TLS) utilise le port TCP 636 pour la résolution sécurisée des groupes Active Directory. TCP 389 est utilisé pour LDAP standard non chiffré."
+    },
+    {
+      "q": "Lequel des ports suivants N'EST PAS utilisé dans un déploiement FSSO standard ?",
+      "choices": [
+        "UDP 8002",
+        "TCP 8000",
+        "TCP 445",
+        "TCP 1812"
+      ],
+      "answer": 3,
+      "explain": "TCP 1812 est le port RADIUS, qui n'est pas utilisé dans FSSO. Les ports FSSO sont : UDP 8002 (DC Agent → Collector), TCP 8000 (Collector → FortiGate), TCP 445 (SMB polling) et TCP 389/636 (LDAP/LDAPS)."
+    },
+    {
+      "q": "Pourquoi le mode DC Agent est-il plus complexe à déployer que le mode Polling ?",
+      "choices": [
+        "Il nécessite une licence supplémentaire sur chaque DC",
+        "Un agent doit être déployé et maintenu sur chaque DC du domaine",
+        "Il requiert une configuration BGP entre le Collector et le FortiGate",
+        "Il impose l'utilisation de LDAPS au lieu de LDAP standard"
+      ],
+      "answer": 1,
+      "explain": "Le mode DC Agent nécessite l'installation d'un agent logiciel (FSSO DC Agent) sur chaque contrôleur de domaine de l'environnement. Cette installation et maintenance supplémentaire le rend plus complexe que le mode Polling qui ne nécessite pas d'agent sur les DC."
+    },
+    {
+      "q": "Dans le flux DC Agent, quelle opération effectue le Collector avant d'envoyer l'info au FortiGate ?",
+      "choices": [
+        "Il authentifie l'utilisateur auprès d'un serveur RADIUS",
+        "Il résout le nom d'hôte en adresse IP via DNS et vérifie les appartenances aux groupes AD",
+        "Il vérifie la politique de mot de passe de l'utilisateur",
+        "Il installe un certificat temporaire sur le poste de l'utilisateur"
+      ],
+      "answer": 1,
+      "explain": "Après avoir reçu l'événement du DC Agent, le Collector effectue deux opérations : il résout le nom d'hôte de la machine en adresse IP via le DNS interne, et il vérifie les appartenances aux groupes Active Directory de l'utilisateur avant d'envoyer le tuple complet au FortiGate."
+    }
+  ]
+}

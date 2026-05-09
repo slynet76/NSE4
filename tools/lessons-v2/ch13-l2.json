@@ -3,7 +3,7 @@
   "module": "High Availability",
   "title": "Election du primaire et override",
   "durationMin": 6,
-  "content": "## Élection du primaire — ordre des critères\n\nChaque fois que le cluster se forme ou subit un failover, les membres se « votent » un primaire. L'algorithme s'arrête **au premier critère qui les différencie**.\n\n### HA override **désactivé** (comportement par défaut)\n\n![Ordre d'élection — override OFF](diagram:0)\n\n| Rang | Critère | Gagnant |\n|---|---|---|\n| 1 | Interfaces monitorées UP | Le plus grand nombre |\n| 2 | HA uptime (marge ≥ 5 min) | Le plus élevé |\n| 3 | Priorité HA | La plus haute |\n| 4 | Numéro de série | Le plus haut |\n\n> **Astuce** : L'uptime prime sur la priorité. Un membre redémarré a un HA uptime de 0 — il perd automatiquement même s'il a la priorité la plus haute.\n\n### HA override **activé**\n\nAvec override ON, **la priorité passe avant l'uptime** :\n\n1. Interfaces monitorées UP\n2. **Priorité HA** ← remonte\n3. HA uptime\n4. Numéro de série\n\n**Avantage** : on désigne explicitement quel équipement doit être primaire.\n\n**Inconvénient — preemption** : quand le primaire préféré revient en ligne après une panne, il reprend son rôle, provoquant **deux failovers** au lieu d'un (panne + retour).\n\n## La colonne `reset_cnt`\n\nDans `get system ha status`, la colonne `reset_cnt` indique combien de fois l'HA uptime d'un membre a été réinitialisé. Un membre avec `uptime = 0` est celui qui vient de (re)démarrer ou de perdre une interface monitorée.\n\n## Forcer un failover\n\n### Override désactivé\n\n```\ndiagnose sys ha reset-uptime\n```\n\nExécuter **sur le primaire** : remet son HA uptime à 0 → il perd le critère 2 → un secondaire prend le relais. Cette commande **ne touche pas** au `system uptime` (visible dans `get system status`).\n\n> ⚠️ L'HA uptime se remet aussi à zéro automatiquement si une interface monitorée tombe ou si le membre redémarre.\n\n### Override activé\n\nModifier les **priorités HA** : augmenter celle d'un secondaire ou baisser celle du primaire actuel.\n\n## Synchronisation des priorités et override\n\n> **Critique** : `HA override` et `HA priority` **ne sont PAS synchronisés** entre membres. Vous devez les régler **manuellement sur chaque équipement**.\n\nC'est intentionnel : si chaque membre avait la même priorité, l'élection n'aurait pas de résultat déterministe.",
+  "content": "## Élection du primaire — ordre des critères\n\nChaque fois que le cluster se forme ou subit un failover, les membres se « votent » un primaire. L'algorithme s'arrête **au premier critère qui les différencie**.\n\n### HA override **désactivé** (comportement par défaut)\n\n![Ordre d'élection — override OFF](diagram:0)\n\n| Rang | Critère | Gagnant |\n|---|---|---|\n| 1 | Interfaces monitorées UP | Le plus grand nombre |\n| 2 | HA uptime (marge ≥ 5 minutes) | Le plus élevé |\n| 3 | Priorité HA | La plus haute |\n| 4 | Numéro de série (4e, dernier critère) | Le plus haut |\n\n> **Astuce** : L'uptime prime sur la priorité. Un membre redémarré a un HA uptime de 0 — il perd automatiquement même s'il a la priorité la plus haute.\n\n### HA override **activé**\n\nAvec override ON, **la priorité passe avant l'uptime** :\n\n1. Interfaces monitorées UP\n2. **Priorité HA** ← remonte\n3. HA uptime\n4. Numéro de série\n\n**Avantage** : on désigne explicitement quel équipement doit être primaire.\n\n**Inconvénient — preemption** : quand le primaire préféré revient en ligne après une panne, il reprend son rôle, provoquant **deux failovers** au lieu d'un (panne + retour).\n\n## La colonne `reset_cnt`\n\nDans `get system ha status`, la colonne `reset_cnt` indique combien de fois l'HA uptime d'un membre a été réinitialisé. Un membre avec `uptime = 0` est celui qui vient de (re)démarrer ou de perdre une interface monitorée.\n\n## Forcer un failover\n\n### Override désactivé\n\n```\ndiagnose sys ha reset-uptime\n```\n\nExécuter **sur le primaire** : remet son HA uptime à 0 → il perd le critère 2 → un secondaire prend le relais. Cette commande **ne touche pas** au `system uptime` (visible dans `get system status`).\n\n> ⚠️ L'HA uptime se remet aussi à zéro automatiquement si une interface monitorée tombe ou si le membre redémarre.\n\n### Override activé\n\nModifier les **priorités HA** : augmenter celle d'un secondaire ou baisser celle du primaire actuel.\n\n## Synchronisation des priorités et override\n\n> **Critique** : `HA override` et `HA priority` **ne sont PAS synchronisés** entre membres. Vous devez les régler **manuellement sur chaque équipement**.\n\nC'est intentionnel : si chaque membre avait la même priorité, l'élection n'aurait pas de résultat déterministe.",
   "diagrams": [
     {
       "caption": "Ordre d'élection selon que HA override est activé ou non. Les cases grises indiquent l'ordre avec override OFF ; les flèches rouges montrent le changement avec override ON.",
@@ -14,79 +14,144 @@
   "questionPool": [
     {
       "q": "Avec HA override désactivé, quel est le PREMIER critère d'élection ?",
-      "choices": ["Le numéro de série", "La priorité HA", "Le HA uptime", "Le nombre d'interfaces monitorées UP"],
+      "choices": [
+        "Le numéro de série",
+        "La priorité HA",
+        "Le HA uptime",
+        "Le nombre d'interfaces monitorées UP"
+      ],
       "answer": 3,
       "explain": "Ordre par défaut : (1) interfaces monitorées UP, (2) HA uptime, (3) priorité, (4) numéro de série."
     },
     {
       "q": "Avec HA override désactivé, quel est le SECOND critère d'élection ?",
-      "choices": ["Le numéro de série", "La priorité HA", "Le HA uptime", "Le nombre d'interfaces monitorées UP"],
+      "choices": [
+        "Le numéro de série",
+        "La priorité HA",
+        "Le HA uptime",
+        "Le nombre d'interfaces monitorées UP"
+      ],
       "answer": 2,
       "explain": "Ordre par défaut : (1) interfaces monitorées UP, (2) HA uptime avec une marge d'au moins 5 minutes."
     },
     {
       "q": "Quelle commande réinitialise l'HA uptime du primaire pour forcer un failover ?",
-      "choices": ["execute reboot", "diagnose sys ha reset-uptime", "config system ha set uptime 0", "execute ha failover"],
+      "choices": [
+        "execute reboot",
+        "diagnose sys ha reset-uptime",
+        "config system ha set uptime 0",
+        "execute ha failover"
+      ],
       "answer": 1,
       "explain": "diagnose sys ha reset-uptime remet le HA uptime à 0 sur le membre où on l'exécute, lui faisant perdre le critère 2."
     },
     {
       "q": "Quel est l'effet principal d'activer HA override ?",
-      "choices": ["Active le mode actif-actif", "La priorité passe avant le HA uptime dans l'élection", "Désactive la synchronisation", "Empêche tout failover automatique"],
+      "choices": [
+        "Active le mode actif-actif",
+        "La priorité passe avant le HA uptime dans l'élection",
+        "Désactive la synchronisation",
+        "Empêche tout failover automatique"
+      ],
       "answer": 1,
       "explain": "Avec override ON, la priorité est évaluée avant le HA uptime — utile pour désigner un primaire préféré."
     },
     {
       "q": "Quel est l'inconvénient principal de l'activation de HA override ?",
-      "choices": ["Ralentit la synchronisation", "Le primaire reprend son rôle quand il revient (preemption = 2 failovers)", "Bloque la commande reset-uptime", "Réduit les interfaces heartbeat disponibles"],
+      "choices": [
+        "Ralentit la synchronisation",
+        "Le primaire reprend son rôle quand il revient (preemption = 2 failovers)",
+        "Bloque la commande reset-uptime",
+        "Réduit les interfaces heartbeat disponibles"
+      ],
       "answer": 1,
       "explain": "Avec override ON, quand le primaire préféré revient après une panne, il reprend son rôle — provoquant un second failover."
     },
     {
       "q": "HA override et HA priority sont-ils synchronisés entre membres du cluster ?",
-      "choices": ["Oui, automatiquement", "Non, à configurer manuellement sur chaque membre", "Oui, via le lien heartbeat", "Non, mais ils le sont au redémarrage"],
+      "choices": [
+        "Oui, automatiquement",
+        "Non, à configurer manuellement sur chaque membre",
+        "Oui, via le lien heartbeat",
+        "Non, mais ils le sont au redémarrage"
+      ],
       "answer": 1,
       "explain": "HA override et HA priority ne sont pas synchronisés — c'est intentionnel pour que chaque membre puisse avoir une priorité différente."
     },
     {
       "q": "Avec override désactivé, comment forcer un failover vers un secondaire spécifique ?",
-      "choices": ["Éteindre physiquement le primaire", "Exécuter diagnose sys ha reset-uptime sur le primaire", "Modifier les priorités HA", "Exécuter execute reboot sur le secondaire"],
+      "choices": [
+        "Éteindre physiquement le primaire",
+        "Exécuter diagnose sys ha reset-uptime sur le primaire",
+        "Modifier les priorités HA",
+        "Exécuter execute reboot sur le secondaire"
+      ],
       "answer": 1,
       "explain": "diagnose sys ha reset-uptime sur le primaire remet son HA uptime à 0 ; le secondaire avec le plus haut uptime prend le relais."
     },
     {
       "q": "Avec override activé, comment forcer un failover ?",
-      "choices": ["diagnose sys ha reset-uptime", "Modifier les priorités HA (augmenter celle d'un secondaire)", "Débrancher un câble heartbeat", "execute ha failover"],
+      "choices": [
+        "diagnose sys ha reset-uptime",
+        "Modifier les priorités HA (augmenter celle d'un secondaire)",
+        "Débrancher un câble heartbeat",
+        "execute ha failover"
+      ],
       "answer": 1,
       "explain": "Avec override ON, la priorité prime. Augmenter la priorité d'un secondaire (ou baisser celle du primaire) déclenche un failover."
     },
     {
       "q": "Que signifie un HA uptime de 0 pour un membre dans get system ha status ?",
-      "choices": ["Le membre est hors ligne", "Le membre vient de redémarrer ou a perdu une interface monitorée", "Le membre est en mode standby", "Le membre a la priorité la plus basse"],
+      "choices": [
+        "Le membre est hors ligne",
+        "Le membre vient de redémarrer ou a perdu une interface monitorée",
+        "Le membre est en mode standby",
+        "Le membre a la priorité la plus basse"
+      ],
       "answer": 1,
       "explain": "HA uptime = 0 indique que l'uptime HA a été réinitialisé (reboot, perte d'interface monitorée, ou reset-uptime)."
     },
     {
       "q": "À quelle marge de temps minimum doit-on s'attendre pour que le critère HA uptime départage deux membres ?",
-      "choices": ["1 minute", "5 minutes", "10 minutes", "30 secondes"],
+      "choices": [
+        "1 minute",
+        "5 minutes",
+        "10 minutes",
+        "30 secondes"
+      ],
       "answer": 1,
       "explain": "Le HA uptime ne départage que si l'écart est d'au moins 5 minutes entre les deux membres."
     },
     {
       "q": "diagnsoe sys ha reset-uptime affecte-t-il le system uptime du FortiGate ?",
-      "choices": ["Oui, les deux sont remis à zéro", "Non, seul le HA uptime est remis à zéro", "Oui, mais uniquement en mode actif-actif", "Non, mais cela redémarre le processus HA"],
+      "choices": [
+        "Oui, les deux sont remis à zéro",
+        "Non, seul le HA uptime est remis à zéro",
+        "Oui, mais uniquement en mode actif-actif",
+        "Non, mais cela redémarre le processus HA"
+      ],
       "answer": 1,
       "explain": "reset-uptime remet uniquement le HA uptime à 0. Le system uptime (visible dans get system status) n'est pas affecté."
     },
     {
       "q": "Dans l'ordre d'élection avec override OFF, quelle est la position du numéro de série ?",
-      "choices": ["1er", "2e", "3e", "4e (dernier)"],
+      "choices": [
+        "1er",
+        "2e",
+        "3e",
+        "4e (dernier)"
+      ],
       "answer": 3,
       "explain": "Le numéro de série est le dernier critère — départage final quand tous les autres sont identiques."
     },
     {
       "q": "Que se passe-t-il si une interface monitorée tombe sur un membre ?",
-      "choices": ["Rien, seul un device failover déclenche une élection", "Son HA uptime est remis à zéro", "Il est exclu définitivement du cluster", "Le cluster passe en mode actif-passif"],
+      "choices": [
+        "Rien, seul un device failover déclenche une élection",
+        "Son HA uptime est remis à zéro",
+        "Il est exclu définitivement du cluster",
+        "Le cluster passe en mode actif-passif"
+      ],
       "answer": 1,
       "explain": "Si une interface monitorée tombe sur un membre, son HA uptime est remis à 0, réduisant ses chances de gagner l'élection."
     }
@@ -94,31 +159,56 @@
   "quiz": [
     {
       "q": "Avec HA override désactivé, quel est le PREMIER critère d'élection ?",
-      "choices": ["Le numéro de série", "La priorité HA", "Le HA uptime", "Le nombre d'interfaces monitorées UP"],
+      "choices": [
+        "Le numéro de série",
+        "La priorité HA",
+        "Le HA uptime",
+        "Le nombre d'interfaces monitorées UP"
+      ],
       "answer": 3,
       "explain": "Ordre par défaut : (1) interfaces monitorées UP, (2) HA uptime, (3) priorité, (4) numéro de série."
     },
     {
       "q": "Quelle commande réinitialise l'HA uptime du primaire pour forcer un failover ?",
-      "choices": ["execute reboot", "diagnose sys ha reset-uptime", "config system ha set uptime 0", "execute ha failover"],
+      "choices": [
+        "execute reboot",
+        "diagnose sys ha reset-uptime",
+        "config system ha set uptime 0",
+        "execute ha failover"
+      ],
       "answer": 1,
       "explain": "diagnose sys ha reset-uptime remet le HA uptime à 0 sur le membre où on l'exécute."
     },
     {
       "q": "Quel est l'effet principal d'activer HA override ?",
-      "choices": ["Active le mode actif-actif", "La priorité passe avant le HA uptime dans l'élection", "Désactive la synchronisation", "Empêche tout failover automatique"],
+      "choices": [
+        "Active le mode actif-actif",
+        "La priorité passe avant le HA uptime dans l'élection",
+        "Désactive la synchronisation",
+        "Empêche tout failover automatique"
+      ],
       "answer": 1,
       "explain": "Avec override ON, la priorité est évaluée avant le HA uptime — utile pour désigner un primaire préféré."
     },
     {
       "q": "HA override et HA priority sont-ils synchronisés entre membres du cluster ?",
-      "choices": ["Oui, automatiquement", "Non, à configurer manuellement sur chaque membre", "Oui, via le lien heartbeat", "Non, mais ils le sont au redémarrage"],
+      "choices": [
+        "Oui, automatiquement",
+        "Non, à configurer manuellement sur chaque membre",
+        "Oui, via le lien heartbeat",
+        "Non, mais ils le sont au redémarrage"
+      ],
       "answer": 1,
       "explain": "HA override et HA priority ne sont pas synchronisés — à régler manuellement sur chaque membre."
     },
     {
       "q": "Quel est l'inconvénient principal de HA override activé ?",
-      "choices": ["Ralentit la synchronisation", "Preemption : le primaire reprend son rôle au retour (2 failovers)", "Bloque la commande reset-uptime", "Réduit les interfaces heartbeat"],
+      "choices": [
+        "Ralentit la synchronisation",
+        "Preemption : le primaire reprend son rôle au retour (2 failovers)",
+        "Bloque la commande reset-uptime",
+        "Réduit les interfaces heartbeat"
+      ],
       "answer": 1,
       "explain": "Avec override ON, le retour du primaire préféré déclenche un second failover (preemption)."
     }

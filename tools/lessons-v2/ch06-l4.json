@@ -1,0 +1,181 @@
+{
+  "id": "ch06-l4",
+  "module": "Fortinet Single Sign-On (FSSO)",
+  "title": "Timers, filtres et options avancées",
+  "durationMin": 7,
+  "content": "## Filtres de groupes FSSO\n\nLes filtres de groupes définissent, par FortiGate, quels groupes AD le collector doit transmettre. Règles importantes :\n\n- Un **filtre par défaut** est obligatoire\n- Les FortiGate d'entrée de gamme (low-end) supportent un **maximum de 256 groupes AD**\n- Types de filtres supportés :\n  - Groupes de sécurité (security groups)\n  - Groupes universels (universal groups)\n  - Unités organisationnelles (OUs)\n  - **Global Catalog** : indispensable pour les groupes universels dans un environnement multi-domaines (cross-domain)\n\n## Ignore User List\n\nLa **Ignore User List** permet d'exclure des comptes qui pollueraient FSSO. Méthodes d'ajout :\n\n1. **Saisie manuelle** : entrer le nom du compte directement\n2. **Sélection d'utilisateur** : parcourir l'annuaire et sélectionner un compte\n3. **Sélection d'OU** : ignorer tous les comptes d'une unité organisationnelle entière\n\nCas d'usage typiques : comptes de service antivirus, agents de sauvegarde, comptes d'administration automatisée.\n\n## Les Timers FSSO (critique NSE4)\n\nLes timers contrôlent le cycle de vie des entrées FSSO. Leur configuration est critique.\n\n### 1. Workstation Verify Interval\n\nLe collector se connecte périodiquement aux postes de travail (**TCP 139/445**, remote registry) pour vérifier si l'utilisateur est toujours connecté.\n\n- Si la connexion au poste réussit → entrée reste en état **OK**\n- Si la connexion échoue → entrée passe en état **not verified**\n\n> **RÈGLE ABSOLUE : ne JAMAIS mettre ce timer à 0.** Si le timer est à 0, le collector ne vérifie jamais les postes et ne purge jamais les entrées obsolètes. Dangereux dans les environnements avec DHCP (une même IP peut être réattribuée à un autre utilisateur).\n\nPrérequis : activer le service **Remote Registry** sur les membres du domaine.\n\n### 2. Dead Entry Timeout\n\nCe timer purge les entrées qui sont restées en état **not verified** au-delà du délai configuré.\n\n| État de l'entrée | Comportement FortiGate |\n|-----------------|------------------------|\n| OK | Considérée valide |\n| not verified | Considérée valide jusqu'à expiration du Dead Entry Timeout |\n| Expirée (purgée) | Entrée supprimée, utilisateur non reconnu |\n\n### 3. IP Address Change Verify Interval\n\nVérifie périodiquement si les adresses IP des utilisateurs ont changé. **Critique dans les environnements DHCP.** Nécessite un **DNS à jour** pour fonctionner correctement.\n\n### 4. Cache User Group Lookup Result\n\nMet en cache les résultats de résolution de groupes pour la durée configurée.\n\n> **Important** : le cache est **immuable** (non rafraîchi) pendant toute la durée configurée. Si les groupes AD changent, FortiGate continue d'utiliser les anciennes valeurs jusqu'à l'expiration du cache.\n\n## Résumé des timers\n\n| Timer | Rôle | Valeur à éviter |\n|-------|------|------------------|\n| Workstation verify interval | Vérifie si utilisateur encore connecté | 0 (dangereux) |\n| Dead entry timeout | Purge les entrées not verified | Trop élevée |\n| IP change verify interval | Détecte changements IP (DHCP) | Trop élevée |\n| Cache group lookup | Met en cache les groupes AD | Trop élevée si AD change souvent |\n\n## Intégrations avancées\n\n- **TS Agent** (Citrix / Terminal Services) : transmet utilisateur + IP + plage de ports au collector. Indispensable pour distinguer plusieurs utilisateurs sur un même serveur.\n- **RADIUS Accounting** : le collector écoute les messages RADIUS Start/Stop\n- **Syslog** : intégration avec des sources syslog tierces\n- **Custom event IDs** : surveiller des ID d'événements Windows personnalisés\n\n## Niveaux de log du collector\n\n| Niveau | Usage |\n|--------|-------|\n| Debug | Dépannage actif (verbose) |\n| Information | Standard recommandé en production |\n| Warning | Niveau par défaut (recommandé minimal) |\n| Error | Uniquement les erreurs critiques |\n\n> Utiliser **Information** en production. Passer en **Debug** uniquement lors d'un dépannage actif.\n\n> Les intégrations avancées du collector FSSO supportées : TS agent, RADIUS accounting, Syslog, event IDs personnalisables. Le **filtrage DNS dynamique par FortiGuard** n'est pas une intégration collector.",
+  "diagrams": [
+    {
+      "caption": "Cycle de vie d'une entrée FSSO : timers et états",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' width='700' height='160' font-family='Arial,sans-serif' font-size='12'><rect width='700' height='160' fill='#f8f9fa' rx='8'/><rect x='30' y='50' width='130' height='50' fill='#d1e7dd' rx='6' stroke='#198754' stroke-width='2'/><text x='95' y='72' text-anchor='middle' font-weight='bold' fill='#0f5132'>Utilisateur</text><text x='95' y='90' text-anchor='middle' fill='#0f5132'>connecté (OK)</text><rect x='270' y='50' width='150' height='50' fill='#fff3cd' rx='6' stroke='#ffc107' stroke-width='2'/><text x='345' y='72' text-anchor='middle' font-weight='bold' fill='#856404'>not verified</text><text x='345' y='90' text-anchor='middle' fill='#856404'>(poste inaccessible)</text><rect x='540' y='50' width='130' height='50' fill='#f8d7da' rx='6' stroke='#dc3545' stroke-width='2'/><text x='605' y='72' text-anchor='middle' font-weight='bold' fill='#842029'>Purgée</text><text x='605' y='90' text-anchor='middle' fill='#842029'>(dead entry)</text><line x1='160' y1='75' x2='268' y2='75' stroke='#6c757d' stroke-width='2' marker-end='url(#arr)'/><text x='214' y='65' text-anchor='middle' fill='#495057' font-size='10'>Workstation verify</text><text x='214' y='95' text-anchor='middle' fill='#495057' font-size='10'>interval échoue</text><line x1='420' y1='75' x2='538' y2='75' stroke='#dc3545' stroke-width='2' marker-end='url(#arr2)'/><text x='479' y='65' text-anchor='middle' fill='#842029' font-size='10'>Dead entry timeout</text><text x='479' y='95' text-anchor='middle' fill='#842029' font-size='10'>expiré</text><text x='350' y='140' text-anchor='middle' fill='#495057' font-size='11'>FortiGate traite OK et not verified comme valides jusqu'à expiration du Dead Entry Timeout</text><defs><marker id='arr' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#6c757d'/></marker><marker id='arr2' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#dc3545'/></marker></defs></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Pourquoi ne faut-il JAMAIS mettre le Workstation Verify Interval à 0 ?",
+      "choices": [
+        "Cela provoque un redémarrage du collector",
+        "Le collector ne vérifie plus les postes et ne purge jamais les entrées obsolètes",
+        "FortiGate perd la connexion avec le DC",
+        "Le cache des groupes n'est plus mis à jour"
+      ],
+      "answer": 1,
+      "explain": "Si le Workstation Verify Interval est à 0, le collector ne se connecte jamais aux postes pour vérifier les sessions. Les entrées obsolètes ne passent jamais en état 'not verified' et ne sont jamais purgées. Dangereux dans les environnements DHCP où une IP peut être réattribuée."
+    },
+    {
+      "q": "Quel est le nombre maximum de groupes AD supportés par les FortiGate d'entrée de gamme (low-end) ?",
+      "choices": [
+        "128",
+        "512",
+        "256",
+        "1024"
+      ],
+      "answer": 2,
+      "explain": "Les FortiGate d'entrée de gamme (low-end) supportent un maximum de 256 groupes AD dans les filtres FSSO."
+    },
+    {
+      "q": "Que signifie l'état 'not verified' d'une entrée FSSO du point de vue de FortiGate ?",
+      "choices": [
+        "L'entrée est immédiatement supprimée",
+        "L'utilisateur est bloqué sur les politiques FSSO",
+        "L'entrée est encore considérée valide jusqu'à l'expiration du Dead Entry Timeout",
+        "FortiGate demande une ré-authentification active"
+      ],
+      "answer": 2,
+      "explain": "FortiGate considère les entrées en état 'not verified' comme encore valides. C'est seulement après l'expiration du Dead Entry Timeout que l'entrée est purgée et l'utilisateur n'est plus reconnu."
+    },
+    {
+      "q": "Quel timer FSSO doit être surveillé en priorité dans un environnement avec beaucoup de DHCP ?",
+      "choices": [
+        "Dead entry timeout",
+        "Cache user group lookup result",
+        "IP address change verify interval",
+        "Workstation verify interval"
+      ],
+      "answer": 2,
+      "explain": "L'IP address change verify interval est critique dans les environnements DHCP car il permet de détecter rapidement si l'adresse IP d'un utilisateur a changé (réattribution DHCP)."
+    },
+    {
+      "q": "Quel agent FSSO est indispensable sur un serveur Citrix pour distinguer les utilisateurs entre eux ?",
+      "choices": [
+        "DC Agent",
+        "Collector Agent",
+        "TS Agent",
+        "LDAP Agent"
+      ],
+      "answer": 2,
+      "explain": "Le TS Agent (TSAgent_Setup) est indispensable sur les serveurs Citrix ou Terminal Services. Il transmet l'identité de chaque utilisateur avec son IP et une plage de ports au collector, permettant de distinguer plusieurs utilisateurs sur un même serveur."
+    },
+    {
+      "q": "Que se passe-t-il si les groupes AD changent pendant la durée de validité du cache 'Cache user group lookup result' ?",
+      "choices": [
+        "FortiGate détecte le changement et met à jour le cache immédiatement",
+        "Le collector notifie FortiGate du changement",
+        "FortiGate continue d'utiliser les anciennes valeurs jusqu'à l'expiration du cache",
+        "L'utilisateur est forcé de se reconnecter"
+      ],
+      "answer": 2,
+      "explain": "Le cache 'Cache user group lookup result' est immuable pendant toute sa durée de validité. Il n'est pas rafraîchi même si les groupes AD changent. FortiGate utilise les valeurs en cache jusqu'à leur expiration."
+    },
+    {
+      "q": "Quel niveau de log est recommandé pour le collector en production (standard) ?",
+      "choices": [
+        "Debug",
+        "Information",
+        "Warning",
+        "Error"
+      ],
+      "answer": 1,
+      "explain": "Le niveau Information est recommandé en production comme niveau standard. Warning est le niveau par défaut (minimal acceptable). Debug est réservé au dépannage actif car il génère beaucoup de logs."
+    },
+    {
+      "q": "Combien de méthodes permettent d'ajouter des entrées dans la Ignore User List ?",
+      "choices": [
+        "1 (saisie manuelle uniquement)",
+        "2 (manuelle ou par utilisateur)",
+        "3 (manuelle, par utilisateur, ou par OU)",
+        "4 (manuelle, utilisateur, OU, ou groupe)"
+      ],
+      "answer": 2,
+      "explain": "La Ignore User List accepte 3 méthodes d'ajout : saisie manuelle du nom de compte, sélection d'un utilisateur depuis l'annuaire, ou sélection d'une OU entière (tous les comptes de l'OU sont ignorés)."
+    },
+    {
+      "q": "Quel port le collector utilise-t-il pour vérifier si un utilisateur est encore connecté à un poste de travail ?",
+      "choices": [
+        "TCP 389 et TCP 636",
+        "TCP 8000 et UDP 8002",
+        "TCP 139 et TCP 445",
+        "UDP 53 et TCP 443"
+      ],
+      "answer": 2,
+      "explain": "Le collector utilise TCP 139 et TCP 445 (ainsi que le service Remote Registry) pour se connecter aux postes de travail et vérifier si l'utilisateur est toujours connecté."
+    },
+    {
+      "q": "Quel service doit être activé sur les membres du domaine pour que le Workstation Verify Interval fonctionne ?",
+      "choices": [
+        "Windows Management Instrumentation (WMI)",
+        "Remote Registry",
+        "Remote Desktop Services",
+        "Windows Firewall"
+      ],
+      "answer": 1,
+      "explain": "Le service Remote Registry doit être activé sur les membres du domaine pour que le collector puisse se connecter aux postes (TCP 139/445) et vérifier les sessions actives."
+    },
+    {
+      "q": "Quel élément est obligatoire dans la configuration des filtres de groupes FSSO ?",
+      "choices": [
+        "Au moins un groupe universel",
+        "Un filtre par défaut",
+        "La configuration du Global Catalog",
+        "Un filtre d'OU"
+      ],
+      "answer": 1,
+      "explain": "Un filtre par défaut est obligatoire dans la définition des filtres de groupes FSSO. Sans filtre par défaut, la configuration est incomplète."
+    },
+    {
+      "q": "Dans quel cas le Global Catalog est-il nécessaire dans les filtres FSSO ?",
+      "choices": [
+        "Pour tous les environnements AD",
+        "Uniquement en mode Standard",
+        "Pour les groupes universels dans un environnement multi-domaines",
+        "Pour les comptes de service uniquement"
+      ],
+      "answer": 2,
+      "explain": "Le Global Catalog est nécessaire pour résoudre les groupes universels dans un environnement multi-domaines (cross-domain). Sans lui, les groupes universels d'autres domaines ne seront pas résolus."
+    },
+    {
+      "q": "Quel timer FSSO contrôle la suppression définitive des entrées dont le poste est inaccessible ?",
+      "choices": [
+        "Workstation verify interval",
+        "IP address change verify interval",
+        "Dead entry timeout",
+        "Cache user group lookup result"
+      ],
+      "answer": 2,
+      "explain": "Le Dead Entry Timeout purge définitivement les entrées restées en état 'not verified' au-delà de la durée configurée. Une entrée 'not verified' n'est pas immédiatement supprimée — elle attend l'expiration de ce timer."
+    },
+    {
+      "q": "Lequel des éléments suivants N'EST PAS une intégration avancée supportée par le collector FSSO ?",
+      "choices": [
+        "RADIUS Accounting",
+        "Syslog",
+        "TS Agent (Citrix)",
+        "Filtrage DNS dynamique par FortiGuard"
+      ],
+      "answer": 3,
+      "explain": "802.1X EAP-TLS n'est pas une intégration collector FSSO. Les intégrations avancées supportées sont : TS Agent (Citrix/TS), RADIUS Accounting, Syslog, et custom event IDs Windows."
+    },
+    {
+      "q": "Quel niveau de log du collector doit être activé pendant un dépannage actif ?",
+      "choices": [
+        "Warning",
+        "Error",
+        "Information",
+        "Debug"
+      ],
+      "answer": 3,
+      "explain": "Le niveau Debug est utilisé pour le dépannage actif (troubleshooting). Il génère des logs très détaillés (verbose). En production, il est recommandé de revenir en Information après le dépannage."
+    }
+  ]
+}

@@ -1,0 +1,181 @@
+{
+  "id": "ch06-l1",
+  "module": "Fortinet Single Sign-On (FSSO)",
+  "title": "Concepts FSSO et déploiements",
+  "durationMin": 8,
+  "content": "## Qu'est-ce que le FSSO ?\n\nLe **Fortinet Single Sign-On (FSSO)** permet au FortiGate d'identifier les utilisateurs du réseau **sans les ré-authentifier**. Le FortiGate consomme des événements de connexion produits par le contrôleur de domaine (DC) plutôt que de procéder lui-même à l'authentification.\n\n> Point clé NSE4 : **FortiGate n'authentifie pas** l'utilisateur dans un déploiement FSSO. C'est le DC qui authentifie ; le FortiGate se contente de recevoir l'information (utilisateur + IP + groupes).\n\n---\n\n## Les 4 modes de déploiement FSSO\n\n### 1. Mode DC Agent (recommandé)\n\nUn agent logiciel est installé sur **chaque contrôleur de domaine**. Il intercepte les événements d'authentification en temps réel et les transmet à un **Collector Agent**.\n\n- **Avantages** : temps réel, scalable, aucun événement manqué\n- **Recommandé** pour les environnements de grande taille\n- Flux : DC Agent → Collector Agent → FortiGate\n\n### 2. Mode Polling avec Collector (sans DC Agent)\n\nLe **Collector Agent** interroge directement les DC à intervalles réguliers. Trois méthodes de polling sont disponibles :\n\n| Méthode | Description | Recommandation |\n|---|---|---|\n| **WMI** | Windows Management Instrumentation | Recommandée |\n| **WinSecLog** | Lecture du journal de sécurité Windows | Alternative |\n| **NetAPI** | API réseau Windows | Moins utilisée |\n\n- **Inconvénients** : peut manquer des événements, délai possible\n- Le Collector envoie ensuite l'info au FortiGate (TCP 8000)\n\n### 3. Mode Agentless Polling\n\nLe **FortiGate lui-même joue le rôle de collector** et interroge directement le DC. Aucun agent ni collector n'est installé.\n\n- Surveille les **event IDs 4768 et 4769** (tickets Kerberos)\n- Adapté aux **petits réseaux** uniquement (consommation de ressources élevée sur le FortiGate)\n- LDAP est utilisé pour résoudre les groupes\n\n### 4. Mode TS Agent (Citrix / Terminal Services)\n\nDans un environnement **Citrix ou Terminal Services**, plusieurs utilisateurs partagent la **même adresse IP**. Le TS Agent est installé sur le serveur terminal et différencie les utilisateurs par numéro de port ou de session.\n\n- **Obligatoire** dans un contexte Citrix/Terminal Services\n- Le TS Agent envoie les informations au Collector Agent\n- Sans TS Agent, le FortiGate ne peut pas distinguer les utilisateurs sur le même serveur\n\n---\n\n## Tableau comparatif des modes\n\n| Mode | Agent sur DC | Collector | FortiGate comme collector | Usage recommandé |\n|---|---|---|---|---|\n| DC Agent | Oui | Oui | Non | Grandes entreprises |\n| Polling + Collector | Non | Oui | Non | Réseaux moyens |\n| Agentless | Non | Non | Oui | Petits réseaux |\n| TS Agent | Non (sur serveur TS) | Oui | Non | Citrix/Terminal Services |\n\n---\n\n## Points clés NSE4 à retenir\n\n- **FortiGate ne fait pas l'authentification** dans FSSO — c'est toujours le DC\n- Le **DC Agent est le mode recommandé** pour la scalabilité et la fiabilité\n- Le mode **agentless** est réservé aux petits réseaux (ressources FortiGate limitées)\n- Le **TS Agent est obligatoire** sur Citrix / Terminal Services (IP partagée)\n- WMI est la méthode de polling recommandée dans le mode Polling\n- Le Collector envoie à FortiGate : **utilisateur + IP + groupes**\n- Event IDs surveillés en agentless : **4768** (TGT Kerberos) et **4769** (service Kerberos)\n\n> Le Collector Agent reçoit les événements des DC Agents, résout le **DNS** et les groupes, puis envoie l'info au FortiGate.",
+  "diagrams": [
+    {
+      "caption": "Comparaison des 4 modes de déploiement FSSO",
+      "height": 280,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' width='560' height='280' font-family='sans-serif' font-size='12'><rect width='560' height='280' fill='#f8fafc' rx='8'/><text x='280' y='22' text-anchor='middle' font-size='14' font-weight='bold' fill='#1f2937'>4 Modes de déploiement FSSO</text><rect x='10' y='35' width='260' height='105' rx='6' fill='#dbeafe' stroke='#3b82f6' stroke-width='1.5'/><text x='140' y='55' text-anchor='middle' font-weight='bold' fill='#1f2937'>DC Agent (recommandé)</text><rect x='20' y='62' width='70' height='28' rx='4' fill='#3b82f6'/><text x='55' y='80' text-anchor='middle' fill='white' font-size='11'>DC Agent</text><text x='100' y='79' fill='#1f2937'>→</text><rect x='110' y='62' width='70' height='28' rx='4' fill='#22c55e'/><text x='145' y='80' text-anchor='middle' fill='white' font-size='11'>Collector</text><text x='190' y='79' fill='#1f2937'>→</text><rect x='200' y='62' width='60' height='28' rx='4' fill='#f59e0b'/><text x='230' y='80' text-anchor='middle' fill='white' font-size='11'>FortiGate</text><text x='140' y='110' text-anchor='middle' fill='#374151' font-size='11'>Scalable — temps réel</text><text x='140' y='128' text-anchor='middle' fill='#374151' font-size='11'>Grandes entreprises</text><rect x='290' y='35' width='260' height='105' rx='6' fill='#dcfce7' stroke='#22c55e' stroke-width='1.5'/><text x='420' y='55' text-anchor='middle' font-weight='bold' fill='#1f2937'>Polling + Collector</text><rect x='300' y='62' width='60' height='28' rx='4' fill='#94a3b8'/><text x='330' y='80' text-anchor='middle' fill='white' font-size='11'>DC (WMI)</text><text x='370' y='79' fill='#1f2937'>→</text><rect x='380' y='62' width='70' height='28' rx='4' fill='#22c55e'/><text x='415' y='80' text-anchor='middle' fill='white' font-size='11'>Collector</text><text x='460' y='79' fill='#1f2937'>→</text><rect x='470' y='62' width='65' height='28' rx='4' fill='#f59e0b'/><text x='503' y='80' text-anchor='middle' fill='white' font-size='11'>FortiGate</text><text x='420' y='110' text-anchor='middle' fill='#374151' font-size='11'>WMI / WinSecLog / NetAPI</text><text x='420' y='128' text-anchor='middle' fill='#374151' font-size='11'>Peut manquer des événements</text><rect x='10' y='155' width='260' height='110' rx='6' fill='#fef3c7' stroke='#f59e0b' stroke-width='1.5'/><text x='140' y='175' text-anchor='middle' font-weight='bold' fill='#1f2937'>Agentless Polling</text><rect x='20' y='182' width='60' height='28' rx='4' fill='#94a3b8'/><text x='50' y='200' text-anchor='middle' fill='white' font-size='11'>DC</text><text x='90' y='199' fill='#1f2937'>←polls</text><rect x='150' y='182' width='100' height='28' rx='4' fill='#f59e0b'/><text x='200' y='200' text-anchor='middle' fill='white' font-size='11'>FortiGate (collector)</text><text x='140' y='232' text-anchor='middle' fill='#374151' font-size='11'>Event IDs 4768 / 4769</text><text x='140' y='250' text-anchor='middle' fill='#374151' font-size='11'>Petits réseaux uniquement</text><rect x='290' y='155' width='260' height='110' rx='6' fill='#f1f5f9' stroke='#94a3b8' stroke-width='1.5'/><text x='420' y='175' text-anchor='middle' font-weight='bold' fill='#1f2937'>TS Agent (Citrix)</text><rect x='300' y='182' width='75' height='28' rx='4' fill='#3b82f6'/><text x='337' y='200' text-anchor='middle' fill='white' font-size='11'>TS Agent</text><text x='385' y='199' fill='#1f2937'>→</text><rect x='395' y='182' width='70' height='28' rx='4' fill='#22c55e'/><text x='430' y='200' text-anchor='middle' fill='white' font-size='11'>Collector</text><text x='475' y='199' fill='#1f2937'>→</text><rect x='485' y='182' width='55' height='28' rx='4' fill='#f59e0b'/><text x='513' y='200' text-anchor='middle' fill='white' font-size='11'>FGT</text><text x='420' y='232' text-anchor='middle' fill='#374151' font-size='11'>IP partagée — obligatoire</text><text x='420' y='250' text-anchor='middle' fill='#374151' font-size='11'>Citrix / Terminal Services</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Dans un déploiement FSSO, qui authentifie l'utilisateur ?",
+      "choices": [
+        "Le FortiGate via RADIUS",
+        "Le contrôleur de domaine (DC)",
+        "Le Collector Agent",
+        "Le FortiAuthenticator"
+      ],
+      "answer": 1,
+      "explain": "Dans FSSO, c'est toujours le contrôleur de domaine qui authentifie l'utilisateur. Le FortiGate consomme simplement les événements de connexion sans procéder lui-même à l'authentification."
+    },
+    {
+      "q": "Quel mode de déploiement FSSO est recommandé pour les grandes entreprises nécessitant scalabilité et fiabilité ?",
+      "choices": [
+        "Agentless polling",
+        "Polling avec Collector sans agent",
+        "DC Agent mode",
+        "TS Agent mode"
+      ],
+      "answer": 2,
+      "explain": "Le mode DC Agent est le mode recommandé pour les environnements de grande taille. Un agent installé sur chaque DC intercepte les événements en temps réel, ce qui le rend scalable et fiable."
+    },
+    {
+      "q": "Quelle méthode de polling est recommandée dans le mode Polling avec Collector ?",
+      "choices": [
+        "NetAPI",
+        "WinSecLog",
+        "WMI (Windows Management Instrumentation)",
+        "LDAP polling"
+      ],
+      "answer": 2,
+      "explain": "WMI (Windows Management Instrumentation) est la méthode de polling recommandée dans le mode Polling avec Collector. WinSecLog et NetAPI sont des alternatives mais moins recommandées."
+    },
+    {
+      "q": "Dans quel contexte le TS Agent est-il obligatoire ?",
+      "choices": [
+        "Lorsque le réseau comporte plus de 1000 utilisateurs",
+        "Lorsque plusieurs utilisateurs partagent la même adresse IP (Citrix/Terminal Services)",
+        "Lorsque le DC Agent n'est pas disponible",
+        "Lorsque le FortiGate est en mode transparent"
+      ],
+      "answer": 1,
+      "explain": "Le TS Agent est obligatoire dans un environnement Citrix ou Terminal Services où plusieurs utilisateurs partagent la même adresse IP. Sans TS Agent, le FortiGate ne peut pas distinguer les utilisateurs."
+    },
+    {
+      "q": "Quels event IDs Windows le mode agentless surveille-t-il pour détecter les authentifications ?",
+      "choices": [
+        "4624 et 4634",
+        "4720 et 4722",
+        "4768 et 4769",
+        "4776 et 4778"
+      ],
+      "answer": 2,
+      "explain": "En mode agentless, le FortiGate surveille les event IDs 4768 (Kerberos TGT) et 4769 (Kerberos service ticket) pour détecter les authentifications des utilisateurs sur le DC."
+    },
+    {
+      "q": "Quelle information le Collector Agent transmet-il au FortiGate ?",
+      "choices": [
+        "Uniquement le nom d'utilisateur",
+        "Le nom d'utilisateur, l'adresse IP et les groupes",
+        "Le nom d'utilisateur et le mot de passe hashé",
+        "L'adresse MAC et le VLAN de l'utilisateur"
+      ],
+      "answer": 1,
+      "explain": "Le Collector Agent envoie au FortiGate trois informations essentielles : le nom d'utilisateur, l'adresse IP associée et les groupes d'appartenance de l'utilisateur."
+    },
+    {
+      "q": "Quel mode de déploiement FSSO est adapté uniquement aux petits réseaux ?",
+      "choices": [
+        "DC Agent mode",
+        "TS Agent mode",
+        "Polling avec Collector (WMI)",
+        "Agentless polling"
+      ],
+      "answer": 3,
+      "explain": "Le mode agentless polling est réservé aux petits réseaux car le FortiGate joue lui-même le rôle de collector et interroge directement le DC, ce qui consomme beaucoup de ressources sur le FortiGate."
+    },
+    {
+      "q": "Dans le mode DC Agent, quel est le rôle du Collector Agent ?",
+      "choices": [
+        "Authentifier les utilisateurs à la place du DC",
+        "Recevoir les événements des DC Agents, résoudre le DNS et les groupes, puis envoyer l'info au FortiGate",
+        "Installer automatiquement les agents sur les DC",
+        "Surveiller les événements de déconnexion Windows"
+      ],
+      "answer": 1,
+      "explain": "Le Collector Agent reçoit les événements des DC Agents, effectue la résolution DNS pour obtenir les adresses IP, vérifie les appartenances aux groupes, puis transmet ces informations au FortiGate."
+    },
+    {
+      "q": "Lequel des éléments suivants N'EST PAS un avantage du mode DC Agent par rapport au mode Polling ?",
+      "choices": [
+        "Moins d'événements manqués",
+        "Détection en temps réel",
+        "Déploiement plus simple sans installation sur les DC",
+        "Meilleure scalabilité pour les grandes entreprises"
+      ],
+      "answer": 2,
+      "explain": "Le mode DC Agent nécessite l'installation d'un agent sur chaque contrôleur de domaine, ce qui le rend plus complexe à déployer. C'est le mode Polling qui est plus simple car il ne nécessite pas d'agent sur les DC."
+    },
+    {
+      "q": "Comment le FortiGate identifie-t-il un utilisateur dans un flux FSSO ?",
+      "choices": [
+        "En interceptant les paquets NTLM sur le réseau",
+        "En faisant correspondre l'adresse IP source du trafic avec les informations reçues du Collector",
+        "En consultant Active Directory via LDAP à chaque nouvelle connexion",
+        "En demandant à l'utilisateur de s'authentifier via un portail captif"
+      ],
+      "answer": 1,
+      "explain": "Le FortiGate fait correspondre l'adresse IP source du trafic réseau avec les couples (IP, utilisateur, groupes) reçus du Collector Agent. C'est ainsi qu'il identifie l'utilisateur sans nouvelle authentification."
+    },
+    {
+      "q": "Quelles sont les trois méthodes disponibles dans le mode Polling avec Collector ?",
+      "choices": [
+        "LDAP, RADIUS, TACACS+",
+        "WMI, WinSecLog, NetAPI",
+        "SMB, NFS, RDP",
+        "Kerberos, NTLM, OAuth"
+      ],
+      "answer": 1,
+      "explain": "Le mode Polling avec Collector offre trois méthodes pour interroger le DC : WMI (recommandée), WinSecLog (lecture du journal de sécurité Windows) et NetAPI (API réseau Windows)."
+    },
+    {
+      "q": "Lequel de ces composants N'EXISTE PAS dans un déploiement FSSO en mode Agentless ?",
+      "choices": [
+        "Le FortiGate",
+        "Le contrôleur de domaine",
+        "Le Collector Agent",
+        "LDAP pour la résolution des groupes"
+      ],
+      "answer": 2,
+      "explain": "En mode Agentless, il n'y a ni DC Agent ni Collector Agent. Le FortiGate joue directement le rôle de collector et interroge le DC via SMB/LDAP, ce qui élimine le besoin d'un Collector Agent séparé."
+    },
+    {
+      "q": "Pourquoi le mode Polling peut-il manquer certains événements d'authentification ?",
+      "choices": [
+        "Parce que WMI ne fonctionne qu'avec Windows Server 2019",
+        "Parce que le Collector interroge le DC périodiquement et non en temps réel",
+        "Parce que le Collector ne peut pas lire les groupes Active Directory",
+        "Parce que TCP 8000 est souvent bloqué par le pare-feu"
+      ],
+      "answer": 1,
+      "explain": "En mode Polling, le Collector interroge le DC à intervalles réguliers (et non en temps réel comme le DC Agent). Des événements peuvent donc se produire entre deux polls et être manqués ou détectés avec un délai."
+    },
+    {
+      "q": "Dans un environnement Citrix, quel problème surgit si le TS Agent n'est pas installé ?",
+      "choices": [
+        "Les utilisateurs ne peuvent pas accéder à Internet",
+        "Le Collector Agent ne peut pas communiquer avec le FortiGate",
+        "Le FortiGate ne peut pas distinguer les différents utilisateurs partageant la même IP",
+        "Les événements 4768/4769 ne sont pas générés"
+      ],
+      "answer": 2,
+      "explain": "Sur un serveur Citrix ou Terminal Services, tous les utilisateurs partagent la même adresse IP. Sans TS Agent, le FortiGate voit toutes les sessions avec la même IP et ne peut pas appliquer des politiques par utilisateur."
+    },
+    {
+      "q": "Quelle est la principale différence entre WMI et WinSecLog en mode Polling ?",
+      "choices": [
+        "WMI utilise TCP 8000 tandis que WinSecLog utilise UDP 514",
+        "WMI interroge le DC via l'API de gestion Windows tandis que WinSecLog lit directement le journal de sécurité",
+        "WMI ne fonctionne que sur les DC primaires, WinSecLog sur tous les DC",
+        "WMI est gratuit, WinSecLog nécessite une licence supplémentaire"
+      ],
+      "answer": 1,
+      "explain": "WMI (Windows Management Instrumentation) interroge le DC via l'API de gestion Windows, offrant une méthode standardisée et recommandée. WinSecLog lit directement le journal de sécurité Windows (Security Event Log), une alternative fonctionnelle mais moins recommandée."
+    }
+  ]
+}
