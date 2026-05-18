@@ -5,6 +5,7 @@ import Markdown, { MarkdownIt } from 'react-native-markdown-display';
 import { SvgXml } from 'react-native-svg';
 import { theme } from '@/lib/theme';
 import { lessonById } from '@/lib/lessons';
+import lessonImages from '@/data/lessonImages';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation';
 
@@ -37,9 +38,9 @@ export default function LessonScreen({ route, navigation }: Props) {
           const h = d.height ?? Math.round(w * 0.6);
           return (
             <View key={node.key} style={styles.diagram}>
-              {d.png ? (
+              {lessonImages[lesson.id] ? (
                 <Image
-                  source={{ uri: d.png }}
+                  source={lessonImages[lesson.id]}
                   style={{ width: w, height: h }}
                   resizeMode="contain"
                 />
