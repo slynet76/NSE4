@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, useWindowDimensions, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Markdown, { MarkdownIt } from 'react-native-markdown-display';
 import { SvgXml } from 'react-native-svg';
@@ -37,7 +37,15 @@ export default function LessonScreen({ route, navigation }: Props) {
           const h = d.height ?? Math.round(w * 0.6);
           return (
             <View key={node.key} style={styles.diagram}>
-              <SvgXml xml={d.svg} width={w} height={h} />
+              {d.png ? (
+                <Image
+                  source={{ uri: d.png }}
+                  style={{ width: w, height: h }}
+                  resizeMode="contain"
+                />
+              ) : d.svg ? (
+                <SvgXml xml={d.svg} width={w} height={h} />
+              ) : null}
               {d.caption ? <Text style={styles.caption}>{d.caption}</Text> : null}
             </View>
           );

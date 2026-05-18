@@ -10,7 +10,8 @@ export type QuizQuestion = {
 
 export type Diagram = {
   caption?: string;
-  svg: string;
+  svg?: string;
+  png?: string;
   height?: number;
 };
 
