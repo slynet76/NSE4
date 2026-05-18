@@ -1,0 +1,394 @@
+{
+  "ch01": [
+    {
+      "lesson": "ch01-l1",
+      "module": "System and Network Settings",
+      "title": "Basic system and network administration",
+      "startPage": 6,
+      "endPage": 15,
+      "diagramPage": 7
+    },
+    {
+      "lesson": "ch01-l2",
+      "module": "System and Network Settings",
+      "title": "Basic administration",
+      "startPage": 16,
+      "endPage": 22,
+      "diagramPage": 17
+    },
+    {
+      "lesson": "ch01-l3",
+      "module": "System and Network Settings",
+      "title": "FortiGuard subscription",
+      "startPage": 23,
+      "endPage": 30,
+      "diagramPage": 24
+    }
+  ],
+  "ch02": [
+    {
+      "lesson": "ch02-l1",
+      "module": "Logging and Monitoring",
+      "title": "The FortiGate log workflow",
+      "startPage": 33,
+      "endPage": 38,
+      "diagramPage": 34
+    },
+    {
+      "lesson": "ch02-l2",
+      "module": "Logging and Monitoring",
+      "title": "The log storage options",
+      "startPage": 39,
+      "endPage": 46,
+      "diagramPage": 40
+    },
+    {
+      "lesson": "ch02-l3",
+      "module": "Logging and Monitoring",
+      "title": "FortiGate registration with FortiAnalyzer",
+      "startPage": 47,
+      "endPage": 56,
+      "diagramPage": 48
+    },
+    {
+      "lesson": "ch02-l4",
+      "module": "Logging and Monitoring",
+      "title": "The log view",
+      "startPage": 57,
+      "endPage": 67,
+      "diagramPage": 58
+    }
+  ],
+  "ch03": [
+    {
+      "lesson": "ch03-l1",
+      "module": "Firewall Policies and NAT",
+      "title": "Identifying the different components of firewall policies",
+      "startPage": 70,
+      "endPage": 93,
+      "diagramPage": 71
+    },
+    {
+      "lesson": "ch03-l2",
+      "module": "Firewall Policies and NAT",
+      "title": "NAT firewall policies",
+      "startPage": 94,
+      "endPage": 110,
+      "diagramPage": 95
+    }
+  ],
+  "ch04": [
+    {
+      "lesson": "ch04-l1",
+      "module": "Routing",
+      "title": "Routing on FortiGate",
+      "startPage": 113,
+      "endPage": 131,
+      "diagramPage": 114
+    },
+    {
+      "lesson": "ch04-l2",
+      "module": "Routing",
+      "title": "ECMP routing",
+      "startPage": 132,
+      "endPage": 141,
+      "diagramPage": 133
+    }
+  ],
+  "ch05": [
+    {
+      "lesson": "ch05-l1",
+      "module": "Firewall Authentication",
+      "title": "Remote authentication",
+      "startPage": 144,
+      "endPage": 156,
+      "diagramPage": 145
+    },
+    {
+      "lesson": "ch05-l2",
+      "module": "Firewall Authentication",
+      "title": "Firewall authentication methods",
+      "startPage": 157,
+      "endPage": 173,
+      "diagramPage": 158
+    }
+  ],
+  "ch06": [
+    {
+      "lesson": "ch06-l1",
+      "module": "Fortinet Single Sign-On (FSSO)",
+      "title": "Understanding SSO concepts",
+      "startPage": 176,
+      "endPage": 188,
+      "diagramPage": 177
+    },
+    {
+      "lesson": "ch06-l2",
+      "module": "Fortinet Single Sign-On (FSSO)",
+      "title": "Configuring the FSSO agents and settings on FortiGate",
+      "startPage": 189,
+      "endPage": 204,
+      "diagramPage": 190
+    },
+    {
+      "lesson": "ch06-l3",
+      "module": "Fortinet Single Sign-On (FSSO)",
+      "title": "FSSO monitoring and troubleshooting",
+      "startPage": 205,
+      "endPage": 215,
+      "diagramPage": 206
+    }
+  ],
+  "ch07": [
+    {
+      "lesson": "ch07-l1",
+      "module": "Certificate Operations",
+      "title": "How FortiGate uses certificates",
+      "startPage": 218,
+      "endPage": 223,
+      "diagramPage": 219
+    },
+    {
+      "lesson": "ch07-l2",
+      "module": "Certificate Operations",
+      "title": "Understanding and configuring full SSL inspection and certificate inspection",
+      "startPage": 224,
+      "endPage": 249,
+      "diagramPage": 225
+    }
+  ],
+  "ch08": [
+    {
+      "lesson": "ch08-l1",
+      "module": "Antivirus",
+      "title": "Antivirus basics",
+      "startPage": 252,
+      "endPage": 268,
+      "diagramPage": 253
+    },
+    {
+      "lesson": "ch08-l2",
+      "module": "Antivirus",
+      "title": "Troubleshooting common antivirus issues",
+      "startPage": 269,
+      "endPage": 278,
+      "diagramPage": 270
+    }
+  ],
+  "ch09": [
+    {
+      "lesson": "ch09-l1",
+      "module": "Web Filtering",
+      "title": "Understanding inspection modes",
+      "startPage": 281,
+      "endPage": 285,
+      "diagramPage": 282
+    },
+    {
+      "lesson": "ch09-l2",
+      "module": "Web Filtering",
+      "title": "Web filtering configuration",
+      "startPage": 286,
+      "endPage": 300,
+      "diagramPage": 287
+    },
+    {
+      "lesson": "ch09-l3",
+      "module": "Web Filtering",
+      "title": "Troubleshooting",
+      "startPage": 301,
+      "endPage": 308,
+      "diagramPage": 302
+    }
+  ],
+  "ch10": [
+    {
+      "lesson": "ch10-l1",
+      "module": "Intrusion Prevention and Application Control",
+      "title": "IPS configuration",
+      "startPage": 311,
+      "endPage": 321,
+      "diagramPage": 312
+    },
+    {
+      "lesson": "ch10-l2",
+      "module": "Intrusion Prevention and Application Control",
+      "title": "Troubleshooting",
+      "startPage": 322,
+      "endPage": 326,
+      "diagramPage": 323
+    },
+    {
+      "lesson": "ch10-l3",
+      "module": "Intrusion Prevention and Application Control",
+      "title": "Application control basics",
+      "startPage": 327,
+      "endPage": 332,
+      "diagramPage": 328
+    },
+    {
+      "lesson": "ch10-l4",
+      "module": "Intrusion Prevention and Application Control",
+      "title": "Application control feature configuration and monitoring",
+      "startPage": 333,
+      "endPage": 345,
+      "diagramPage": 334
+    }
+  ],
+  "ch11": [
+    {
+      "lesson": "ch11-l1",
+      "module": "IPsec VPN",
+      "title": "IPsec basics",
+      "startPage": 348,
+      "endPage": 360,
+      "diagramPage": 349
+    },
+    {
+      "lesson": "ch11-l2",
+      "module": "IPsec VPN",
+      "title": "IPsec configuration",
+      "startPage": 361,
+      "endPage": 382,
+      "diagramPage": 362
+    },
+    {
+      "lesson": "ch11-l3",
+      "module": "IPsec VPN",
+      "title": "Routing and firewall policies for IPsec VPNs",
+      "startPage": 383,
+      "endPage": 389,
+      "diagramPage": 384
+    },
+    {
+      "lesson": "ch11-l4",
+      "module": "IPsec VPN",
+      "title": "Monitoring and logs",
+      "startPage": 390,
+      "endPage": 401,
+      "diagramPage": 391
+    }
+  ],
+  "ch12": [
+    {
+      "lesson": "ch12-l1",
+      "module": "SD-WAN Configuration and Monitoring",
+      "title": "SD-WAN solution and its use cases",
+      "startPage": 404,
+      "endPage": 409,
+      "diagramPage": 405
+    },
+    {
+      "lesson": "ch12-l2",
+      "module": "SD-WAN Configuration and Monitoring",
+      "title": "SD-WAN fundamentals",
+      "startPage": 410,
+      "endPage": 427,
+      "diagramPage": 411
+    },
+    {
+      "lesson": "ch12-l3",
+      "module": "SD-WAN Configuration and Monitoring",
+      "title": "SD-WAN basic monitoring",
+      "startPage": 428,
+      "endPage": 444,
+      "diagramPage": 429
+    }
+  ],
+  "ch13": [
+    {
+      "lesson": "ch13-l1",
+      "module": "High Availability",
+      "title": "HA operation modes and primary FortiGate election",
+      "startPage": 447,
+      "endPage": 454,
+      "diagramPage": 448
+    },
+    {
+      "lesson": "ch13-l2",
+      "module": "High Availability",
+      "title": "Cluster synchronization",
+      "startPage": 455,
+      "endPage": 461,
+      "diagramPage": 456
+    },
+    {
+      "lesson": "ch13-l3",
+      "module": "High Availability",
+      "title": "Failover types",
+      "startPage": 462,
+      "endPage": 465,
+      "diagramPage": 463
+    },
+    {
+      "lesson": "ch13-l4",
+      "module": "High Availability",
+      "title": "Monitoring FortiGate HA",
+      "startPage": 466,
+      "endPage": 475,
+      "diagramPage": 467
+    }
+  ],
+  "ch14": [
+    {
+      "lesson": "ch14-l1",
+      "module": "Diagnostics and Troubleshooting",
+      "title": "Overall diagnosis",
+      "startPage": 478,
+      "endPage": 484,
+      "diagramPage": 479
+    },
+    {
+      "lesson": "ch14-l2",
+      "module": "Diagnostics and Troubleshooting",
+      "title": "The packet sniffer and debug flow",
+      "startPage": 485,
+      "endPage": 495,
+      "diagramPage": 486
+    },
+    {
+      "lesson": "ch14-l3",
+      "module": "Diagnostics and Troubleshooting",
+      "title": "CPU and memory usage",
+      "startPage": 496,
+      "endPage": 506,
+      "diagramPage": 497
+    }
+  ],
+  "ch15": [
+    {
+      "lesson": "ch15-l1",
+      "module": "FortiGate in the Cloud",
+      "title": "Understanding cloud security solutions",
+      "startPage": 509,
+      "endPage": 514,
+      "diagramPage": 510
+    },
+    {
+      "lesson": "ch15-l2",
+      "module": "FortiGate in the Cloud",
+      "title": "Understanding FortiGate VM and FortiGate CNF",
+      "startPage": 515,
+      "endPage": 534,
+      "diagramPage": 516
+    }
+  ],
+  "ch16": [
+    {
+      "lesson": "ch16-l1",
+      "module": "FortiSASE",
+      "title": "FortiSASE",
+      "startPage": 537,
+      "endPage": 544,
+      "diagramPage": 538
+    },
+    {
+      "lesson": "ch16-l2",
+      "module": "FortiSASE",
+      "title": "Secure access service edge (SASE) use cases",
+      "startPage": 545,
+      "endPage": 558,
+      "diagramPage": 546
+    }
+  ]
+}

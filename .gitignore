@@ -13,3 +13,6 @@ ios/
 tools/audit-report.json
 _*.txt
 _*.pdf
+
+tools/pdf-slide-images/
+tools/pdf-text-*.txt
