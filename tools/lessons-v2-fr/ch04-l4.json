@@ -1,0 +1,181 @@
+{
+  "id": "ch04-l4",
+  "module": "Routing",
+  "title": "Monitoring, route lookup et RPF",
+  "durationMin": 7,
+  "content": "## Routing Monitor Widget (Dashboard)\n\nLe widget **Routing Monitor** sur le Dashboard FortiGate affiche :\n- Les routes **Static** et **Dynamic** actives\n- Le contenu de la **policy route table**\n\n**Important** : Le widget **ne montre PAS** :\n- Les routes **inactive** (ex : interface associée est down)\n- Les routes **standby** (ex : gateway inaccessible)\n\nCes routes existent dans la RIB mais ne sont pas actives dans la FIB.\n\n## Route Lookup Tool\n\nL'outil **Route Lookup** permet de tester la décision de routage du FortiGate pour une paire source/destination donnée.\n\n- **Avec IP source** : consulte à la fois la **routing table standard** ET la **policy route table**\n- **Sans IP source** : consulte **uniquement la routing table standard** (pas les policy routes / ISDB)\n\nCet outil est accessible depuis le GUI FortiGate (Network > Route Lookup).\n\n\n![RPF Check : Feasible vs Strict](diagram:0)\n\n## RPF — Reverse Path Forwarding\n\nLe **RPF** (Reverse Path Forwarding) est un mécanisme **anti-spoofing** qui vérifie la validité de l'adresse source d'un paquet.\n\n**Timing** : Le RPF check est effectué **uniquement sur le premier paquet d'une nouvelle session**. Les paquets suivants d'une même session ne sont pas soumis au RPF.\n\n### Deux modes de RPF :\n\n**1. Feasible path** :\n- Vérifie qu'**au moins une route** existe vers l'IP source **via l'interface d'entrée** (ingress interface)\n- Mode le moins restrictif\n\n**2. Strict** :\n- Vérifie que la **meilleure route** (best route) vers l'IP source passe **via l'interface d'entrée**\n- Mode le plus restrictif\n- Si la meilleure route retour passe par une autre interface → paquet droppé\n\n**Résumé RPF** : le check RPF = anti-spoofing, premier paquet d'une nouvelle session uniquement.",
+  "diagrams": [
+    {
+      "caption": "RPF Check : Feasible vs Strict",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8fafc'/><rect x='10' y='15' width='270' height='130' rx='8' fill='#dbeafe' stroke='#3b82f6' stroke-width='2'/><text x='145' y='38' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='bold' fill='#1d4ed8'>Feasible Path RPF</text><text x='145' y='58' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#1e40af'>Au moins UNE route</text><text x='145' y='75' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#1e40af'>vers source via ingress</text><text x='145' y='95' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#3b82f6'>Mode : moins restrictif</text><rect x='22' y='108' width='110' height='28' rx='5' fill='#16a34a'/><text x='77' y='126' text-anchor='middle' font-family='sans-serif' font-size='10' fill='white'>PASS si route existe</text><rect x='148' y='108' width='120' height='28' rx='5' fill='#ef4444'/><text x='208' y='126' text-anchor='middle' font-family='sans-serif' font-size='10' fill='white'>DROP si aucune route</text><rect x='320' y='15' width='270' height='130' rx='8' fill='#fee2e2' stroke='#ef4444' stroke-width='2'/><text x='455' y='38' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='bold' fill='#b91c1c'>Strict RPF</text><text x='455' y='58' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#991b1b'>La MEILLEURE route</text><text x='455' y='75' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#991b1b'>vers source via ingress</text><text x='455' y='95' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#b91c1c'>Mode : plus restrictif</text><rect x='332' y='108' width='110' height='28' rx='5' fill='#16a34a'/><text x='387' y='126' text-anchor='middle' font-family='sans-serif' font-size='10' fill='white'>PASS si best route</text><rect x='458' y='108' width='120' height='28' rx='5' fill='#ef4444'/><text x='518' y='126' text-anchor='middle' font-family='sans-serif' font-size='10' fill='white'>DROP sinon</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Que montre le widget Routing Monitor sur le Dashboard FortiGate ?",
+      "choices": [
+        "Toutes les routes de la RIB, y compris inactives et standby",
+        "Les routes Static et Dynamic actives + la policy route table",
+        "Uniquement les routes statiques configurées manuellement",
+        "Les sessions actives et leur routage associé"
+      ],
+      "answer": 1,
+      "explain": "Le widget **Routing Monitor** affiche les routes **Static** et **Dynamic** actives ainsi que le contenu de la **policy route table**. Il ne montre pas les routes inactives ni standby."
+    },
+    {
+      "q": "Quels types de routes le widget Routing Monitor NE montre-t-il PAS ?",
+      "choices": [
+        "Les routes OSPF et BGP",
+        "Les routes statiques avec gateway",
+        "Les routes inactive et standby",
+        "Les routes connected"
+      ],
+      "answer": 2,
+      "explain": "Le widget Routing Monitor **ne montre pas** les routes **inactive** (interface down) et les routes **standby** (gateway inaccessible). Ces routes existent dans la RIB mais ne sont pas actives dans la FIB."
+    },
+    {
+      "q": "Quel est l'objectif du RPF (Reverse Path Forwarding) ?",
+      "choices": [
+        "Améliorer les performances de routage",
+        "Mécanisme anti-spoofing vérifiant la validité de l'adresse source",
+        "Assurer la redondance des routes",
+        "Équilibrer la charge entre plusieurs interfaces"
+      ],
+      "answer": 1,
+      "explain": "Le **RPF** (Reverse Path Forwarding) est un mécanisme **anti-spoofing**. Il vérifie que l'adresse source d'un paquet est accessible via l'interface d'entrée, empêchant ainsi l'usurpation d'adresses IP."
+    },
+    {
+      "q": "À quel moment le check RPF est-il effectué ?",
+      "choices": [
+        "Sur chaque paquet de chaque flux",
+        "Uniquement sur le premier paquet d'une nouvelle session",
+        "Sur tous les paquets ICMP uniquement",
+        "À l'établissement de la session TCP (SYN uniquement)"
+      ],
+      "answer": 1,
+      "explain": "Le RPF check est effectué **uniquement sur le premier paquet d'une nouvelle session**. Une fois la session établie, les paquets suivants ne sont plus soumis au RPF check."
+    },
+    {
+      "q": "En mode Strict RPF, quelle condition doit être remplie pour qu'un paquet soit accepté ?",
+      "choices": [
+        "Au moins une route doit exister vers la source via l'interface d'entrée",
+        "La meilleure route vers la source doit passer via l'interface d'entrée",
+        "La source doit être dans la même zone de sécurité",
+        "L'interface d'entrée doit avoir une IP dans le même sous-réseau que la source"
+      ],
+      "answer": 1,
+      "explain": "En mode **Strict RPF**, la **meilleure route** (best route) vers l'adresse source doit passer **via l'interface d'entrée** (ingress interface). Si la meilleure route utilise une autre interface, le paquet est droppé."
+    },
+    {
+      "q": "En mode Feasible Path RPF, quelle condition doit être remplie ?",
+      "choices": [
+        "La meilleure route vers la source doit passer via l'interface d'entrée",
+        "Au moins une route vers la source doit exister via l'interface d'entrée",
+        "La source doit appartenir à un réseau connected",
+        "La route par défaut doit pointer vers l'interface d'entrée"
+      ],
+      "answer": 1,
+      "explain": "En mode **Feasible Path RPF**, il suffit qu'**au moins une route** vers l'adresse source existe **via l'interface d'entrée**. C'est le mode le moins restrictif — la meilleure route peut être ailleurs."
+    },
+    {
+      "q": "Quand l'outil Route Lookup est utilisé sans IP source, quelle table consulte-t-il ?",
+      "choices": [
+        "Uniquement la policy route table",
+        "La routing table standard ET la policy route table",
+        "Uniquement la routing table standard (pas les policy routes)",
+        "La session table"
+      ],
+      "answer": 2,
+      "explain": "Sans IP source, l'outil **Route Lookup** consulte **uniquement la routing table standard**. Les policy routes et routes ISDB ne sont pas consultées car elles nécessitent une IP source pour être évaluées."
+    },
+    {
+      "q": "Quelle est la différence entre Strict RPF et Feasible Path RPF ?",
+      "choices": [
+        "Strict vérifie la meilleure route via ingress ; Feasible vérifie au moins une route via ingress",
+        "Feasible est plus restrictif que Strict",
+        "Strict s'applique à IPv6, Feasible à IPv4",
+        "Ils sont identiques mais configurés différemment"
+      ],
+      "answer": 0,
+      "explain": "**Strict RPF** : la **meilleure route** vers la source doit passer via l'ingress (plus restrictif). **Feasible Path RPF** : **au moins une route** vers la source doit passer via l'ingress (moins restrictif)."
+    },
+    {
+      "q": "Qu'est-ce qu'une route \"standby\" sur FortiGate ?",
+      "choices": [
+        "Une route configurée comme backup avec un AD plus élevé",
+        "Une route dont la gateway est inaccessible (non installée dans la FIB)",
+        "Une route administrative désactivée",
+        "Une route temporaire créée par OSPF"
+      ],
+      "answer": 1,
+      "explain": "Une route **standby** est une route dont la **gateway est inaccessible** ou dont l'interface est down. Elle existe dans la RIB mais n'est pas installée dans la FIB et n'apparaît pas dans le widget Routing Monitor."
+    },
+    {
+      "q": "Quel outil GUI permet de tester la décision de routage du FortiGate pour une destination donnée ?",
+      "choices": [
+        "Le widget Routing Monitor",
+        "L'outil Route Lookup",
+        "La session table viewer",
+        "La commande diagnose sniffer"
+      ],
+      "answer": 1,
+      "explain": "L'outil **Route Lookup** (accessible dans le GUI FortiGate sous Network > Route Lookup) permet de tester la décision de routage pour une destination donnée, avec ou sans IP source."
+    },
+    {
+      "q": "Pourquoi le RPF check est-il important du point de vue de la sécurité ?",
+      "choices": [
+        "Il empêche les attaques DDoS volumétriques",
+        "Il empêche l'usurpation d'adresse IP (IP spoofing) en vérifiant que la source est accessible via l'interface d'entrée",
+        "Il chiffre les paquets pour éviter l'interception",
+        "Il limite le nombre de sessions simultanées"
+      ],
+      "answer": 1,
+      "explain": "Le **RPF** est un mécanisme **anti-spoofing** : il vérifie que l'adresse source est accessible via l'interface d'entrée (ingress). Si ce n'est pas le cas, l'adresse source est probablement usurpée et le paquet est droppé."
+    },
+    {
+      "q": "Qu'est-ce qu'une route \"inactive\" sur FortiGate ?",
+      "choices": [
+        "Une route statique volontairement désactivée",
+        "Une route dont l'interface associée est down",
+        "Une route avec une metric trop élevée",
+        "Une route OSPF non encore converge"
+      ],
+      "answer": 1,
+      "explain": "Une route **inactive** est une route dont l'**interface associée est down** (ex : câble débranché, interface shutdown). Elle n'est pas installée dans la FIB et n'apparaît pas dans le widget Routing Monitor."
+    },
+    {
+      "q": "Le RPF est configuré pour vérifier quel aspect des paquets entrants ?",
+      "choices": [
+        "Le port destination TCP/UDP",
+        "Le TTL du paquet IP",
+        "La validité de l'adresse source par rapport à l'interface d'entrée",
+        "La validité du checksum IP"
+      ],
+      "answer": 2,
+      "explain": "Le **RPF** vérifie la **validité de l'adresse source** : il contrôle que l'adresse source du paquet est accessible via l'interface d'entrée (ingress). C'est un mécanisme anti-spoofing fondamental."
+    },
+    {
+      "q": "Quand l'outil Route Lookup est utilisé AVEC une IP source, quelle(s) table(s) consulte-t-il ?",
+      "choices": [
+        "Uniquement la routing table standard",
+        "La policy route table uniquement",
+        "La routing table standard ET la policy route table",
+        "La session table uniquement"
+      ],
+      "answer": 2,
+      "explain": "Avec une IP source spécifiée, l'outil **Route Lookup** consulte à la fois la **routing table standard** ET la **policy route table** (incluant les routes ISDB), simulant le comportement réel du FortiGate."
+    },
+    {
+      "q": "Lequel des modes RPF est le plus restrictif ?",
+      "choices": [
+        "Feasible Path",
+        "Strict",
+        "Les deux sont équivalents",
+        "Cela dépend de la topologie réseau"
+      ],
+      "answer": 1,
+      "explain": "Le mode **Strict RPF** est le plus restrictif : il exige que la **meilleure route** vers la source passe via l'interface d'entrée. Feasible Path est moins restrictif car n'importe quelle route via l'ingress suffit."
+    }
+  ]
+}

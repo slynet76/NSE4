@@ -1,0 +1,238 @@
+{
+  "id": "ch08-l5",
+  "module": "Antivirus",
+  "title": "Logs et dépannage AV",
+  "durationMin": 6,
+  "content": "## Logs AV FortiGate\n\nLes logs antivirus sont accessibles dans l'interface graphique via **Log & Report > Security Events > Antivirus**. Chaque entrée de log AV contient les champs suivants :\n\n| Champ | Description |\n|---|---|\n| **Timestamp** | Date et heure de la détection |\n| **src IP** | Adresse IP source du flux |\n| **dst IP** | Adresse IP destination |\n| **Protocole** | HTTP, FTP, SMTP, etc. |\n| **Nom du fichier** | Nom du fichier scanné |\n| **Virus name** | Nom de la menace détectée |\n| **Action** | Block, Monitor ou Pass |\n| **Checksum** | Hash du fichier détecté |\n\n## Commandes de dépannage AV\n\n### Vérification de la base de signatures AV\n\n```\ndiagnose antivirus database version\n```\nAffiche la **version de la base de signatures AV** actuellement chargée sur le FortiGate.\n\n```\ndiagnose autoupdate versions\n```\nAffiche les versions de **toutes les bases FortiGuard** (AV, IPS, etc.) avec les dates de mise à jour.\n\n### Debug du moteur de scan\n\n```\ndiagnose debug application scanunit -1\n```\nActive le debug du **moteur de scan antivirus scanunit** — affiche les opérations de scan en temps réel.\n\n```\nget system status\n```\nAffiche la version **FortiOS**, le hostname et le numéro de série — utile pour identifier la version du système.\n\n### Forcer une mise à jour de la base AV\n\n```\nexecute update-av\n```\nForce une **mise à jour immédiate** de la base de signatures AV depuis FortiGuard — sans attendre le prochain cycle automatique.\n\n\n![Champs clés d'une entrée de log AV FortiGate](diagram:0)\n\n## Fichier EICAR\n\nLe fichier **EICAR** (European Institute for Computer Antivirus Research) est un fichier de test antivirus standard. C'est un simple fichier texte dont le contenu est reconnu comme un **virus test** par tous les moteurs AV conformes. L'EICAR permet de tester que le scan AV fonctionne correctement sans utiliser un vrai virus.\n\n> Le fichier EICAR est inoffensif mais reconnu comme virus test par tous les moteurs AV. C'est l'outil standard pour valider la configuration AV.\n\n## Moteur scanunit\n\nLe processus **scanunit** est le processus FortiOS responsable du scan antivirus. Il est visible dans la sortie de la commande `diagnose sys top`. Si le scanunit consomme beaucoup de CPU, cela peut indiquer un volume élevé de fichiers à analyser.\n\n## Gestion des faux positifs\n\nSi un fichier légitime est bloqué par l'AV (faux positif), la procédure recommandée est :\n1. Vérifier le **virus name** dans les logs AV pour identifier la signature déclenchée\n2. Ajouter une **exemption AV** pour cette source ou ce fichier\n3. Signaler le faux positif à FortiGuard si la signature est incorrecte",
+  "diagrams": [
+    {
+      "caption": "Champs clés d'une entrée de log AV FortiGate",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><text x='270' y='18' text-anchor='middle' fill='#3b82f6' font-size='12' font-family='monospace' font-weight='bold'>Log AV — Security Events &gt; Antivirus</text><rect x='10' y='25' width='520' height='25' rx='3' fill='#1e293b'/><text x='15' y='42' fill='#94a3b8' font-size='10' font-family='monospace'>timestamp</text><text x='100' y='42' fill='#94a3b8' font-size='10' font-family='monospace'>src IP</text><text x='170' y='42' fill='#94a3b8' font-size='10' font-family='monospace'>dst IP</text><text x='240' y='42' fill='#94a3b8' font-size='10' font-family='monospace'>protocole</text><text x='320' y='42' fill='#94a3b8' font-size='10' font-family='monospace'>filename</text><text x='395' y='42' fill='#94a3b8' font-size='10' font-family='monospace'>virus-name</text><text x='480' y='42' fill='#94a3b8' font-size='10' font-family='monospace'>action</text><rect x='10' y='53' width='520' height='22' rx='3' fill='#0f172a' stroke='#22c55e' stroke-width='1'/><text x='15' y='68' fill='#e2e8f0' font-size='9' font-family='monospace'>2024-01-15 10:23</text><text x='100' y='68' fill='#e2e8f0' font-size='9' font-family='monospace'>192.168.1.10</text><text x='170' y='68' fill='#e2e8f0' font-size='9' font-family='monospace'>8.8.8.8</text><text x='240' y='68' fill='#22c55e' font-size='9' font-family='monospace'>HTTP</text><text x='320' y='68' fill='#e2e8f0' font-size='9' font-family='monospace'>invoice.exe</text><text x='395' y='68' fill='#ef4444' font-size='9' font-family='monospace'>EICAR-Test</text><text x='480' y='68' fill='#ef4444' font-size='9' font-family='monospace'>block</text><line x1='10' y1='85' x2='530' y2='85' stroke='#334155' stroke-width='1'/><text x='15' y='102' fill='#3b82f6' font-size='10' font-family='monospace' font-weight='bold'>Commandes de depannage AV</text><rect x='10' y='108' width='520' height='18' rx='3' fill='#1e293b'/><text x='15' y='121' fill='#22c55e' font-size='10' font-family='monospace'>diagnose antivirus database version</text><text x='320' y='121' fill='#94a3b8' font-size='9' font-family='monospace'>— version base signatures AV</text><rect x='10' y='128' width='520' height='18' rx='3' fill='#0f172a'/><text x='15' y='141' fill='#22c55e' font-size='10' font-family='monospace'>diagnose debug application scanunit -1</text><text x='320' y='141' fill='#94a3b8' font-size='9' font-family='monospace'>— debug moteur scanunit</text><rect x='10' y='148' width='520' height='18' rx='3' fill='#1e293b'/><text x='15' y='161' fill='#22c55e' font-size='10' font-family='monospace'>execute update-av</text><text x='200' y='161' fill='#94a3b8' font-size='9' font-family='monospace'>— forcer mise a jour base AV depuis FortiGuard</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quelle commande affiche la version de la base de signatures AV sur FortiGate ?",
+      "choices": [
+        "get system status",
+        "diagnose autoupdate versions",
+        "diagnose antivirus database version",
+        "execute update-av"
+      ],
+      "answer": 2,
+      "explain": "La commande diagnose antivirus database version affiche la version de la base de signatures AV actuellement chargee sur le FortiGate."
+    },
+    {
+      "q": "Quelle commande force une mise a jour immediate de la base AV depuis FortiGuard ?",
+      "choices": [
+        "diagnose autoupdate versions",
+        "diagnose antivirus database version",
+        "get system status",
+        "execute update-av"
+      ],
+      "answer": 3,
+      "explain": "La commande execute update-av force une mise a jour immediate de la base de signatures AV depuis les serveurs FortiGuard, sans attendre le prochain cycle automatique."
+    },
+    {
+      "q": "Quelle commande active le debug du moteur de scan antivirus scanunit sur FortiGate ?",
+      "choices": [
+        "diagnose antivirus database version",
+        "diagnose debug application scanunit -1",
+        "get system status",
+        "diagnose autoupdate versions"
+      ],
+      "answer": 1,
+      "explain": "La commande diagnose debug application scanunit -1 active le debug du moteur de scan antivirus scanunit, affichant les operations de scan en temps reel."
+    },
+    {
+      "q": "Dans quelle section de l'interface FortiGate se trouvent les logs antivirus ?",
+      "choices": [
+        "System > Status",
+        "Log & Report > Security Events > Antivirus",
+        "Policy & Objects > Security Profiles",
+        "Monitor > Firewall"
+      ],
+      "answer": 1,
+      "explain": "Les logs AV sont accessibles dans Log & Report > Security Events > Antivirus. Chaque entree contient le timestamp, src IP, dst IP, protocole, nom du fichier, virus name, action et checksum."
+    },
+    {
+      "q": "Quel est le fichier EICAR dans le contexte de l'antivirus ?",
+      "choices": [
+        "Un vrai virus utilise pour les tests en laboratoire",
+        "Un fichier texte standard reconnu comme virus test par tous les moteurs AV",
+        "Un fichier de configuration FortiGuard",
+        "Un outil de scan manuel"
+      ],
+      "answer": 1,
+      "explain": "Le fichier EICAR est un fichier texte standard dont le contenu est reconnu comme virus test par tous les moteurs AV conformes. Il est inoffensif et permet de valider que le scan AV fonctionne."
+    },
+    {
+      "q": "Quel processus FortiOS est responsable du scan antivirus et visible dans diagnose sys top ?",
+      "choices": [
+        "httpsd",
+        "scanunit",
+        "fortiguard",
+        "proxyd"
+      ],
+      "answer": 1,
+      "explain": "Le processus scanunit est le processus FortiOS responsable du scan antivirus. Il est visible dans la sortie de diagnose sys top et sa consommation CPU reflete la charge de scan."
+    },
+    {
+      "q": "Quelle commande affiche la version FortiOS, le hostname et le numero de serie du FortiGate ?",
+      "choices": [
+        "diagnose autoupdate versions",
+        "execute update-av",
+        "diagnose antivirus database version",
+        "get system status"
+      ],
+      "answer": 3,
+      "explain": "La commande get system status affiche la version FortiOS, le hostname et le numero de serie du FortiGate, informations utiles pour identifier le systeme en cours de depannage."
+    },
+    {
+      "q": "Quelle commande affiche les versions de toutes les bases FortiGuard (AV, IPS, etc.) ?",
+      "choices": [
+        "get system status",
+        "diagnose antivirus database version",
+        "diagnose autoupdate versions",
+        "execute update-av"
+      ],
+      "answer": 2,
+      "explain": "La commande diagnose autoupdate versions affiche les versions de toutes les bases FortiGuard incluant AV, IPS, et autres services, avec les dates de mise a jour."
+    },
+    {
+      "q": "Quelle est la premiere etape recommandee quand un fichier legitime est bloque par l'AV (faux positif) ?",
+      "choices": [
+        "Desactiver l'AV immediatement",
+        "Verifier le virus name dans les logs AV pour identifier la signature declenchee",
+        "Reinitialiser le FortiGate",
+        "Contacter FortiGuard directement"
+      ],
+      "answer": 1,
+      "explain": "Pour traiter un faux positif, la premiere etape est de verifier le virus name dans les logs AV pour identifier quelle signature a ete declenchee, puis ajouter une exemption AV si necessaire."
+    },
+    {
+      "q": "Quel champ dans un log AV contient le hash du fichier detecte ?",
+      "choices": [
+        "virus name",
+        "action",
+        "checksum",
+        "filename"
+      ],
+      "answer": 2,
+      "explain": "Le champ checksum dans un log AV contient le hash du fichier detecte. Ce hash permet d'identifier de maniere unique le fichier et de le comparer avec des bases de reputation."
+    },
+    {
+      "q": "Si le processus scanunit consomme beaucoup de CPU, qu'est-ce que cela peut indiquer ?",
+      "choices": [
+        "La base AV est obsolete",
+        "Un volume eleve de fichiers a analyser par le moteur AV",
+        "Le FortiGate a besoin d'une mise a jour",
+        "La connexion FortiGuard est perdue"
+      ],
+      "answer": 1,
+      "explain": "Une consommation CPU elevee du processus scanunit indique generalement un volume eleve de fichiers a analyser. C'est normal en periode de forte activite reseau avec beaucoup de transferts de fichiers."
+    },
+    {
+      "q": "Qu'est-ce qu'une exemption AV dans le contexte des faux positifs ?",
+      "choices": [
+        "Une mise a jour de la base AV",
+        "Une configuration permettant d'exempter une source ou un fichier du scan AV",
+        "Un rapport envoye a FortiGuard",
+        "Une desactivation du profil AV"
+      ],
+      "answer": 1,
+      "explain": "Une exemption AV permet d'exempter une adresse IP source ou une URL specifique du scan antivirus. Elle est utilisee pour les faux positifs sur des sources fiables et connues."
+    },
+    {
+      "q": "Quelle information dans un log AV permet d'identifier quel protocole a transporte le fichier infecte ?",
+      "choices": [
+        "Le champ action",
+        "Le champ checksum",
+        "Le champ protocole",
+        "Le champ virus name"
+      ],
+      "answer": 2,
+      "explain": "Le champ protocole dans un log AV indique quel protocole (HTTP, FTP, SMTP, etc.) a transporte le fichier infecte, ce qui aide a comprendre le vecteur d'attaque."
+    },
+    {
+      "q": "Comment valider rapidement qu'un profil AV FortiGate fonctionne correctement sans utiliser un vrai virus ?",
+      "choices": [
+        "Utiliser un fichier ZIP vide",
+        "Tester avec le fichier EICAR",
+        "Verifier les logs systeme",
+        "Executer diagnose antivirus database version"
+      ],
+      "answer": 1,
+      "explain": "Le fichier EICAR est la methode standard pour valider qu'un moteur AV fonctionne. Ce fichier texte inoffensif est reconnu comme virus test par tous les moteurs AV conformes dont FortiGate."
+    },
+    {
+      "q": "Quel champ du log AV indique si le fichier a ete bloque ou simplement surveille ?",
+      "choices": [
+        "virus name",
+        "checksum",
+        "protocole",
+        "action"
+      ],
+      "answer": 3,
+      "explain": "Le champ action dans le log AV indique l'action appliquee : block (fichier bloque), monitor (surveille sans blocage) ou pass (ignore). Il reflete la configuration du profil AV."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quelle commande affiche la version de la base de signatures AV sur FortiGate ?",
+      "choices": [
+        "get system status",
+        "diagnose autoupdate versions",
+        "diagnose antivirus database version",
+        "execute update-av"
+      ],
+      "answer": 2,
+      "explain": "La commande diagnose antivirus database version affiche la version de la base de signatures AV actuellement chargee sur le FortiGate."
+    },
+    {
+      "q": "Quelle commande force une mise a jour immediate de la base AV depuis FortiGuard ?",
+      "choices": [
+        "diagnose autoupdate versions",
+        "diagnose antivirus database version",
+        "get system status",
+        "execute update-av"
+      ],
+      "answer": 3,
+      "explain": "La commande execute update-av force une mise a jour immediate de la base de signatures AV depuis les serveurs FortiGuard, sans attendre le prochain cycle automatique."
+    },
+    {
+      "q": "Quel est le fichier EICAR dans le contexte de l'antivirus ?",
+      "choices": [
+        "Un vrai virus utilise pour les tests en laboratoire",
+        "Un fichier texte standard reconnu comme virus test par tous les moteurs AV",
+        "Un fichier de configuration FortiGuard",
+        "Un outil de scan manuel"
+      ],
+      "answer": 1,
+      "explain": "Le fichier EICAR est un fichier texte standard dont le contenu est reconnu comme virus test par tous les moteurs AV conformes. Il est inoffensif et permet de valider que le scan AV fonctionne."
+    },
+    {
+      "q": "Quel processus FortiOS est responsable du scan antivirus et visible dans diagnose sys top ?",
+      "choices": [
+        "httpsd",
+        "scanunit",
+        "fortiguard",
+        "proxyd"
+      ],
+      "answer": 1,
+      "explain": "Le processus scanunit est le processus FortiOS responsable du scan antivirus. Il est visible dans la sortie de diagnose sys top et sa consommation CPU reflete la charge de scan."
+    },
+    {
+      "q": "Dans quelle section de l'interface FortiGate se trouvent les logs antivirus ?",
+      "choices": [
+        "System > Status",
+        "Log & Report > Security Events > Antivirus",
+        "Policy & Objects > Security Profiles",
+        "Monitor > Firewall"
+      ],
+      "answer": 1,
+      "explain": "Les logs AV sont accessibles dans Log & Report > Security Events > Antivirus. Chaque entree contient le timestamp, src IP, dst IP, protocole, nom du fichier, virus name, action et checksum."
+    }
+  ]
+}

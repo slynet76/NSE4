@@ -1,0 +1,181 @@
+{
+  "id": "ch05-l5",
+  "module": "Firewall Authentication",
+  "title": "Politiques, services et timeouts",
+  "durationMin": 7,
+  "content": "## Authentification dans les politiques firewall\n\nL'authentification est configurée dans le **champ source** d'une politique firewall. Pour déclencher l'authentification, la source doit inclure **à la fois une adresse IP et un utilisateur ou groupe** (en plus de l'IP seule).\n\nDès qu'un utilisateur ou groupe est présent dans le champ source, **FortiGate déclenche une authentification active** sur ce flux.\n\n## Types d'objets utilisateur/groupe dans une politique\n\n- **Comptes locaux** (base locale FortiGate)\n- **Utilisateurs LDAP/RADIUS** (distants)\n- **Utilisateurs PKI** (certificats)\n- **Groupes FSSO** (authentification passive)\n\n\n![Comparaison des modes de timeout d'authentification (Soft vs Hard)](diagram:0)\n\n## Services autorisés avant authentification\n\nAvant qu'un utilisateur s'authentifie, **DNS est autorisé** afin de permettre la **résolution FQDN**. Sans DNS, la page de login FortiGate ne pourrait pas se charger correctement si elle est référencée par un nom de domaine.\n\n## Modes de timeout\n\n### Soft timeout\nL'utilisateur est **déconnecté après une période d'inactivité**. Si l'utilisateur est actif, la session reste ouverte indéfiniment.\n\n### Hard timeout\nL'utilisateur est **déconnecté après un temps total écoulé**, quelle que soit son activité. La durée est absolue depuis la connexion initiale.\n\n## Option CLI : auth-on-demand always\n\nLa commande :\n```\nset auth-on-demand always\n```\nforce l'affichage du challenge d'authentification **même en l'absence de navigateur** (flux non-HTTP). Par défaut, l'authentification n'est déclenchée que sur les flux HTTP/HTTPS.\n\n## Cas des administrateurs FortiGate\n\nLes **administrateurs FortiGate** n'apparaissent **pas dans la liste des utilisateurs authentifiés** via les politiques. Ils se connectent **directement sur FortiGate** (interface d'administration), pas à travers une politique firewall.",
+  "diagrams": [
+    {
+      "caption": "Comparaison des modes de timeout d'authentification (Soft vs Hard)",
+      "height": 140,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 140'><rect width='600' height='140' fill='#f8f9fa' rx='8'/><rect x='20' y='20' width='255' height='100' rx='6' fill='#dcfce7' stroke='#22c55e' stroke-width='1.5'/><text x='147' y='42' text-anchor='middle' font-size='12' font-weight='bold' fill='#166534'>Soft Timeout</text><text x='147' y='62' text-anchor='middle' font-size='10' fill='#14532d'>Déconnexion après inactivité</text><text x='147' y='78' text-anchor='middle' font-size='10' fill='#14532d'>Session maintenue si actif</text><text x='147' y='94' text-anchor='middle' font-size='10' fill='#14532d'>Durée glissante</text><text x='147' y='110' text-anchor='middle' font-size='9' fill='#166534'>Ex : 8h inactif → déconnexion</text><rect x='325' y='20' width='255' height='100' rx='6' fill='#fee2e2' stroke='#ef4444' stroke-width='1.5'/><text x='452' y='42' text-anchor='middle' font-size='12' font-weight='bold' fill='#991b1b'>Hard Timeout</text><text x='452' y='62' text-anchor='middle' font-size='10' fill='#7f1d1d'>Déconnexion après temps total</text><text x='452' y='78' text-anchor='middle' font-size='10' fill='#7f1d1d'>Quelle que soit l'activité</text><text x='452' y='94' text-anchor='middle' font-size='10' fill='#7f1d1d'>Durée absolue</text><text x='452' y='110' text-anchor='middle' font-size='9' fill='#991b1b'>Ex : 8h après login → déconnexion</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Dans une politique firewall FortiGate, que doit contenir le champ source pour déclencher l'authentification ?",
+      "choices": [
+        "Une adresse IP uniquement",
+        "Un utilisateur ou groupe uniquement",
+        "Une adresse IP ET un utilisateur ou groupe",
+        "Un certificat PKI uniquement"
+      ],
+      "answer": 2,
+      "explain": "Le champ source doit contenir à la fois une adresse IP et un utilisateur ou groupe pour que FortiGate déclenche l'authentification."
+    },
+    {
+      "q": "Pourquoi le DNS est-il autorisé avant authentification sur FortiGate ?",
+      "choices": [
+        "Pour permettre les mises à jour FortiGuard",
+        "Pour permettre la résolution FQDN — sans DNS, la page de login ne peut pas se charger si référencée par nom de domaine",
+        "Pour synchroniser NTP avant l'authentification",
+        "Pour vérifier les certificats de révocation"
+      ],
+      "answer": 1,
+      "explain": "DNS est autorisé avant authentification pour permettre la résolution FQDN. Sans DNS, la page de login FortiGate ne pourrait pas être atteinte par nom de domaine."
+    },
+    {
+      "q": "Comment fonctionne le Hard timeout d'authentification sur FortiGate ?",
+      "choices": [
+        "L'utilisateur est déconnecté après une période d'inactivité",
+        "L'utilisateur est déconnecté après un temps total écoulé, quelle que soit son activité",
+        "L'utilisateur reçoit un avertissement mais reste connecté",
+        "Le Hard timeout s'applique uniquement aux sessions VPN"
+      ],
+      "answer": 1,
+      "explain": "Le Hard timeout déconnecte l'utilisateur après un temps total absolu depuis la connexion initiale, indépendamment de l'activité."
+    },
+    {
+      "q": "À quoi sert l'option CLI 'set auth-on-demand always' ?",
+      "choices": [
+        "À désactiver l'authentification pour les flux non-HTTP",
+        "À forcer l'affichage du challenge d'authentification même en l'absence de navigateur",
+        "À activer l'authentification passive FSSO",
+        "À définir le timeout d'authentification à la valeur maximale"
+      ],
+      "answer": 1,
+      "explain": "'auth-on-demand always' force le challenge d'authentification même sur des flux sans navigateur (non-HTTP). Par défaut, le challenge n'est déclenché que pour HTTP/HTTPS."
+    },
+    {
+      "q": "Pourquoi les administrateurs FortiGate n'apparaissent-ils pas dans la liste des utilisateurs authentifiés via les politiques ?",
+      "choices": [
+        "Ils utilisent un compte LDAP séparé",
+        "Ils se connectent directement sur FortiGate (interface d'administration), pas à travers une politique firewall",
+        "Ils sont masqués pour des raisons de sécurité",
+        "Ils utilisent l'authentification passive FSSO"
+      ],
+      "answer": 1,
+      "explain": "Les administrateurs FortiGate se connectent directement à l'interface d'administration du FortiGate. Ils ne passent pas par une politique firewall, donc n'apparaissent pas dans les sessions authentifiées."
+    },
+    {
+      "q": "Comment fonctionne le Soft timeout d'authentification ?",
+      "choices": [
+        "Déconnexion après un temps total absolu",
+        "Déconnexion après une période d'inactivité — la session reste ouverte si l'utilisateur est actif",
+        "Déconnexion immédiate après chaque requête",
+        "Le Soft timeout ne déconnecte jamais l'utilisateur"
+      ],
+      "answer": 1,
+      "explain": "Le Soft timeout déconnecte l'utilisateur après une période d'inactivité. Si l'utilisateur est actif, la session reste ouverte."
+    },
+    {
+      "q": "Quels types d'objets utilisateur peuvent être placés dans le champ source d'une politique firewall ?",
+      "choices": [
+        "Uniquement des comptes locaux FortiGate",
+        "Comptes locaux, utilisateurs LDAP/RADIUS, utilisateurs PKI, groupes FSSO",
+        "Uniquement des groupes LDAP ou RADIUS",
+        "Uniquement des certificats PKI"
+      ],
+      "answer": 1,
+      "explain": "Le champ source d'une politique accepte : comptes locaux, utilisateurs LDAP/RADIUS, utilisateurs PKI et groupes FSSO."
+    },
+    {
+      "q": "Quelle action FortiGate déclenche-t-il lorsqu'un utilisateur ou groupe est présent dans le champ source d'une politique ?",
+      "choices": [
+        "Une authentification passive FSSO",
+        "Une authentification active (challenge d'authentification) sur ce flux",
+        "Une vérification de certificat PKI automatique",
+        "Une connexion silencieuse sans interaction"
+      ],
+      "answer": 1,
+      "explain": "La présence d'un utilisateur ou groupe dans le champ source déclenche une authentification active — FortiGate présente un challenge d'authentification à l'utilisateur."
+    },
+    {
+      "q": "Comment FortiGate authentifie-t-il les utilisateurs sur du trafic HTTP dans une politique avec utilisateur en source ?",
+      "choices": [
+        "Il bloque le trafic sans explication",
+        "Il redirige l'utilisateur vers une page de login et attend les identifiants (challenge HTTP)",
+        "Il consulte automatiquement FSSO",
+        "Il accepte le trafic sans authentification si l'IP est connue"
+      ],
+      "answer": 1,
+      "explain": "Pour du trafic HTTP, FortiGate redirige l'utilisateur vers sa page de login (challenge HTTP) et attend les identifiants avant d'autoriser le flux."
+    },
+    {
+      "q": "Quels éléments constituent le champ source d'une politique firewall avec authentification ?",
+      "choices": [
+        "IP source uniquement",
+        "Utilisateur/groupe uniquement",
+        "IP source + utilisateur ou groupe",
+        "Port source + utilisateur"
+      ],
+      "answer": 2,
+      "explain": "Pour l'authentification, le champ source doit contenir à la fois une adresse IP (ou plage) ET un utilisateur ou groupe."
+    },
+    {
+      "q": "Pourquoi DNS est-il spécifiquement autorisé avant authentification (et non HTTP) ?",
+      "choices": [
+        "Pour permettre l'accès aux serveurs de mise à jour FortiGuard",
+        "La résolution DNS est nécessaire pour atteindre la page de login FortiGate par son FQDN avant toute auth",
+        "DNS est plus sécurisé que HTTP pour le pré-auth",
+        "Pour permettre les vérifications de certificat CRL"
+      ],
+      "answer": 1,
+      "explain": "DNS doit être autorisé avant auth pour que la résolution FQDN fonctionne. Sans cela, la page de login FortiGate (référencée par nom) serait inaccessible."
+    },
+    {
+      "q": "Quelle est la différence principale entre Soft et Hard timeout ?",
+      "choices": [
+        "Soft = basé sur l'activité (inactivité), Hard = basé sur le temps total absolu",
+        "Soft = pour VPN, Hard = pour politiques firewall",
+        "Soft = déconnexion immédiate, Hard = avec avertissement",
+        "Ils sont identiques mais avec des valeurs par défaut différentes"
+      ],
+      "answer": 0,
+      "explain": "Soft timeout = déconnexion après inactivité (session maintenue si actif). Hard timeout = déconnexion après temps total absolu depuis la connexion."
+    },
+    {
+      "q": "Que fait l'option 'auth-on-demand always' par rapport au comportement par défaut ?",
+      "choices": [
+        "Elle désactive le challenge sur HTTP pour accélérer la navigation",
+        "Elle force le challenge même sans navigateur — par défaut, le challenge n'est déclenché que sur HTTP/HTTPS",
+        "Elle active l'authentification passive FSSO en priorité",
+        "Elle définit le timeout à une valeur infinie"
+      ],
+      "answer": 1,
+      "explain": "Par défaut, le challenge d'auth n'est déclenché que sur HTTP/HTTPS. 'auth-on-demand always' force le challenge sur n'importe quel flux, même non-HTTP."
+    },
+    {
+      "q": "Les groupes FSSO peuvent-ils être utilisés dans le champ source d'une politique firewall ?",
+      "choices": [
+        "Non, FSSO est uniquement pour le monitoring",
+        "Oui, les groupes FSSO peuvent être placés dans le champ source d'une politique",
+        "Non, FSSO ne supporte que les politiques VPN",
+        "Oui, mais uniquement en combinaison avec RADIUS"
+      ],
+      "answer": 1,
+      "explain": "Les groupes FSSO peuvent être placés dans le champ source d'une politique firewall, permettant ainsi l'authentification passive transparente pour les utilisateurs du domaine."
+    },
+    {
+      "q": "Quelle est la différence entre un utilisateur local et un utilisateur distant dans le contexte d'une politique firewall FortiGate ?",
+      "choices": [
+        "Les utilisateurs locaux passent par LDAP, les distants par la base locale",
+        "Les utilisateurs locaux sont dans la base FortiGate, les distants sont vérifiés sur un serveur LDAP/RADIUS externe",
+        "Il n'y a aucune différence dans la politique firewall",
+        "Les utilisateurs distants ne peuvent pas être mis en source"
+      ],
+      "answer": 1,
+      "explain": "Les utilisateurs locaux sont stockés dans la base FortiGate. Les utilisateurs distants (LDAP/RADIUS) sont vérifiés sur un serveur externe. Les deux peuvent être utilisés dans le champ source d'une politique."
+    }
+  ]
+}

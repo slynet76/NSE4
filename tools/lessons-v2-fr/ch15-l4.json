@@ -1,0 +1,238 @@
+{
+  "id": "ch15-l4",
+  "module": "FortiGate in the Cloud",
+  "title": "Déploiement CNF : AWS et Azure",
+  "durationMin": 8,
+  "content": "## Déploiement AWS CNF — Étapes\n\nLe déploiement de FortiGate CNF sur AWS suit les étapes suivantes :\n\n1. **Créer une instance CNF** dans le portail Fortinet CNF (portail web dédié)\n2. **Associer au compte AWS** via un IAM role ou un CloudFormation template — cela autorise Fortinet à déployer les ressources dans le compte AWS\n3. **Configurer des GWLBE** (Gateway Load Balancer Endpoints) dans chaque VPC à protéger\n4. **Modifier les route tables** du VPC pour diriger le trafic vers le GWLBE\n5. **Créer les politiques FirewallPolicy** dans le portail CNF\n\n> L'utilisation d'un **CloudFormation template** automatise la création des ressources AWS nécessaires (IAM role, GWLBE, route tables) en une seule opération.\n\n## Déploiement Azure CNF\n\nSur Azure, le déploiement FortiGate CNF s'effectue via :\n- **Azure Gateway Load Balancer** : mécanisme natif Azure pour rediriger le trafic vers des appliances virtuelles tierces\n- **Azure Firewall Manager** : FortiGate CNF apparaît comme **fournisseur de sécurité tiers** dans Azure Firewall Manager, permettant une intégration native dans l'écosystème Azure\n\n\n![Flux de déploiement FortiGate CNF sur AWS](diagram:0)\n\n## FortiManager Cloud\n\n**FortiManager Cloud** est la console centralisée pour gérer les politiques de plusieurs instances FortiGate CNF. Il permet :\n- Gestion unifiée des politiques firewall sur plusieurs déploiements CNF\n- Contrôle centralisé des objets (adresses, services, profils de sécurité)\n- Déploiement coordonné des configurations sur plusieurs instances\n\n## Monitoring CNF\n\nLes logs FortiGate CNF peuvent être envoyés vers :\n- **FortiAnalyzer Cloud** : solution SIEM Fortinet native pour l'analyse des logs\n- **Un SIEM externe** (Splunk, Azure Sentinel, AWS Security Hub, etc.)\n\n## Limites de FortiGate CNF\n\nFortiGate CNF présente des limites par rapport à une FortiGate VM :\n- **Moins de flexibilité** : certaines fonctionnalités FortiOS avancées ne sont pas disponibles\n- Moins de contrôle sur la configuration précise du moteur FortiOS\n- Dépendance aux capacités exposées par le portail CNF\n\n## Mises à jour automatiques\n\nUne particularité importante de FortiGate CNF est que les **mises à jour CNF sont gérées automatiquement par Fortinet**. Les patches FortiOS sont appliqués de façon transparente, sans fenêtre de maintenance à planifier par le client, contrairement à FortiGate VM où le client est responsable des mises à jour.",
+  "diagrams": [
+    {
+      "caption": "Flux de déploiement FortiGate CNF sur AWS",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='8' y='20' width='95' height='55' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='55' y='38' text-anchor='middle' fill='#3b82f6' font-size='8' font-family='monospace' font-weight='bold'>Compte AWS</text><text x='55' y='52' text-anchor='middle' fill='#e2e8f0' font-size='7' font-family='monospace'>IAM role</text><text x='55' y='65' text-anchor='middle' fill='#e2e8f0' font-size='7' font-family='monospace'>CloudFormation</text><polygon points='104,47 116,43 116,51' fill='#22c55e'/><line x1='103' y1='47' x2='116' y2='47' stroke='#22c55e' stroke-width='1.5'/><rect x='117' y='22' width='90' height='50' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='1.5'/><text x='162' y='38' text-anchor='middle' fill='#22c55e' font-size='8' font-family='monospace' font-weight='bold'>GWLB endpoint</text><text x='162' y='51' text-anchor='middle' fill='#e2e8f0' font-size='7' font-family='monospace'>dans chaque VPC</text><text x='162' y='64' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='monospace'>Route tables</text><polygon points='208,47 220,43 220,51' fill='#22c55e'/><line x1='207' y1='47' x2='220' y2='47' stroke='#22c55e' stroke-width='1.5'/><rect x='221' y='22' width='100' height='50' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='2'/><text x='271' y='38' text-anchor='middle' fill='#22c55e' font-size='8' font-family='monospace' font-weight='bold'>FortiGate CNF</text><text x='271' y='51' text-anchor='middle' fill='#e2e8f0' font-size='7' font-family='monospace'>Fortinet managed</text><text x='271' y='64' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='monospace'>FWaaS</text><polygon points='322,47 334,43 334,51' fill='#3b82f6'/><line x1='321' y1='47' x2='334' y2='47' stroke='#3b82f6' stroke-width='1.5'/><rect x='335' y='22' width='105' height='50' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='387' y='38' text-anchor='middle' fill='#3b82f6' font-size='8' font-family='monospace' font-weight='bold'>Portail CNF</text><text x='387' y='51' text-anchor='middle' fill='#e2e8f0' font-size='7' font-family='monospace'>FirewallPolicy</text><text x='387' y='64' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='monospace'>Fortinet portail</text><polygon points='441,47 453,43 453,51' fill='#3b82f6'/><line x1='440' y1='47' x2='453' y2='47' stroke='#3b82f6' stroke-width='1.5'/><rect x='454' y='28' width='78' height='38' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='493' y='44' text-anchor='middle' fill='#3b82f6' font-size='8' font-family='monospace'>FortiManager</text><text x='493' y='57' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='monospace'>Cloud</text><rect x='8' y='98' width='524' height='70' rx='4' fill='#1e293b' stroke='#94a3b8' stroke-width='1'/><text x='270' y='115' text-anchor='middle' fill='#94a3b8' font-size='9' font-family='monospace' font-weight='bold'>Monitoring CNF</text><text x='270' y='130' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>Logs → FortiAnalyzer Cloud ou SIEM externe</text><text x='270' y='145' text-anchor='middle' fill='#94a3b8' font-size='8' font-family='monospace'>Mises a jour automatiques par Fortinet — patches FortiOS transparents</text><text x='270' y='160' text-anchor='middle' fill='#94a3b8' font-size='8' font-family='monospace'>Azure : Azure Gateway Load Balancer + Azure Firewall Manager</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quelle est la première étape du déploiement de FortiGate CNF sur AWS ?",
+      "choices": [
+        "Configurer les GWLBE dans chaque VPC",
+        "Créer une instance CNF dans le portail Fortinet CNF",
+        "Modifier les route tables du VPC",
+        "Créer les politiques FirewallPolicy"
+      ],
+      "answer": 1,
+      "explain": "La première étape du déploiement AWS CNF est de créer une instance CNF dans le portail Fortinet CNF (portail web dédié)."
+    },
+    {
+      "q": "Quel outil AWS automatise la création des ressources nécessaires au déploiement CNF (IAM role, GWLBE, route tables) ?",
+      "choices": [
+        "AWS CLI",
+        "AWS CloudFormation template",
+        "AWS Config",
+        "AWS Systems Manager"
+      ],
+      "answer": 1,
+      "explain": "Un CloudFormation template automatise la création des ressources AWS nécessaires au déploiement CNF : IAM role, GWLBE, route tables, en une seule opération."
+    },
+    {
+      "q": "Comment FortiGate CNF apparaît-il dans Azure Firewall Manager ?",
+      "choices": [
+        "Comme une appliance virtuelle native Azure",
+        "Comme un fournisseur de sécurité tiers",
+        "Comme un service Azure natif",
+        "Comme une extension Azure Firewall"
+      ],
+      "answer": 1,
+      "explain": "Dans Azure Firewall Manager, FortiGate CNF apparaît comme un fournisseur de sécurité tiers, permettant une intégration native dans l'écosystème Azure."
+    },
+    {
+      "q": "Vers quoi les logs FortiGate CNF peuvent-ils être envoyés pour monitoring ?",
+      "choices": [
+        "Uniquement vers FortiAnalyzer Cloud",
+        "Vers FortiAnalyzer Cloud ou un SIEM externe",
+        "Uniquement vers un SIEM externe",
+        "Vers le portail CNF uniquement"
+      ],
+      "answer": 1,
+      "explain": "Les logs FortiGate CNF peuvent être envoyés vers FortiAnalyzer Cloud (solution Fortinet) ou vers un SIEM externe (Splunk, Azure Sentinel, AWS Security Hub, etc.)."
+    },
+    {
+      "q": "Quelle étape permet d'autoriser Fortinet à déployer des ressources dans le compte AWS pour CNF ?",
+      "choices": [
+        "Créer un VPN site-à-site entre Fortinet et AWS",
+        "Associer via un IAM role ou un CloudFormation template",
+        "Configurer les security groups AWS",
+        "Activer AWS Shield Advanced"
+      ],
+      "answer": 1,
+      "explain": "On autorise Fortinet à déployer des ressources dans le compte AWS en associant via un IAM role ou un CloudFormation template lors du déploiement CNF."
+    },
+    {
+      "q": "Quel mécanisme Azure est utilisé pour rediriger le trafic vers FortiGate CNF sur Azure ?",
+      "choices": [
+        "Azure ExpressRoute",
+        "Azure VPN Gateway",
+        "Azure Gateway Load Balancer",
+        "Azure Traffic Manager"
+      ],
+      "answer": 2,
+      "explain": "Sur Azure, le trafic est redirigé vers FortiGate CNF via l'Azure Gateway Load Balancer, mécanisme natif Azure pour les appliances virtuelles tierces."
+    },
+    {
+      "q": "Quelle est la principale limite de FortiGate CNF par rapport à FortiGate VM ?",
+      "choices": [
+        "FortiGate CNF ne peut pas filtrer le trafic HTTP",
+        "Moins de flexibilité — certaines fonctionnalités FortiOS avancées ne sont pas disponibles",
+        "FortiGate CNF ne supporte pas le multi-VPC",
+        "FortiGate CNF ne propose pas de haute disponibilité"
+      ],
+      "answer": 1,
+      "explain": "La principale limite de FortiGate CNF est qu'il offre moins de flexibilité que FortiGate VM, avec certaines fonctionnalités FortiOS avancées non disponibles."
+    },
+    {
+      "q": "Qui gère les mises à jour FortiOS sur FortiGate CNF ?",
+      "choices": [
+        "Le client lors de fenêtres de maintenance planifiées",
+        "AWS ou Azure automatiquement",
+        "Fortinet automatiquement de façon transparente",
+        "Le client via le portail CNF"
+      ],
+      "answer": 2,
+      "explain": "Les mises à jour CNF sont gérées automatiquement par Fortinet. Les patches FortiOS sont appliqués de façon transparente, sans fenêtre de maintenance à planifier par le client."
+    },
+    {
+      "q": "Quelle modification réseau est nécessaire dans chaque VPC pour intégrer FortiGate CNF sur AWS ?",
+      "choices": [
+        "Modifier les security groups AWS",
+        "Activer le VPC peering",
+        "Modifier les route tables du VPC pour diriger le trafic vers le GWLBE",
+        "Configurer un VPN site-à-site"
+      ],
+      "answer": 2,
+      "explain": "Pour intégrer FortiGate CNF, on modifie les route tables du VPC pour diriger le trafic vers les GWLBE (Gateway Load Balancer Endpoints) dans chaque VPC à protéger."
+    },
+    {
+      "q": "Quelle solution Fortinet permet d'analyser les logs de FortiGate CNF nativement ?",
+      "choices": [
+        "FortiClient Cloud",
+        "FortiAnalyzer Cloud",
+        "FortiManager Cloud",
+        "FortiPortal"
+      ],
+      "answer": 1,
+      "explain": "FortiAnalyzer Cloud est la solution SIEM Fortinet native pour l'analyse des logs de FortiGate CNF."
+    },
+    {
+      "q": "Qu'est-ce qu'un IAM role dans le contexte du déploiement AWS CNF ?",
+      "choices": [
+        "Un certificat SSL pour sécuriser les communications",
+        "Un rôle AWS qui autorise Fortinet à déployer des ressources dans le compte AWS",
+        "Une politique firewall CNF",
+        "Un type de VM FortiGate sur AWS"
+      ],
+      "answer": 1,
+      "explain": "Un IAM role est un mécanisme AWS qui autorise Fortinet (via le portail CNF) à déployer et gérer les ressources nécessaires dans le compte AWS du client."
+    },
+    {
+      "q": "Comment FortiManager Cloud complète-t-il le portail CNF ?",
+      "choices": [
+        "Il remplace complètement le portail CNF",
+        "Il offre une gestion centralisée des politiques sur plusieurs instances CNF",
+        "Il gère uniquement les logs CNF",
+        "Il configure les GWLBE à la place du portail CNF"
+      ],
+      "answer": 1,
+      "explain": "FortiManager Cloud offre une gestion centralisée des politiques sur plusieurs instances CNF, complétant le portail CNF pour les déploiements multi-instances."
+    },
+    {
+      "q": "Quel avantage majeur les mises à jour automatiques CNF apportent-elles au client ?",
+      "choices": [
+        "Le client n'a pas à planifier de fenêtres de maintenance pour les patches FortiOS",
+        "Le client peut choisir la version FortiOS de son choix",
+        "Les mises à jour améliorent automatiquement les performances réseau",
+        "Les mises à jour sont appliquées instantanément sans aucun impact"
+      ],
+      "answer": 0,
+      "explain": "Les mises à jour automatiques CNF permettent au client de ne pas avoir à planifier de fenêtres de maintenance pour les patches FortiOS, contrairement à FortiGate VM où le client gère les mises à jour."
+    },
+    {
+      "q": "Dans quelles circonstances FortiGate VM serait-il préféré à FortiGate CNF ?",
+      "choices": [
+        "Quand on veut éviter de gérer des VMs",
+        "Quand des fonctionnalités FortiOS avancées ou une grande flexibilité de configuration sont nécessaires",
+        "Quand on déploie dans Azure uniquement",
+        "Quand le budget est très limité"
+      ],
+      "answer": 1,
+      "explain": "FortiGate VM est préféré à CNF quand on a besoin de fonctionnalités FortiOS avancées non disponibles dans CNF, ou quand une grande flexibilité de configuration est requise."
+    },
+    {
+      "q": "Quelle est la cinquième et dernière étape clé du déploiement AWS CNF après avoir configuré les GWLBE et les route tables ?",
+      "choices": [
+        "Installer FortiOS manuellement",
+        "Configurer le VPN IPsec vers AWS",
+        "Créer les politiques FirewallPolicy dans le portail CNF",
+        "Activer la licence BYOL"
+      ],
+      "answer": 2,
+      "explain": "Après avoir configuré les GWLBE et modifié les route tables, l'étape finale est de créer les politiques FirewallPolicy dans le portail CNF Fortinet pour contrôler le trafic inspecté."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quelle est la première étape du déploiement de FortiGate CNF sur AWS ?",
+      "choices": [
+        "Configurer les GWLBE dans chaque VPC",
+        "Créer une instance CNF dans le portail Fortinet CNF",
+        "Modifier les route tables du VPC",
+        "Créer les politiques FirewallPolicy"
+      ],
+      "answer": 1,
+      "explain": "La première étape du déploiement AWS CNF est de créer une instance CNF dans le portail Fortinet CNF (portail web dédié)."
+    },
+    {
+      "q": "Comment FortiGate CNF apparaît-il dans Azure Firewall Manager ?",
+      "choices": [
+        "Comme une appliance virtuelle native Azure",
+        "Comme un fournisseur de sécurité tiers",
+        "Comme un service Azure natif",
+        "Comme une extension Azure Firewall"
+      ],
+      "answer": 1,
+      "explain": "Dans Azure Firewall Manager, FortiGate CNF apparaît comme un fournisseur de sécurité tiers, permettant une intégration native dans l'écosystème Azure."
+    },
+    {
+      "q": "Qui gère les mises à jour FortiOS sur FortiGate CNF ?",
+      "choices": [
+        "Le client lors de fenêtres de maintenance planifiées",
+        "AWS ou Azure automatiquement",
+        "Fortinet automatiquement de façon transparente",
+        "Le client via le portail CNF"
+      ],
+      "answer": 2,
+      "explain": "Les mises à jour CNF sont gérées automatiquement par Fortinet. Les patches FortiOS sont appliqués de façon transparente, sans fenêtre de maintenance à planifier par le client."
+    },
+    {
+      "q": "Quel outil AWS automatise la création des ressources nécessaires au déploiement CNF ?",
+      "choices": [
+        "AWS CLI",
+        "AWS CloudFormation template",
+        "AWS Config",
+        "AWS Systems Manager"
+      ],
+      "answer": 1,
+      "explain": "Un CloudFormation template automatise la création des ressources AWS nécessaires au déploiement CNF : IAM role, GWLBE, route tables, en une seule opération."
+    },
+    {
+      "q": "Vers quoi les logs FortiGate CNF peuvent-ils être envoyés pour monitoring ?",
+      "choices": [
+        "Uniquement vers FortiAnalyzer Cloud",
+        "Vers FortiAnalyzer Cloud ou un SIEM externe",
+        "Uniquement vers un SIEM externe",
+        "Vers le portail CNF uniquement"
+      ],
+      "answer": 1,
+      "explain": "Les logs FortiGate CNF peuvent être envoyés vers FortiAnalyzer Cloud (solution Fortinet) ou vers un SIEM externe (Splunk, Azure Sentinel, AWS Security Hub, etc.)."
+    }
+  ]
+}

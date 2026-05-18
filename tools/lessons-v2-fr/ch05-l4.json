@@ -1,0 +1,181 @@
+{
+  "id": "ch05-l4",
+  "module": "Firewall Authentication",
+  "title": "Authentification à deux facteurs et tokens",
+  "durationMin": 7,
+  "content": "## Principe de la 2FA\n\nL'authentification à deux facteurs (**2FA**) exige deux preuves d'identité distinctes :\n\n- **Quelque chose que vous connaissez** : mot de passe, code PIN.\n- **Quelque chose que vous possédez** : token matériel, certificat, smartphone.\n\nCes deux facteurs combinés augmentent significativement la sécurité des accès.\n\n## Types de tokens FortiGate\n\n### FortiToken (matériel)\nPetit dispositif physique générant des mots de passe à usage unique (**OTP**). Il existe en mode **TOTP** (Time-based OTP — synchronisé sur l'heure) et **HOTP** (HMAC-based OTP — basé sur un compteur).\n\n### FortiToken Mobile\nApplication smartphone qui remplace le token matériel. **2 activations gratuites** sont incluses par FortiGate.\n\n### Token par e-mail\nFortiGate envoie un OTP par e-mail à l'utilisateur.\n\n### Token par SMS\nFortiGate envoie un OTP par SMS à l'utilisateur.\n\n\n![Flux d'authentification 2FA avec FortiToken sur FortiGate](diagram:0)\n\n## Importance du NTP pour TOTP\n\nLe TOTP (Time-based OTP) génère des codes valables quelques secondes. **NTP est essentiel** pour que FortiGate et le token restent synchronisés sur la même heure. Sans NTP, les codes seront rejetés.\n\n## Seed — la graine du token\n\nLe **seed** est un **nombre aléatoire unique assigné à chaque token**. Il constitue la base de la génération OTP. Chaque token a un seed différent, ce qui garantit l'unicité des codes.\n\n## FortiToken Mobile gratuit\n\nChaque FortiGate dispose de **2 activations gratuites** de FortiToken Mobile.\n\n## Partage de tokens entre plusieurs FortiGates\n\nSi plusieurs FortiGates doivent valider le même FortiToken, il faut utiliser **FortiAuthenticator** comme serveur de validation centralisé. Un token ne peut être activé que sur un seul FortiGate à la fois — FortiAuthenticator résout cette limitation.\n\n## Limitation : proxies explicites\n\nLa 2FA **ne fonctionne pas avec les proxies explicites** (explicit proxy). C'est une limitation connue de FortiGate.",
+  "diagrams": [
+    {
+      "caption": "Flux d'authentification 2FA avec FortiToken sur FortiGate",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8f9fa' rx='8'/><rect x='10' y='55' width='90' height='50' rx='6' fill='#dbeafe' stroke='#3b82f6' stroke-width='1.5'/><text x='55' y='78' text-anchor='middle' font-size='10' font-weight='bold' fill='#1e40af'>Utilisateur</text><text x='55' y='93' text-anchor='middle' font-size='9' fill='#1e40af'>+ FortiToken</text><rect x='255' y='55' width='90' height='50' rx='6' fill='#dcfce7' stroke='#22c55e' stroke-width='1.5'/><text x='300' y='78' text-anchor='middle' font-size='10' font-weight='bold' fill='#166534'>FortiGate</text><text x='300' y='93' text-anchor='middle' font-size='9' fill='#166534'>Vérifie OTP</text><rect x='490' y='35' width='100' height='30' rx='4' fill='#fef9c3' stroke='#eab308' stroke-width='1'/><text x='540' y='55' text-anchor='middle' font-size='9' fill='#713f12'>FortiAuthenticator</text><rect x='490' y='95' width='100' height='30' rx='4' fill='#e0e7ff' stroke='#6366f1' stroke-width='1'/><text x='540' y='115' text-anchor='middle' font-size='9' fill='#3730a3'>NTP Server</text><line x1='100' y1='80' x2='255' y2='80' stroke='#6b7280' stroke-width='1.5'/><text x='177' y='72' text-anchor='middle' font-size='9' fill='#374151'>login+OTP</text><line x1='345' y1='65' x2='490' y2='55' stroke='#eab308' stroke-width='1' stroke-dasharray='4'/><text x='420' y='55' text-anchor='middle' font-size='8' fill='#713f12'>multi-FGT</text><line x1='345' y1='90' x2='490' y2='108' stroke='#6366f1' stroke-width='1' stroke-dasharray='4'/><text x='420' y='108' text-anchor='middle' font-size='8' fill='#3730a3'>sync temps</text><text x='55' y='125' text-anchor='middle' font-size='8' fill='#6b7280'>Seed = base OTP</text><text x='300' y='125' text-anchor='middle' font-size='8' fill='#6b7280'>2 FortiToken Mobile gratuits</text><text x='300' y='145' text-anchor='middle' font-size='8' fill='#ef4444'>2FA incompatible avec explicit proxy</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Pourquoi NTP est-il essentiel pour l'authentification 2FA avec FortiToken ?",
+      "choices": [
+        "NTP sécurise le canal de communication avec le token",
+        "Le TOTP génère des codes basés sur l'heure — NTP synchronise FortiGate et le token pour que les codes correspondent",
+        "NTP est nécessaire pour activer la licence FortiToken",
+        "NTP chiffre les seeds des tokens"
+      ],
+      "answer": 1,
+      "explain": "TOTP (Time-based OTP) génère des codes valables quelques secondes. Sans NTP, FortiGate et le token peuvent avoir des heures différentes et les codes seront rejetés."
+    },
+    {
+      "q": "Combien d'activations FortiToken Mobile gratuites sont incluses par FortiGate ?",
+      "choices": [
+        "1",
+        "2",
+        "5",
+        "10"
+      ],
+      "answer": 1,
+      "explain": "Chaque FortiGate inclut 2 activations gratuites de FortiToken Mobile. Des licences supplémentaires doivent être achetées."
+    },
+    {
+      "q": "Quelle solution permet à plusieurs FortiGates de partager le même FortiToken ?",
+      "choices": [
+        "FortiManager",
+        "FortiAnalyzer",
+        "FortiAuthenticator",
+        "FortiGuard"
+      ],
+      "answer": 2,
+      "explain": "FortiAuthenticator est le serveur de validation centralisé. Il permet à plusieurs FortiGates de valider les mêmes tokens sans duplication d'activation."
+    },
+    {
+      "q": "Avec quel type de proxy la 2FA FortiGate est-elle incompatible ?",
+      "choices": [
+        "Proxy transparent",
+        "Proxy SSL",
+        "Proxy explicite (explicit proxy)",
+        "Proxy SOCKS"
+      ],
+      "answer": 2,
+      "explain": "La 2FA ne fonctionne pas avec les proxies explicites sur FortiGate. C'est une limitation connue de la plateforme."
+    },
+    {
+      "q": "Qu'est-ce que le 'seed' d'un token FortiToken ?",
+      "choices": [
+        "Le PIN de déverrouillage du token",
+        "Le numéro de série du token",
+        "Un nombre aléatoire unique assigné au token, qui est la base de la génération OTP",
+        "La durée de validité de chaque OTP"
+      ],
+      "answer": 2,
+      "explain": "Le seed est un nombre aléatoire unique assigné à chaque token. Il constitue la base mathématique de la génération des OTP (TOTP/HOTP)."
+    },
+    {
+      "q": "Quelle est la différence entre TOTP et HOTP ?",
+      "choices": [
+        "TOTP = basé sur le temps, HOTP = basé sur un compteur",
+        "TOTP = matériel, HOTP = application mobile",
+        "TOTP = pour VPN, HOTP = pour WiFi",
+        "Ils sont identiques"
+      ],
+      "answer": 0,
+      "explain": "TOTP (Time-based OTP) génère des codes basés sur l'heure courante. HOTP (HMAC-based OTP) génère des codes basés sur un compteur d'utilisations."
+    },
+    {
+      "q": "Quels sont les deux facteurs requis par la 2FA ?",
+      "choices": [
+        "Quelque chose que vous connaissez + quelque chose que vous êtes",
+        "Quelque chose que vous connaissez + quelque chose que vous possédez",
+        "Deux mots de passe différents",
+        "Un mot de passe + une empreinte biométrique uniquement"
+      ],
+      "answer": 1,
+      "explain": "La 2FA combine 'quelque chose que vous connaissez' (mot de passe, PIN) et 'quelque chose que vous possédez' (token, smartphone, certificat)."
+    },
+    {
+      "q": "Qu'est-ce que FortiToken Mobile ?",
+      "choices": [
+        "Un token matériel USB",
+        "Une application smartphone remplaçant le token physique pour générer des OTP",
+        "Un service cloud FortiGuard",
+        "Un SMS automatique envoyé par FortiGate"
+      ],
+      "answer": 1,
+      "explain": "FortiToken Mobile est une application smartphone qui génère des OTP. Elle remplace le token matériel FortiToken avec la commodité d'un smartphone."
+    },
+    {
+      "q": "Quelle est la différence entre FortiToken (matériel) et FortiToken Mobile ?",
+      "choices": [
+        "FortiToken matériel utilise HOTP, FortiToken Mobile utilise TOTP uniquement",
+        "FortiToken est un dispositif physique, FortiToken Mobile est une application smartphone",
+        "FortiToken Mobile n'est pas gratuit, FortiToken matériel l'est",
+        "Ils sont identiques en fonctionnement"
+      ],
+      "answer": 1,
+      "explain": "FortiToken est un dispositif physique (clé/carte), FortiToken Mobile est une application smartphone. Les deux génèrent des OTP mais avec des supports différents."
+    },
+    {
+      "q": "Quels types de tokens e-mail et SMS existent dans FortiGate 2FA ?",
+      "choices": [
+        "FortiGate envoie un certificat par e-mail ou un code QR par SMS",
+        "FortiGate envoie un OTP par e-mail ou par SMS à l'utilisateur",
+        "FortiGate envoie un lien de validation par e-mail uniquement",
+        "Il n'y a pas de token e-mail ou SMS dans FortiGate"
+      ],
+      "answer": 1,
+      "explain": "FortiGate supporte les tokens e-mail (OTP envoyé par courriel) et SMS (OTP envoyé par message texte) comme méthodes 2FA supplémentaires."
+    },
+    {
+      "q": "Pourquoi NTP est-il spécifiquement important pour TOTP et non pour HOTP ?",
+      "choices": [
+        "NTP est important pour les deux de la même façon",
+        "TOTP base ses codes sur l'heure courante — une désynchronisation horaire invalide les codes. HOTP utilise un compteur, pas l'heure.",
+        "HOTP nécessite NTP pour synchroniser le compteur",
+        "NTP n'est pas lié aux tokens"
+      ],
+      "answer": 1,
+      "explain": "TOTP génère des codes dépendants de l'heure — une différence de quelques secondes entre FortiGate et le token invalide les codes. HOTP utilise un compteur d'événements, indépendant de l'heure."
+    },
+    {
+      "q": "Que se passe-t-il si un même FortiToken est activé sur deux FortiGates différents sans FortiAuthenticator ?",
+      "choices": [
+        "Les deux FortiGates partagent automatiquement les activations",
+        "C'est impossible — un token ne peut être activé que sur un seul FortiGate à la fois",
+        "Le second FortiGate doit acheter une licence séparée",
+        "Le token génère deux codes différents simultanément"
+      ],
+      "answer": 1,
+      "explain": "Un token ne peut être activé que sur un seul FortiGate. FortiAuthenticator est nécessaire pour centraliser la validation et permettre le partage entre plusieurs FortiGates."
+    },
+    {
+      "q": "À quoi sert le seed dans la génération OTP ?",
+      "choices": [
+        "À chiffrer le canal entre le token et FortiGate",
+        "À définir la durée de validité de l'OTP",
+        "C'est le nombre aléatoire unique de base à partir duquel l'algorithme TOTP/HOTP calcule les codes",
+        "À identifier le modèle du token"
+      ],
+      "answer": 2,
+      "explain": "Le seed est la valeur secrète partagée entre le token et le serveur. L'algorithme OTP utilise ce seed (combiné à l'heure ou au compteur) pour calculer des codes identiques des deux côtés."
+    },
+    {
+      "q": "Quelle est la limitation de la 2FA avec les proxies explicites ?",
+      "choices": [
+        "La 2FA fonctionne mais avec un délai plus long",
+        "La 2FA fonctionne uniquement avec FortiToken matériel",
+        "La 2FA ne fonctionne pas du tout avec les proxies explicites",
+        "La 2FA est limitée à 1 facteur sur proxy explicite"
+      ],
+      "answer": 2,
+      "explain": "La 2FA est incompatible avec les proxies explicites (explicit proxy) sur FortiGate. C'est une limitation connue de la plateforme."
+    },
+    {
+      "q": "Quel est le rôle de FortiAuthenticator dans une infrastructure 2FA multi-FortiGates ?",
+      "choices": [
+        "Générer les seeds pour tous les tokens",
+        "Servir de serveur de validation centralisé pour les tokens, permettant à plusieurs FortiGates de valider les mêmes tokens",
+        "Remplacer NTP pour la synchronisation horaire",
+        "Stocker les sauvegardes des configurations FortiGate"
+      ],
+      "answer": 1,
+      "explain": "FortiAuthenticator centralise la validation des tokens. Il permet à plusieurs FortiGates de valider les mêmes FortiTokens sans nécessiter une activation par équipement."
+    }
+  ]
+}

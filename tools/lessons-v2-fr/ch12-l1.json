@@ -1,0 +1,181 @@
+{
+  "id": "ch12-l1",
+  "module": "SD-WAN Configuration and Monitoring",
+  "title": "SD-WAN : principes et cas d'usage",
+  "durationMin": 7,
+  "content": "## SD-WAN : principes et cas d'usage\n\n![Trois cas d'usage SD-WAN : DIA, Hub-and-Spoke, RIA](diagram:0)\n\n### Définition\n**SD-WAN** (Software-Defined WAN) est une architecture qui permet la **sélection dynamique du chemin par application**. Fortinet propose le **Secure SD-WAN**, qui intègre nativement IPsec, UTM, link monitoring, ISDB, traffic shaping et load balancing dans FortiOS.\n\n### Direction du trafic\nSD-WAN contrôle uniquement le trafic **Egress** (sortant). Le trafic retour (ingress) peut emprunter un autre lien : SD-WAN **ne contrôle pas l'ingress**.\n\n### Underlay vs Overlay\n- **Underlay** = lien physique fourni par l'ISP : DSL, fibre, MPLS, 4G, LTE. C'est le support réseau réel.\n- **Overlay** = tunnel virtuel (IPsec) construit sur l'underlay. L'overlay offre contrôle d'adressage et confidentialité.\n\n### Bénéfices\n- **Hybrid WAN** : combiner liens publics (internet) + privés (MPLS) pour optimiser les coûts et la performance.\n- Meilleure performance applicative grâce à la sélection intelligente du chemin.\n- Économies par rapport à une architecture MPLS pure.\n\n### Cas d'usage principaux\n\n#### DIA — Direct Internet Access (local breakout)\nSortie directe vers internet sur plusieurs liens depuis le site distant. Pas de backhauling vers le hub. Idéal pour SaaS (Office 365, Salesforce).\n\n#### Site-to-site hub-and-spoke avec IPsec overlays\nLes sites spoke établissent des tunnels IPsec overlay vers le hub. Le protocole **BGP** est recommandé pour la scalabilité du routage hub-and-spoke.\n\n#### RIA — Remote Internet Access (remote breakout)\nLe trafic internet des sites distants est **ramené au hub** pour une inspection centralisée (UTM, pare-feu). Le hub assure la sortie internet après inspection.\n\n### Speed tests\nFortiGate peut lancer des **speed tests automatiques** contre les serveurs **FortiGuard** pour mesurer la qualité des liens underlay.\n\n### Récapitulatif NSE4\n- SD-WAN gère **Egress uniquement**\n- **Underlay** = lien physique ISP (DSL, fibre, MPLS, 4G, LTE)\n- **Overlay** = tunnel virtuel (IPsec)\n- **BGP** recommandé pour hub-and-spoke scalable\n- **DIA** = sortie directe multi-liens ; **RIA** = inspection centralisée au hub\n\n> **RIA** : le trafic internet des spokes est rapatrié au hub de **manière** centralisée pour inspection unifiée.",
+  "diagrams": [
+    {
+      "caption": "Trois cas d'usage SD-WAN : DIA, Hub-and-Spoke, RIA",
+      "height": 200,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 200'><rect width='600' height='200' fill='#f8f9fa'/><rect x='10' y='10' width='175' height='175' rx='8' fill='#e3f2fd' stroke='#1565c0' stroke-width='1.5'/><text x='97' y='30' text-anchor='middle' font-size='12' font-weight='bold' fill='#1565c0'>DIA</text><text x='97' y='44' text-anchor='middle' font-size='10' fill='#1565c0'>Direct Internet Access</text><rect x='30' y='60' width='60' height='28' rx='4' fill='#1565c0'/><text x='60' y='79' text-anchor='middle' font-size='10' fill='white'>Site A</text><rect x='105' y='60' width='60' height='28' rx='4' fill='#1565c0'/><text x='135' y='79' text-anchor='middle' font-size='10' fill='white'>Site B</text><line x1='60' y1='88' x2='60' y2='120' stroke='#42a5f5' stroke-width='2'/><line x1='135' y1='88' x2='135' y2='120' stroke='#42a5f5' stroke-width='2'/><ellipse cx='97' cy='148' rx='35' ry='20' fill='#bbdefb' stroke='#1565c0' stroke-width='1.5'/><text x='97' y='152' text-anchor='middle' font-size='10' fill='#1565c0'>Internet</text><text x='97' y='185' text-anchor='middle' font-size='9' fill='#555'>Multi-liens directs</text><rect x='212' y='10' width='175' height='175' rx='8' fill='#e8f5e9' stroke='#2e7d32' stroke-width='1.5'/><text x='299' y='30' text-anchor='middle' font-size='12' font-weight='bold' fill='#2e7d32'>Hub-and-Spoke</text><text x='299' y='44' text-anchor='middle' font-size='10' fill='#2e7d32'>IPsec overlays + BGP</text><rect x='262' y='55' width='75' height='28' rx='4' fill='#2e7d32'/><text x='299' y='74' text-anchor='middle' font-size='10' fill='white'>Hub</text><rect x='222' y='120' width='55' height='25' rx='4' fill='#66bb6a'/><text x='249' y='137' text-anchor='middle' font-size='9' fill='white'>Spoke 1</text><rect x='322' y='120' width='55' height='25' rx='4' fill='#66bb6a'/><text x='349' y='137' text-anchor='middle' font-size='9' fill='white'>Spoke 2</text><line x1='299' y1='83' x2='249' y2='120' stroke='#43a047' stroke-width='1.5' stroke-dasharray='4,3'/><line x1='299' y1='83' x2='349' y2='120' stroke='#43a047' stroke-width='1.5' stroke-dasharray='4,3'/><text x='299' y='185' text-anchor='middle' font-size='9' fill='#555'>BGP pour scalabilité</text><rect x='414' y='10' width='175' height='175' rx='8' fill='#fce4ec' stroke='#880e4f' stroke-width='1.5'/><text x='501' y='30' text-anchor='middle' font-size='12' font-weight='bold' fill='#880e4f'>RIA</text><text x='501' y='44' text-anchor='middle' font-size='10' fill='#880e4f'>Remote Internet Access</text><rect x='434' y='58' width='55' height='25' rx='4' fill='#c2185b'/><text x='461' y='75' text-anchor='middle' font-size='9' fill='white'>Spoke</text><rect x='462' y='108' width='78' height='28' rx='4' fill='#880e4f'/><text x='501' y='127' text-anchor='middle' font-size='10' fill='white'>Hub UTM</text><ellipse x='501' cy='165' rx='28' ry='16' cx='501' fill='#f8bbd0' stroke='#880e4f' stroke-width='1.5'/><text x='501' y='169' text-anchor='middle' font-size='9' fill='#880e4f'>Internet</text><line x1='461' y1='83' x2='490' y2='108' stroke='#e91e63' stroke-width='1.5' stroke-dasharray='4,3'/><line x1='501' y1='136' x2='501' y2='149' stroke='#e91e63' stroke-width='2'/><text x='501' y='192' text-anchor='middle' font-size='9' fill='#555'>Inspection centralisée</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quelle direction du trafic SD-WAN contrôle-t-il ?",
+      "choices": [
+        "Ingress uniquement",
+        "Egress uniquement",
+        "Ingress et Egress",
+        "Ni ingress ni egress"
+      ],
+      "answer": 1,
+      "explain": "SD-WAN contrôle uniquement le trafic Egress (sortant). Le trafic retour (ingress) peut emprunter un autre lien indépendamment."
+    },
+    {
+      "q": "Qu'est-ce qu'un lien Underlay dans une architecture SD-WAN ?",
+      "choices": [
+        "Un tunnel IPsec entre deux sites",
+        "Un lien physique fourni par l'ISP (DSL, fibre, MPLS, 4G, LTE)",
+        "Une interface loopback virtuelle",
+        "Un VPN SSL entre utilisateurs distants"
+      ],
+      "answer": 1,
+      "explain": "L'underlay désigne le lien physique réel fourni par l'ISP : DSL, fibre, MPLS, 4G, LTE. C'est le support réseau sur lequel repose l'overlay."
+    },
+    {
+      "q": "Qu'est-ce qu'un lien Overlay dans une architecture SD-WAN ?",
+      "choices": [
+        "Un lien MPLS dédié loué à l'opérateur",
+        "Un port physique FortiGate supplémentaire",
+        "Un tunnel virtuel (IPsec) construit sur l'underlay",
+        "Une interface DSL avec QoS activée"
+      ],
+      "answer": 2,
+      "explain": "L'overlay est un tunnel virtuel, typiquement IPsec, construit au-dessus de l'underlay. Il offre contrôle d'adressage et confidentialité via ESP."
+    },
+    {
+      "q": "Quel est le nom commercial de la solution SD-WAN de Fortinet ?",
+      "choices": [
+        "FortiWAN Advanced",
+        "Secure SD-WAN",
+        "FortiLink SD-WAN",
+        "Dynamic Path Control"
+      ],
+      "answer": 1,
+      "explain": "Fortinet appelle sa solution Secure SD-WAN. Elle intègre nativement IPsec, UTM, link monitoring, ISDB, traffic shaping et load balancing dans FortiOS."
+    },
+    {
+      "q": "Que signifie DIA dans le contexte SD-WAN ?",
+      "choices": [
+        "Dynamic Interface Assignment",
+        "Direct Internet Access",
+        "Dual ISP Architecture",
+        "Distributed Inspection Agent"
+      ],
+      "answer": 1,
+      "explain": "DIA (Direct Internet Access) correspond au cas d'usage de sortie directe vers internet sur plusieurs liens depuis le site distant, sans backhauling vers un hub."
+    },
+    {
+      "q": "Dans le cas d'usage RIA, où est effectuée l'inspection du trafic internet ?",
+      "choices": [
+        "Sur chaque site spoke localement",
+        "Directement par le FAI",
+        "Au hub, de manière centralisée",
+        "Sur FortiCloud uniquement"
+      ],
+      "answer": 2,
+      "explain": "RIA (Remote Internet Access) ramène le trafic internet des sites distants au hub pour une inspection centralisée (UTM, pare-feu). Le hub assure la sortie internet après inspection."
+    },
+    {
+      "q": "Quel protocole de routage est recommandé pour les architectures hub-and-spoke SD-WAN scalables ?",
+      "choices": [
+        "OSPF",
+        "RIP v2",
+        "BGP",
+        "IS-IS"
+      ],
+      "answer": 2,
+      "explain": "BGP est recommandé pour les architectures hub-and-spoke avec IPsec overlays car il offre la scalabilité nécessaire à la distribution des routes entre hub et spokes."
+    },
+    {
+      "q": "Quel est le bénéfice principal d'une architecture Hybrid WAN avec SD-WAN ?",
+      "choices": [
+        "Remplacer entièrement MPLS par des liens 4G uniquement",
+        "Combiner des liens publics (internet) et privés (MPLS) pour optimiser coûts et performance",
+        "Éliminer tous les tunnels IPsec du réseau",
+        "Centraliser toute la configuration réseau sur un seul routeur"
+      ],
+      "answer": 1,
+      "explain": "L'Hybrid WAN permet de combiner des liens publics (internet) et des liens privés (MPLS) afin d'optimiser à la fois les coûts et la performance applicative."
+    },
+    {
+      "q": "Contre quels serveurs FortiGate effectue-t-il les speed tests automatiques pour mesurer la qualité des liens ?",
+      "choices": [
+        "Les serveurs Microsoft Azure",
+        "Les serveurs FortiGuard",
+        "Les serveurs NTP publics",
+        "Le FortiManager du client"
+      ],
+      "answer": 1,
+      "explain": "FortiGate lance des speed tests automatiques contre les serveurs FortiGuard pour mesurer la qualité et la bande passante des liens underlay SD-WAN."
+    },
+    {
+      "q": "Qu'est-ce que SD-WAN ne contrôle PAS ?",
+      "choices": [
+        "La sélection du chemin sortant (egress)",
+        "Le trafic ingress (retour)",
+        "Le load balancing entre membres",
+        "La sélection par application"
+      ],
+      "answer": 1,
+      "explain": "SD-WAN ne contrôle pas le trafic ingress. La direction contrôlée est exclusivement l'egress (sortant). Le retour peut emprunter un autre lien."
+    },
+    {
+      "q": "Quelle est la différence fondamentale entre underlay et overlay ?",
+      "choices": [
+        "L'underlay est chiffré, l'overlay ne l'est pas",
+        "L'underlay est un lien physique ISP, l'overlay est un tunnel virtuel (IPsec) construit dessus",
+        "L'underlay est géré par FortiManager, l'overlay par FortiAnalyzer",
+        "L'underlay supporte uniquement IPv6, l'overlay uniquement IPv4"
+      ],
+      "answer": 1,
+      "explain": "L'underlay est le lien physique réel fourni par l'ISP (DSL, fibre, MPLS, 4G, LTE). L'overlay est un tunnel virtuel IPsec construit sur cet underlay."
+    },
+    {
+      "q": "Dans le cas d'usage RIA, quel trafic est ramené au hub pour inspection centralisée ?",
+      "choices": [
+        "Uniquement le trafic VoIP inter-sites",
+        "Le trafic internet des sites distants",
+        "Les mises à jour FortiOS",
+        "Le trafic MPLS privé uniquement"
+      ],
+      "answer": 1,
+      "explain": "RIA (Remote Internet Access) ramène le trafic internet des sites distants au hub pour une inspection centralisée par l'UTM et le pare-feu du hub."
+    },
+    {
+      "q": "La technologie LTE peut-elle servir de lien Underlay SD-WAN ?",
+      "choices": [
+        "Non, LTE n'est pas supporté comme underlay",
+        "Oui, LTE est un lien physique ISP valide pour l'underlay",
+        "Uniquement en mode overlay IPsec",
+        "Seulement avec un FortiExtender dédié"
+      ],
+      "answer": 1,
+      "explain": "LTE est explicitement listé parmi les types de liens underlay supportés : DSL, fibre, MPLS, 4G, LTE. Tout lien physique fourni par un ISP peut être underlay."
+    },
+    {
+      "q": "Quelles fonctionnalités FortiOS sont intégrées dans le Secure SD-WAN de Fortinet ?",
+      "choices": [
+        "Uniquement le load balancing et le failover",
+        "IPsec, UTM, link monitoring, ISDB, traffic shaping et load balancing",
+        "Seulement IPsec et le monitoring de liens",
+        "BGP, OSPF, RIP et les tunnels GRE"
+      ],
+      "answer": 1,
+      "explain": "Le Secure SD-WAN Fortinet intègre nativement dans FortiOS : IPsec, UTM, link monitoring, ISDB (Internet Service Database), traffic shaping et load balancing."
+    },
+    {
+      "q": "Quel cas d'usage SD-WAN permet une sortie directe vers des services SaaS comme Office 365 sans passer par un hub ?",
+      "choices": [
+        "RIA (Remote Internet Access)",
+        "Hub-and-spoke avec BGP",
+        "DIA (Direct Internet Access)",
+        "MPLS private breakout"
+      ],
+      "answer": 2,
+      "explain": "DIA (Direct Internet Access / local breakout) permet une sortie directe vers internet et les services SaaS depuis le site distant, sans backhauling vers un hub central."
+    }
+  ]
+}

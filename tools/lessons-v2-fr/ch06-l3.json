@@ -1,0 +1,181 @@
+{
+  "id": "ch06-l3",
+  "module": "Fortinet Single Sign-On (FSSO)",
+  "title": "Configuration de FortiGate et des agents",
+  "durationMin": 7,
+  "content": "## Configuration FSSO côté FortiGate\n\nLa configuration FSSO sur FortiGate se fait dans **Security Fabric > External Connectors**. Deux types de connecteurs sont disponibles :\n\n- **Poll Active Directory Server** : mode sans agent (agentless), FortiGate interroge directement le DC\n- **Fortinet Single-Sign-On Agent** : pour les collector agents Windows\n\n### Configuration Agentless (Poll AD)\n\nEn mode agentless, il faut configurer :\n- L'adresse IP du contrôleur de domaine\n- Les identifiants administrateur (compte de service)\n- Un serveur LDAP associé (indispensable pour la résolution des groupes)\n\n### Configuration avec Collector Agent\n\nEn mode collector, FortiGate déclare :\n- L'adresse IP du collector\n- Le mot de passe partagé (shared secret)\n\n**Modes d'accès** :\n| Mode | Filtrage | Prérequis collector |\n|------|----------|---------------------|\n| Collector Agent mode | Filtres définis sur le collector | Mode Standard ou Advanced |\n| Local mode | Filtres définis sur FortiGate via LDAP | Collector DOIT être en mode Advanced |\n\n> **Bonne pratique** : définir les filtres sur le collector (pas via LDAP sur FortiGate). Si le serveur LDAP tombe, le collector continue à collecter les événements de connexion.\n\n## Téléchargement et versions des agents\n\nLes agents se téléchargent depuis **Fortinet Support** (support.fortinet.com) :\n\n| Fichier | Description |\n|---------|-------------|\n| `DC_Agent_Setup` | Agent installé sur chaque contrôleur de domaine |\n| `FSSO_Setup` | Collector agent pour environnement Windows/AD |\n| `FSSO_Setup_edirectory` | Collector agent pour Novell eDirectory |\n| `TSAgent_Setup` | Agent pour serveurs Citrix / Terminal Services |\n\n> **Important** : la version du DC agent et du collector doivent correspondre entre eux. Il n'est pas nécessaire qu'elles correspondent à la version FortiOS.\n\n\n![Comparaison Mode Standard vs Mode Advanced AD](diagram:0)\n\n## Installation du Collector Agent\n\nLors de l'installation :\n- Le compte de service doit être au format `DOMAIN\\Username`\n- Le mode **Advanced** est recommandé\n- Lancer le **DC Agent Install Wizard** depuis l'interface du collector\n\n### Assistant DC Agent Install Wizard\n\nL'assistant demande de configurer :\n1. L'adresse IP du collector\n2. Les domaines à surveiller\n3. La **Ignore User List** : comptes de service à exclure (antivirus, sauvegardes…)\n4. Les DCs sur lesquels installer l'agent\n5. Le mode : **DC Agent Mode** (agent sur DC) ou **Polling Mode** (sans agent sur DC)\n\n> **Redémarrage du DC requis** après l'installation du DC agent.\n\n## Modes AD : Standard vs Advanced\n\n| Critère | Mode Standard | Mode Advanced |\n|---------|---------------|---------------|\n| Protocole | NetBIOS | LDAP |\n| Syntaxe des groupes | `DOMAIN\\GroupName` | `CN=GroupName,OU=...,DC=...` |\n| Groupes imbriqués | Non | Oui |\n| OUs | Non | Oui |\n| Utilisateurs individuels | Non | Oui |\n| Recommandé | Non | Oui |\n\n> **Attention** : si vous passez du mode Standard au mode Advanced (ou inversement), vous devez **recréer tous les filtres de groupes**. Les filtres existants ne sont pas compatibles.\n\n## SSO_Guest_Users\n\n**SSO_Guest_Users** est un groupe pré-configuré sur FortiGate qui regroupe les utilisateurs dont le groupe AD n'a pas été reconnu par FSSO.\n\n**Règle absolue** : n'inclure SSO_Guest_Users dans une politique de sécurité **que si l'authentification passive est utilisée seule**. Ne **JAMAIS** inclure ce groupe dans des politiques combinant authentification active et passive.\n\n> Le DC Agent Install Wizard configure : IP du collector, domaines, Ignore User List, DCs cibles, mode. Il ne configure pas la **licence** FortiGate — celle-ci est gérée séparément dans le GUI FortiGate.",
+  "diagrams": [
+    {
+      "caption": "Comparaison Mode Standard vs Mode Advanced AD",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' width='700' height='180' font-family='monospace' font-size='13'><rect width='700' height='180' fill='#f8f9fa' rx='8'/><rect x='20' y='20' width='300' height='140' fill='#fff3cd' rx='6' stroke='#ffc107' stroke-width='2'/><text x='170' y='42' text-anchor='middle' font-weight='bold' fill='#856404'>Mode Standard (NetBIOS)</text><text x='35' y='68' fill='#333'>Syntaxe : DOMAIN\\GroupName</text><text x='35' y='90' fill='#333'>Groupes imbriqués : NON</text><text x='35' y='112' fill='#333'>OUs : NON</text><text x='35' y='134' fill='#333'>Utilisateurs : NON</text><text x='35' y='156' fill='#c0392b' font-weight='bold'>Non recommandé</text><rect x='380' y='20' width='300' height='140' fill='#d1e7dd' rx='6' stroke='#198754' stroke-width='2'/><text x='530' y='42' text-anchor='middle' font-weight='bold' fill='#0f5132'>Mode Advanced (LDAP)</text><text x='395' y='68' fill='#333'>Syntaxe : CN=...,OU=...,DC=...</text><text x='395' y='90' fill='#333'>Groupes imbriqués : OUI</text><text x='395' y='112' fill='#333'>OUs : OUI</text><text x='395' y='134' fill='#333'>Utilisateurs : OUI</text><text x='395' y='156' fill='#0f5132' font-weight='bold'>Recommandé</text><text x='350' y='100' text-anchor='middle' font-size='22' fill='#6c757d'>⇄</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Dans l'interface FortiGate, où configure-t-on les connecteurs FSSO ?",
+      "choices": [
+        "User & Authentication > LDAP Servers",
+        "Security Fabric > External Connectors",
+        "Network > Interfaces",
+        "Policy & Objects > Firewall Policy"
+      ],
+      "answer": 1,
+      "explain": "La configuration FSSO se fait dans Security Fabric > External Connectors, où l'on choisit entre Poll Active Directory Server (agentless) et Fortinet Single-Sign-On Agent (collector)."
+    },
+    {
+      "q": "Quel type de connecteur FortiGate utilise-t-on pour le mode sans agent (agentless) FSSO ?",
+      "choices": [
+        "Fortinet Single-Sign-On Agent",
+        "Poll Active Directory Server",
+        "RADIUS Single Sign-On",
+        "LDAP Connector"
+      ],
+      "answer": 1,
+      "explain": "Le connecteur Poll Active Directory Server correspond au mode agentless : FortiGate interroge directement le DC sans nécessiter de collector agent."
+    },
+    {
+      "q": "En mode Local mode FSSO, quel prérequis s'applique au collector agent ?",
+      "choices": [
+        "Le collector doit être installé sur le DC",
+        "Le collector doit être en mode Advanced",
+        "Le collector doit utiliser RADIUS",
+        "Le collector doit avoir un certificat SSL"
+      ],
+      "answer": 1,
+      "explain": "En Local mode, les filtres sont définis sur FortiGate via LDAP. Pour que cela fonctionne, le collector DOIT être configuré en mode Advanced."
+    },
+    {
+      "q": "Quel fichier d'installation faut-il utiliser pour le collector agent dans un environnement Novell eDirectory ?",
+      "choices": [
+        "DC_Agent_Setup",
+        "FSSO_Setup",
+        "FSSO_Setup_edirectory",
+        "TSAgent_Setup"
+      ],
+      "answer": 2,
+      "explain": "FSSO_Setup_edirectory est le fichier spécifique au collector agent pour les environnements Novell eDirectory."
+    },
+    {
+      "q": "Concernant les versions des agents FSSO, quelle affirmation est correcte ?",
+      "choices": [
+        "DC agent et collector doivent correspondre à la version FortiOS",
+        "DC agent et collector doivent correspondre entre eux",
+        "Seul le collector doit correspondre à FortiOS",
+        "Les versions n'ont pas d'importance"
+      ],
+      "answer": 1,
+      "explain": "La version du DC agent et du collector doivent correspondre entre eux. Il n'est pas nécessaire qu'elles correspondent à la version FortiOS."
+    },
+    {
+      "q": "Quel format doit utiliser le compte de service lors de l'installation du collector agent ?",
+      "choices": [
+        "Username@domain.com",
+        "domain/Username",
+        "DOMAIN\\Username",
+        "Username:DOMAIN"
+      ],
+      "answer": 2,
+      "explain": "Le compte de service doit être au format DOMAIN\\Username (format NetBIOS backslash) lors de l'installation du collector agent."
+    },
+    {
+      "q": "Après l'installation du DC agent via l'assistant, que faut-il obligatoirement faire ?",
+      "choices": [
+        "Redémarrer le collector agent",
+        "Redémarrer FortiGate",
+        "Redémarrer le contrôleur de domaine",
+        "Relancer le service FSSO sur le collector"
+      ],
+      "answer": 2,
+      "explain": "Un redémarrage du contrôleur de domaine (DC) est requis après l'installation du DC agent."
+    },
+    {
+      "q": "Quelle est la bonne pratique concernant la définition des filtres FSSO ?",
+      "choices": [
+        "Toujours définir les filtres sur FortiGate via LDAP",
+        "Définir les filtres sur le collector, pas sur FortiGate via LDAP",
+        "Définir les filtres sur le DC agent",
+        "Ne pas utiliser de filtres en production"
+      ],
+      "answer": 1,
+      "explain": "Il est recommandé de définir les filtres sur le collector. Si le serveur LDAP tombe, le collector continue à collecter les événements de connexion sans interruption."
+    },
+    {
+      "q": "Que se passe-t-il si on passe du mode Standard au mode Advanced dans la configuration FSSO ?",
+      "choices": [
+        "Les filtres existants sont automatiquement convertis",
+        "Seuls les filtres de groupes imbriqués doivent être recréés",
+        "Tous les filtres de groupes doivent être recréés",
+        "Aucun impact sur les filtres existants"
+      ],
+      "answer": 2,
+      "explain": "En changeant de mode (Standard ↔ Advanced), la syntaxe des groupes change complètement (NetBIOS vs LDAP CN=...). Tous les filtres existants doivent être recréés."
+    },
+    {
+      "q": "Quel mode AD supporte les groupes imbriqués (nested groups) ?",
+      "choices": [
+        "Mode Standard uniquement",
+        "Les deux modes supportent les groupes imbriqués",
+        "Mode Advanced uniquement",
+        "Aucun des deux modes"
+      ],
+      "answer": 2,
+      "explain": "Seul le mode Advanced supporte les groupes imbriqués (nested groups), les OUs et les utilisateurs individuels. Le mode Standard (NetBIOS) est limité aux groupes plats."
+    },
+    {
+      "q": "À quoi sert la Ignore User List dans la configuration FSSO ?",
+      "choices": [
+        "À bloquer des utilisateurs spécifiques sur le réseau",
+        "À exclure des comptes de service (antivirus, sauvegardes) de FSSO",
+        "À définir les utilisateurs autorisés à s'authentifier",
+        "À lister les administrateurs FortiGate"
+      ],
+      "answer": 1,
+      "explain": "La Ignore User List permet d'exclure des comptes de service (antivirus, sauvegardes…) qui pollueraient FSSO avec des connexions non-humaines."
+    },
+    {
+      "q": "Quel fichier installer sur les serveurs Citrix ou Terminal Services ?",
+      "choices": [
+        "DC_Agent_Setup",
+        "FSSO_Setup",
+        "FSSO_Setup_edirectory",
+        "TSAgent_Setup"
+      ],
+      "answer": 3,
+      "explain": "TSAgent_Setup est l'agent destiné aux serveurs Citrix et Terminal Services (TS). Il transmet les informations utilisateur+IP+port range au collector."
+    },
+    {
+      "q": "Lequel des éléments suivants N'EST PAS configuré via le DC Agent Install Wizard ?",
+      "choices": [
+        "L'adresse IP du collector",
+        "Les domaines à surveiller",
+        "La clé de licence FortiGate",
+        "La Ignore User List"
+      ],
+      "answer": 2,
+      "explain": "La clé de licence FortiGate n'est pas configurée via le DC Agent Install Wizard. L'assistant configure : IP du collector, domaines, Ignore User List, DCs cibles et le mode DC Agent/Polling."
+    },
+    {
+      "q": "Dans quel cas doit-on utiliser SSO_Guest_Users dans une politique de sécurité ?",
+      "choices": [
+        "Toujours, pour couvrir tous les utilisateurs",
+        "Uniquement avec authentification passive seule",
+        "Uniquement avec authentification active seule",
+        "Jamais, ce groupe est réservé à l'administration"
+      ],
+      "answer": 1,
+      "explain": "SSO_Guest_Users ne doit être inclus dans une politique que si l'authentification passive est utilisée seule. Ne JAMAIS l'inclure dans des politiques combinant active et passive."
+    },
+    {
+      "q": "En mode Collector Agent mode, où sont définis les filtres de groupes FSSO ?",
+      "choices": [
+        "Sur FortiGate via LDAP",
+        "Sur le contrôleur de domaine",
+        "Sur le collector agent",
+        "Dans l'annuaire Active Directory"
+      ],
+      "answer": 2,
+      "explain": "En Collector Agent mode, les filtres sont définis sur le collector agent lui-même. En Local mode, les filtres sont définis sur FortiGate via LDAP (nécessitant le mode Advanced sur le collector)."
+    }
+  ]
+}

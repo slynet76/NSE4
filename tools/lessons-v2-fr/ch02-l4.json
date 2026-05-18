@@ -1,0 +1,181 @@
+{
+  "id": "ch02-l4",
+  "module": "Logging and Monitoring",
+  "title": "Transport des logs et fiabilité",
+  "durationMin": 7,
+  "content": "## Transport des logs et fiabilité\n\n![Comparaison des méthodes de transport des logs](diagram:0)\n\n### Transport par défaut : UDP 514\n\nPar défaut, FortiGate envoie ses logs en **UDP port 514**.\n- Rapide et léger.\n- **Sans garantie** de livraison : si un paquet est perdu (congestion, perte réseau), le log est définitivement perdu.\n- Observable : un sniffer sur l'interface FortiGate verra les paquets UDP passer.\n\n---\n\n### Reliable Logging : basculement en TCP\n\nPour garantir la livraison des logs, activer le **reliable logging** :\n- Le transport passe de **UDP vers TCP**.\n- TCP garantit : **livraison**, **ordre** des logs, **retransmission** en cas de perte.\n- Activation possible via le **Fabric Connector** (interface graphique) ou en **CLI**.\n\n**Pour le Fabric Connector logging** : le reliable logging est activable directement dans les paramètres du connector.\n\n---\n\n### FortiCloud : TCP + chiffrement high\n\n- FortiCloud utilise **TCP** par défaut (pas UDP).\n- Niveau de chiffrement : **high** (activé par défaut).\n- Double garantie : fiabilité TCP + confidentialité des logs en transit.\n\n---\n\n### Confirm Queue avec seq_no\n\nMécanisme applicatif au-dessus du TCP :\n- FortiGate assigne un **numéro de séquence (seq_no)** à chaque log.\n- FAZ envoie un **ACK séquentiel** confirmant la réception de chaque log.\n- Garantit que FAZ a bien reçu chaque log individuellement, au-delà de la garantie TCP.\n- Évite les pertes silencieuses même en cas de buffer overflow côté FAZ.\n\n---\n\n### Store-and-Upload\n\nMéthode d'envoi différé des logs :\n1. Les logs sont d'abord stockés sur le **disque local** du FortiGate.\n2. L'envoi vers FAZ ou FortiCloud est **planifié** (typiquement la nuit) pour être effectué aux **heures creuses**.\n3. **Économise la bande passante** sur les liens WAN coûteux ou limités.\n4. Très utile depuis un **site distant** avec un lien à faible débit.\n\n**Prérequis** : le FortiGate doit disposer d'un **disque local** pour stocker temporairement les logs avant envoi.\n\n---\n\n## Comparaison des transports\n\n| Transport | Garantie | Chiffrement | Usage |\n|---|---|---|---|\n| UDP 514 | Aucune | Non | Défaut, LAN local |\n| TCP (reliable) | Livraison + ordre + retransmission | Non (sauf TLS) | FAZ fiable |\n| TCP + chiffrement high | Livraison + confidentialité | Oui (high) | FortiCloud |\n| Store-and-upload | Disque tampon + planifié | Selon destination | Sites distants |\n\n---\n\n### Résumé des activations\n- **Reliable logging** : activable via Fabric Connector ou CLI.\n- **FortiCloud** : TCP + chiffrement high par défaut, sans configuration supplémentaire.\n- **Store-and-upload** : nécessite un disque local sur le FortiGate.",
+  "diagrams": [
+    {
+      "caption": "Comparaison des méthodes de transport des logs",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8f9fa' rx='8'/><rect x='10' y='10' width='80' height='30' rx='5' fill='#1a73e8'/><text x='50' y='30' font-family='Arial' font-size='11' font-weight='bold' fill='white' text-anchor='middle'>FortiGate</text><line x1='90' y1='25' x2='130' y2='45' stroke='#ea4335' stroke-width='2'/><text x='108' y='42' font-family='Arial' font-size='9' fill='#ea4335'>UDP</text><line x1='90' y1='25' x2='130' y2='80' stroke='#34a853' stroke-width='2'/><text x='97' y='70' font-family='Arial' font-size='9' fill='#34a853'>TCP</text><line x1='90' y1='25' x2='130' y2='115' stroke='#fbbc04' stroke-width='2'/><text x='92' y='108' font-family='Arial' font-size='9' fill='#888'>store</text><rect x='130' y='32' width='160' height='26' rx='4' fill='#fce8e6' stroke='#ea4335' stroke-width='1'/><text x='210' y='49' font-family='Arial' font-size='10' fill='#c62828' text-anchor='middle'>UDP 514 — paquet perdu = log perdu</text><rect x='130' y='67' width='160' height='26' rx='4' fill='#e6f4ea' stroke='#34a853' stroke-width='1'/><text x='210' y='84' font-family='Arial' font-size='10' fill='#1b5e20' text-anchor='middle'>TCP reliable — livraison garantie</text><rect x='130' y='102' width='160' height='26' rx='4' fill='#fff8e1' stroke='#f9a825' stroke-width='1'/><text x='210' y='119' font-family='Arial' font-size='10' fill='#6d4c00' text-anchor='middle'>Store-and-upload — disque → planifié</text><polygon points='294,45 304,39 304,51' fill='#ea4335'/><polygon points='294,80 304,74 304,86' fill='#34a853'/><polygon points='294,115 304,109 304,121' fill='#f9a825'/><rect x='305' y='32' width='130' height='26' rx='4' fill='#e8eaf6' stroke='#3f51b5' stroke-width='1'/><text x='370' y='49' font-family='Arial' font-size='10' fill='#283593' text-anchor='middle'>FAZ / Syslog</text><rect x='305' y='67' width='130' height='26' rx='4' fill='#e8eaf6' stroke='#3f51b5' stroke-width='1'/><text x='370' y='84' font-family='Arial' font-size='10' fill='#283593' text-anchor='middle'>FAZ + seq_no ACK</text><rect x='305' y='102' width='130' height='26' rx='4' fill='#e8eaf6' stroke='#3f51b5' stroke-width='1'/><text x='370' y='119' font-family='Arial' font-size='10' fill='#283593' text-anchor='middle'>FAZ / FortiCloud</text><rect x='445' y='60' width='145' height='30' rx='4' fill='#4285f4'/><text x='517' y='79' font-family='Arial' font-size='10' font-weight='bold' fill='white' text-anchor='middle'>FortiCloud : TCP + high</text><line x1='435' y1='80' x2='445' y2='75' stroke='#4285f4' stroke-width='1.5' stroke-dasharray='3,2'/><text x='300' y='148' font-family='Arial' font-size='10' fill='#888' text-anchor='middle'>Confirm queue (seq_no) : ACK applicatif FAZ au-delà de TCP | Store-and-upload : nécessite disque local</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel protocole FortiGate utilise-t-il par défaut pour envoyer les logs ?",
+      "choices": [
+        "TCP port 514",
+        "TLS port 6514",
+        "UDP port 514",
+        "HTTPS port 443"
+      ],
+      "answer": 2,
+      "explain": "Par défaut, FortiGate envoie ses logs en UDP port 514. C'est rapide mais sans garantie de livraison."
+    },
+    {
+      "q": "Qu'est-ce que le reliable logging change dans le transport des logs ?",
+      "choices": [
+        "Il compresse les logs avant envoi",
+        "Il bascule le transport de UDP vers TCP, garantissant livraison, ordre et retransmission",
+        "Il chiffre les logs avec TLS",
+        "Il envoie les logs vers deux destinations simultanément"
+      ],
+      "answer": 1,
+      "explain": "Le reliable logging bascule le transport d'UDP vers TCP. TCP garantit la livraison, l'ordre des logs et la retransmission en cas de perte."
+    },
+    {
+      "q": "Quel niveau de chiffrement FortiCloud utilise-t-il par défaut ?",
+      "choices": [
+        "Aucun chiffrement",
+        "Chiffrement medium",
+        "Chiffrement high",
+        "Chiffrement AES-128 uniquement"
+      ],
+      "answer": 2,
+      "explain": "FortiCloud utilise TCP avec un chiffrement de niveau 'high' par défaut. C'est activé sans configuration supplémentaire."
+    },
+    {
+      "q": "À quoi sert le mécanisme de confirm queue avec seq_no ?",
+      "choices": [
+        "À compresser les logs en séquence",
+        "À garantir au niveau applicatif que FAZ a bien reçu chaque log via un ACK séquentiel",
+        "À chiffrer les numéros de séquence TCP",
+        "À prioriser certains types de logs"
+      ],
+      "answer": 1,
+      "explain": "Le confirm queue avec seq_no est un mécanisme applicatif : chaque log reçoit un numéro de séquence, et FAZ envoie un ACK confirmant la réception de chaque log individuellement, au-delà de la garantie TCP."
+    },
+    {
+      "q": "Quel est le but principal du mode store-and-upload ?",
+      "choices": [
+        "Accélérer l'envoi des logs en temps réel",
+        "Stocker les logs sur disque local puis les envoyer aux heures creuses pour économiser la bande passante",
+        "Dupliquer les logs sur deux serveurs FAZ",
+        "Chiffrer les logs avant de les envoyer"
+      ],
+      "answer": 1,
+      "explain": "Store-and-upload stocke les logs sur le disque local du FortiGate, puis planifie l'envoi aux heures creuses (la nuit) pour économiser la bande passante, utile sur les liens WAN limités."
+    },
+    {
+      "q": "Quelles garanties offre TCP en reliable logging par rapport à UDP ?",
+      "choices": [
+        "Uniquement le chiffrement",
+        "Livraison garantie, ordre des logs et retransmission en cas de perte",
+        "Uniquement la retransmission",
+        "Vitesse d'envoi accrue et faible latence"
+      ],
+      "answer": 1,
+      "explain": "TCP garantit trois choses : la livraison (les logs arrivent), l'ordre (dans l'ordre d'envoi) et la retransmission (si un segment est perdu, il est renvoyé)."
+    },
+    {
+      "q": "Comment activer le reliable logging sur FortiGate ?",
+      "choices": [
+        "Uniquement via CLI avec la commande 'set reliable enable'",
+        "Via le Fabric Connector ou via CLI",
+        "Uniquement depuis l'interface de FortiAnalyzer",
+        "En modifiant le port de destination de 514 à 1514"
+      ],
+      "answer": 1,
+      "explain": "Le reliable logging peut être activé via le Fabric Connector (interface graphique, directement dans les paramètres du connector) ou via CLI."
+    },
+    {
+      "q": "Un sniffer est placé sur l'interface de sortie d'un FortiGate qui envoie ses logs en UDP. Que verra-t-il ?",
+      "choices": [
+        "Rien, les logs UDP sont chiffrés et invisibles au sniffer",
+        "Les paquets UDP des logs FortiGate, car UDP est observable en clair",
+        "Uniquement les headers des logs, pas le contenu",
+        "Des paquets TCP, UDP étant encapsulé dans TCP"
+      ],
+      "answer": 1,
+      "explain": "UDP est observable par un sniffer sur l'interface FortiGate. Les paquets de logs UDP passeront en clair et seront capturables."
+    },
+    {
+      "q": "FortiCloud utilise quel protocole de transport pour ses logs ?",
+      "choices": [
+        "UDP 514",
+        "TCP avec chiffrement high",
+        "SNMP trap",
+        "SFTP"
+      ],
+      "answer": 1,
+      "explain": "FortiCloud utilise TCP (pas UDP) avec un chiffrement high par défaut, offrant à la fois fiabilité et confidentialité."
+    },
+    {
+      "q": "Où le reliable logging peut-il être activé directement dans l'interface graphique FortiGate ?",
+      "choices": [
+        "Dans Log & Report → Settings",
+        "Directement dans les paramètres du Fabric Connector",
+        "Dans System → FortiGuard",
+        "Dans Network → Interfaces"
+      ],
+      "answer": 1,
+      "explain": "Pour le Fabric Connector logging, le reliable logging est activable directement dans les paramètres du Fabric Connector dans l'interface graphique."
+    },
+    {
+      "q": "Quel est l'inconvénient principal de l'envoi de logs en UDP ?",
+      "choices": [
+        "UDP consomme trop de bande passante",
+        "Un paquet UDP perdu signifie un log définitivement perdu sans retransmission",
+        "UDP ne supporte pas les security logs",
+        "UDP nécessite une authentification supplémentaire"
+      ],
+      "answer": 1,
+      "explain": "L'inconvénient d'UDP est l'absence de garantie : si un paquet est perdu (congestion réseau), le log est définitivement perdu. Il n'y a pas de mécanisme de retransmission."
+    },
+    {
+      "q": "Store-and-upload nécessite obligatoirement quel composant côté FortiGate ?",
+      "choices": [
+        "Une licence FortiAnalyzer",
+        "Un disque local sur le FortiGate pour stocker temporairement les logs",
+        "Une connexion VPN vers FAZ",
+        "Un ADOM dédié sur FortiAnalyzer"
+      ],
+      "answer": 1,
+      "explain": "Store-and-upload nécessite un disque local sur le FortiGate pour stocker temporairement les logs avant leur envoi planifié. Sans disque, cette fonction n'est pas disponible."
+    },
+    {
+      "q": "Le confirm queue (seq_no) opère à quel niveau ?",
+      "choices": [
+        "Au niveau réseau (couche 3)",
+        "Au niveau transport TCP (couche 4)",
+        "Au niveau applicatif, au-dessus de TCP",
+        "Au niveau physique (couche 1)"
+      ],
+      "answer": 2,
+      "explain": "Le confirm queue avec seq_no est un mécanisme applicatif, au-dessus de TCP. Il ajoute une couche de confirmation supplémentaire pour s'assurer que FAZ a bien reçu chaque log."
+    },
+    {
+      "q": "Comparez UDP et TCP pour le transport de logs. Quelle affirmation est correcte ?",
+      "choices": [
+        "UDP est plus fiable mais plus lent que TCP",
+        "UDP est plus rapide mais sans garantie de livraison ; TCP reliable garantit livraison, ordre et retransmission",
+        "TCP et UDP offrent les mêmes garanties de livraison",
+        "TCP est plus rapide et moins fiable qu'UDP"
+      ],
+      "answer": 1,
+      "explain": "UDP est plus rapide mais sans garantie (logs perdus possibles). TCP (reliable logging) est plus lent mais garantit livraison, ordre et retransmission."
+    },
+    {
+      "q": "Par défaut, FortiAnalyzer reçoit les logs en UDP. Si l'on veut plus de fiabilité sans FortiCloud, que doit-on activer ?",
+      "choices": [
+        "Le mode Collector sur FAZ",
+        "Le reliable logging pour passer en TCP",
+        "Le store-and-upload sur FortiGate",
+        "Le confirm queue uniquement (sans changer le protocole)"
+      ],
+      "answer": 1,
+      "explain": "Pour une livraison fiable vers FortiAnalyzer sans FortiCloud, il faut activer le reliable logging pour passer de UDP à TCP, avec garantie de livraison et retransmission."
+    }
+  ]
+}

@@ -1,0 +1,181 @@
+{
+  "id": "ch12-l4",
+  "module": "SD-WAN Configuration and Monitoring",
+  "title": "Règles SD-WAN et stratégies",
+  "durationMin": 7,
+  "content": "## Règles SD-WAN : évaluation top-down\n\nLes règles SD-WAN fonctionnent comme les politiques pare-feu : évaluation **top-down, premier match**. Dès qu'un paquet correspond à une règle, FortiGate applique la stratégie de steering associée et arrête l'évaluation.\n\nUne **règle implicite** se trouve en bas de la liste. Si aucune règle explicite ne matche, le trafic suit cette règle implicite qui applique un load balance par **Source IP** par défaut.\n\n![Flux d'évaluation des règles SD-WAN](diagram:0)\n\n## Critères de matching\n\nChaque règle SD-WAN peut filtrer sur :\n- **IP source** et **interface source**\n- **Utilisateur** (user) et **groupe d'utilisateurs** (user group)\n- **IP destination**\n- **Protocole IP** et **port destination**\n- **Internet Service** (ISDB — base de données des services Internet FortiGuard)\n- **Application** (category, group) — la visibilité dans l'interface graphique nécessite d'activer l'option dans `config system global`\n- **ToS** (Type of Service)\n\n## Les trois stratégies de steering\n\n### 1. Manual\n\nLa préférence est définie selon **l'ordre de configuration** des membres. Aucune métrique de qualité n'est prise en compte. Compatible avec le **load-balancing** (les deux fonctions sont combinables).\n\n### 2. Best Quality\n\nFortiGate choisit le membre avec la **meilleure qualité** parmi ceux actifs. Les critères mesurables sont : **latence**, **jitter**, **packet loss**, ou un **mix pondéré** de ces métriques. Le membre ayant le meilleur score est sélectionné.\n\n### 3. Lowest Cost (SLA)\n\nSeuls les **membres qui respectent le SLA target** sont éligibles. Parmi eux, le tie-break s'effectue d'abord par **coût** (valeur configurée sur le membre), puis par **ordre** de configuration. Combinable avec le **load-balancing**.\n\n## Processus de lookup\n\nAvant d'appliquer une règle SD-WAN, FortiGate effectue un **FIB lookup** pour la destination :\n1. Si la meilleure route FIB (fib-best-match) **n'est pas un membre SD-WAN** → la règle est **skippée** (ignorée).\n2. Si la route passe bien par un membre SD-WAN, FortiGate cherche un membre **acceptable** (alive + route valide).\n\nCette logique garantit que les règles SD-WAN ne s'appliquent qu'aux destinations réellement atteignables via le SD-WAN.\n\n## Règle implicite et load-balancing\n\nLa règle implicite utilise par défaut le load balance par **Source IP**. L'administrateur peut la configurer avec d'autres modes :\n- **Source-Destination IP**\n- **Sessions**\n- **Volume**\n- **Spillover**\n\n> **Point clé** : une règle est skippée si la meilleure route FIB ne passe pas par un membre SD-WAN. La règle implicite prend en charge le trafic non matché en appliquant le routage standard (FIB) avec load-balancing.\n\n> Les critères SD-WAN n'incluent pas l'adresse **MAC** source — ce n'est pas un critère de matching SD-WAN.",
+  "diagrams": [
+    {
+      "caption": "Flux d'évaluation des règles SD-WAN : top-down avec trois stratégies et règle implicite.",
+      "height": 220,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 220'><rect x='200' y='8' width='200' height='32' rx='6' fill='#1e3a5f' stroke='#3b82f6' stroke-width='2'/><text x='300' y='29' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#93c5fd'>Paquet entrant</text><line x1='300' y1='40' x2='300' y2='56' stroke='#6b7280' stroke-width='2'/><polygon points='300,56 294,48 306,48' fill='#6b7280'/><rect x='180' y='56' width='240' height='32' rx='6' fill='#1f2d1f' stroke='#22c55e' stroke-width='1.5'/><text x='300' y='72' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#86efac'>Règle 1 match ?</text><text x='300' y='84' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#6ee7b7'>top-down, premier match</text><line x1='420' y1='72' x2='480' y2='72' stroke='#22c55e' stroke-width='1.5'/><text x='450' y='68' font-family='sans-serif' font-size='9' fill='#22c55e'>OUI</text><rect x='480' y='56' width='100' height='32' rx='5' fill='#14532d' stroke='#22c55e' stroke-width='1.5'/><text x='530' y='75' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#86efac'>Steering →</text><line x1='300' y1='88' x2='300' y2='104' stroke='#6b7280' stroke-width='2'/><text x='270' y='100' font-family='sans-serif' font-size='9' fill='#ef4444'>NON</text><polygon points='300,104 294,96 306,96' fill='#6b7280'/><rect x='180' y='104' width='240' height='32' rx='6' fill='#1f2d1f' stroke='#22c55e' stroke-width='1.5'/><text x='300' y='120' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#86efac'>Règle 2 match ?</text><line x1='420' y1='120' x2='480' y2='120' stroke='#22c55e' stroke-width='1.5'/><text x='450' y='116' font-family='sans-serif' font-size='9' fill='#22c55e'>OUI</text><rect x='480' y='104' width='100' height='32' rx='5' fill='#14532d' stroke='#22c55e' stroke-width='1.5'/><text x='530' y='123' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#86efac'>Steering →</text><line x1='300' y1='136' x2='300' y2='152' stroke='#6b7280' stroke-width='2'/><text x='270' y='148' font-family='sans-serif' font-size='9' fill='#ef4444'>NON</text><polygon points='300,152 294,144 306,144' fill='#6b7280'/><rect x='160' y='152' width='280' height='36' rx='6' fill='#2d1f00' stroke='#f59e0b' stroke-width='2'/><text x='300' y='168' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#fcd34d'>Règle implicite</text><text x='300' y='181' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#fbbf24'>Load balance Source IP (FIB)</text><rect x='20' y='56' width='140' height='80' rx='6' fill='#1a1a2e' stroke='#6366f1' stroke-width='1.5'/><text x='90' y='75' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='700' fill='#a5b4fc'>Stratégies</text><text x='90' y='92' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#c7d2fe'>Manual</text><text x='90' y='106' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#c7d2fe'>Best Quality</text><text x='90' y='120' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#c7d2fe'>Lowest Cost (SLA)</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Dans quel ordre FortiGate évalue-t-il les règles SD-WAN ?",
+      "choices": [
+        "Bottom-up, dernier match",
+        "Top-down, premier match",
+        "Par priorité de coût croissant",
+        "Alphabétiquement par nom de règle"
+      ],
+      "answer": 1,
+      "explain": "Les règles SD-WAN sont évaluées top-down, premier match — exactement comme les politiques pare-feu. Dès qu'une règle correspond, la stratégie associée est appliquée."
+    },
+    {
+      "q": "Que se passe-t-il si aucune règle SD-WAN explicite ne matche un paquet ?",
+      "choices": [
+        "Le paquet est droppé",
+        "FortiGate applique la règle implicite avec routage standard (FIB)",
+        "FortiGate envoie le paquet sur le premier membre SD-WAN",
+        "FortiGate attend la prochaine règle disponible"
+      ],
+      "answer": 1,
+      "explain": "La règle implicite en bas de liste prend en charge le trafic non matché. Par défaut elle applique un load balance par Source IP suivant le routage standard (FIB)."
+    },
+    {
+      "q": "Quelle est la caractéristique principale de la stratégie Manual ?",
+      "choices": [
+        "Elle choisit le membre avec la latence la plus faible",
+        "Elle choisit le membre qui respecte le SLA target",
+        "Elle utilise l'ordre de configuration, sans métrique de qualité",
+        "Elle équilibre la charge par volume de trafic"
+      ],
+      "answer": 2,
+      "explain": "La stratégie Manual sélectionne le membre selon l'ordre de configuration uniquement. Aucune métrique (latence, jitter, packet loss) n'est évaluée. Elle est combinable avec le load-balancing."
+    },
+    {
+      "q": "Quels critères la stratégie Best Quality peut-elle mesurer pour choisir un membre ?",
+      "choices": [
+        "Coût, ordre, et volume de données",
+        "Latence, jitter, packet loss, ou mix pondéré",
+        "Nombre de sessions actives et bande passante",
+        "MTU et temps de convergence BGP"
+      ],
+      "answer": 1,
+      "explain": "La stratégie Best Quality évalue la qualité des membres via la latence, le jitter, le packet loss, ou un mix pondéré de ces métriques. Le membre avec le meilleur score est sélectionné."
+    },
+    {
+      "q": "Dans la stratégie Lowest Cost (SLA), quels membres sont éligibles ?",
+      "choices": [
+        "Tous les membres actifs sans exception",
+        "Uniquement le membre avec le coût le plus bas",
+        "Les membres qui respectent le SLA target",
+        "Les membres avec la meilleure latence"
+      ],
+      "answer": 2,
+      "explain": "Lowest Cost (SLA) n'évalue que les membres qui respectent le SLA target défini. Parmi eux, le tie-break s'effectue par coût puis par ordre de configuration."
+    },
+    {
+      "q": "Quel est le load-balancing par défaut de la règle implicite SD-WAN ?",
+      "choices": [
+        "Spillover",
+        "Volume",
+        "Sessions",
+        "Source IP"
+      ],
+      "answer": 3,
+      "explain": "La règle implicite SD-WAN utilise par défaut le load balance par Source IP. L'administrateur peut le modifier en Source-Destination IP, Sessions, Volume ou Spillover."
+    },
+    {
+      "q": "Dans quel cas une règle SD-WAN est-elle skippée (ignorée) ?",
+      "choices": [
+        "Si le membre SD-WAN est surchargé",
+        "Si la meilleure route FIB (fib-best-match) n'est pas un membre SD-WAN",
+        "Si le protocole IP n'est pas TCP ou UDP",
+        "Si aucun SLA n'est configuré sur la règle"
+      ],
+      "answer": 1,
+      "explain": "FortiGate effectue un FIB lookup pour la destination. Si la meilleure route FIB ne passe pas par un membre SD-WAN, la règle est skippée et l'évaluation continue avec la règle suivante."
+    },
+    {
+      "q": "Que faut-il activer dans config system global pour voir le matching Application dans l'interface graphique d'une règle SD-WAN ?",
+      "choices": [
+        "Activer deep-inspection globalement",
+        "Activer la visibilité Application dans config system global",
+        "Activer le mode NGFW",
+        "Activer FortiGuard application control"
+      ],
+      "answer": 1,
+      "explain": "La visibilité du critère Application (category, group) dans la GUI des règles SD-WAN nécessite d'activer l'option correspondante dans config system global."
+    },
+    {
+      "q": "Parmi les critères de matching SD-WAN suivants, lequel est INCORRECT ?",
+      "choices": [
+        "IP source et IP destination",
+        "Protocole IP et port destination",
+        "Internet Service (ISDB)",
+        "Adresse MAC source"
+      ],
+      "answer": 3,
+      "explain": "L'adresse MAC source n'est pas un critère de matching SD-WAN. Les critères valides incluent : IP source/destination, protocole IP, port destination, user, user group, Internet Service, Application, ToS."
+    },
+    {
+      "q": "Quels modes de load-balancing sont disponibles pour la règle implicite SD-WAN ?",
+      "choices": [
+        "Source IP, Destination IP, Protocol, Port",
+        "Source IP, Source-Destination IP, Sessions, Volume, Spillover",
+        "Round-robin, Weighted, Least-connections",
+        "Manual, Best Quality, Lowest Cost"
+      ],
+      "answer": 1,
+      "explain": "La règle implicite SD-WAN supporte les modes : Source IP (défaut), Source-Destination IP, Sessions, Volume et Spillover."
+    },
+    {
+      "q": "Dans la stratégie Lowest Cost (SLA), comment est géré le tie-break entre deux membres éligibles ?",
+      "choices": [
+        "Par latence la plus basse, puis par jitter",
+        "Par coût configuré sur le membre, puis par ordre de configuration",
+        "Par volume de trafic traité, puis par coût",
+        "Par ordre alphabétique du nom d'interface"
+      ],
+      "answer": 1,
+      "explain": "Dans Lowest Cost (SLA), le tie-break entre membres respectant le SLA target s'effectue d'abord par coût (valeur numérique configurée), puis par ordre de configuration."
+    },
+    {
+      "q": "Quelle stratégie SD-WAN mesure réellement les performances du lien avant de choisir un membre ?",
+      "choices": [
+        "Manual",
+        "Lowest Cost (SLA)",
+        "Best Quality",
+        "Spillover"
+      ],
+      "answer": 2,
+      "explain": "La stratégie Best Quality mesure activement la qualité des liens (latence, jitter, packet loss ou mix pondéré) pour choisir le membre offrant la meilleure qualité au moment de la décision."
+    },
+    {
+      "q": "La stratégie Manual est-elle compatible avec le load-balancing ?",
+      "choices": [
+        "Non, Manual désactive le load-balancing",
+        "Oui, Manual et load-balancing sont combinables",
+        "Uniquement avec le mode Spillover",
+        "Uniquement si un SLA est configuré"
+      ],
+      "answer": 1,
+      "explain": "La stratégie Manual est combinable avec le load-balancing. L'ordre de préférence est défini manuellement, mais le load-balancing peut distribuer le trafic entre les membres éligibles."
+    },
+    {
+      "q": "Quelle étape FortiGate effectue-t-il avant d'appliquer une règle SD-WAN à un paquet ?",
+      "choices": [
+        "Il vérifie la table ARP pour la destination",
+        "Il effectue un FIB lookup pour la destination",
+        "Il consulte la table BGP pour la route optimale",
+        "Il interroge FortiGuard pour classifier la destination"
+      ],
+      "answer": 1,
+      "explain": "FortiGate effectue un FIB lookup pour la destination du paquet. Si la meilleure route FIB n'est pas un membre SD-WAN, la règle est skippée. Ce processus garantit la cohérence du routage."
+    },
+    {
+      "q": "Comment peut-on personnaliser le comportement de la règle implicite SD-WAN ?",
+      "choices": [
+        "En ajoutant des critères de matching IP à la règle implicite",
+        "En configurant un mode de load-balancing différent (Sessions, Volume, Spillover, etc.)",
+        "En associant un SLA target à la règle implicite",
+        "La règle implicite ne peut pas être modifiée"
+      ],
+      "answer": 1,
+      "explain": "La règle implicite est configurable : l'administrateur peut changer le mode de load-balancing parmi Source IP (défaut), Source-Destination IP, Sessions, Volume et Spillover."
+    }
+  ]
+}

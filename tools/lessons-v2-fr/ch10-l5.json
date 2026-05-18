@@ -1,0 +1,238 @@
+{
+  "id": "ch10-l5",
+  "module": "Intrusion Prevention and Application Control",
+  "title": "Application Control - bases",
+  "durationMin": 6,
+  "content": "## Qu'est-ce que l'Application Control ?\n\nL'**Application Control** est une fonctionnalité FortiGate qui permet d'identifier et de contrôler les applications par leur comportement réseau. Elle utilise le **DPI** (Deep Packet Inspection — inspection approfondie des paquets) et fonctionne indépendamment du port TCP/IP utilisé.\n\nContrairement à un simple filtrage par port, l'Application Control reconnaît l'application même si elle utilise des ports non standards.\n\n> **Exemple** : BitTorrent sur le port 80 sera identifié comme BitTorrent, non comme du trafic HTTP.\n\n## Base FortiGuard Application Control\n\nLa **base FortiGuard Application Control** répertorie des milliers d'applications avec leurs signatures comportementales. Elle est mise à jour régulièrement et permet à FortiGate d'identifier les applications les plus récentes.\n\n## Identification d'application par DPI\n\n![Pipeline d'identification des applications](diagram:0)\n\nL'identification s'effectue par inspection approfondie des paquets (**DPI**) :\n1. FortiGate capture le trafic réseau\n2. Le moteur DPI analyse le contenu et le comportement des flux\n3. Les signatures comportementales de la base FortiGuard sont comparées\n4. L'application est identifiée et une catégorie lui est attribuée\n5. L'action configurée pour la catégorie (ou l'application) est appliquée\n\n## Catégories d'applications\n\nLes applications sont regroupées en catégories :\n\n| Catégorie | Exemples |\n|---|---|\n| **Business** | Salesforce, SAP, Oracle |\n| **Collaboration** | Teams, Zoom, Slack |\n| **Email** | Gmail, Outlook Web, Yahoo Mail |\n| **Game** | Steam, Battle.net |\n| **General.Interest** | Wikipedia, météo |\n| **Network.Service** | DNS, DHCP, NTP |\n| **P2P** | BitTorrent, eMule |\n| **Storage.Backup** | Dropbox, Google Drive |\n| **Social.Media** | Facebook, Twitter, Instagram |\n| **Video.Audio** | YouTube, Netflix, Spotify |\n| **VoIP** | Skype, WhatsApp Voice |\n\n## Actions disponibles\n\nPour chaque catégorie ou application, les actions configurables sont : **Allow**, **Monitor**, **Block**, **Quarantine**.\n\n## Application overrides\n\nLes **application overrides** permettent de définir des règles spécifiques pour une application particulière qui écrasent la règle de catégorie.\n\n**Exemple** : la catégorie P2P est bloquée, mais une exception (override) autorise un outil de transfert P2P interne.\n\n## IPS vs Application Control\n\n| Fonctionnalité | Objectif |\n|---|---|\n| **IPS** | Détection d'attaques et d'exploits — menaces actives |\n| **Application Control** | Identification et contrôle des usages applicatifs légitimes ou non |\n\nCes deux fonctionnalités sont complémentaires et peuvent être activées simultanément dans la même politique firewall.",
+  "diagrams": [
+    {
+      "caption": "Pipeline d'identification des applications : trafic réseau, moteur DPI, signatures FortiGuard, catégorie, action appliquée.",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='10' y='70' width='80' height='40' rx='5' fill='#1e293b' stroke='#64748b' stroke-width='1.5'/><text x='50' y='87' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#e2e8f0'>Trafic</text><text x='50' y='101' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>réseau</text><line x1='90' y1='90' x2='115' y2='90' stroke='#3b82f6' stroke-width='1.5'/><polygon points='115,90 107,86 107,94' fill='#3b82f6'/><rect x='115' y='68' width='90' height='44' rx='5' fill='#0f2235' stroke='#3b82f6' stroke-width='2'/><text x='160' y='87' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#93c5fd'>Moteur</text><text x='160' y='103' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#93c5fd'>DPI</text><line x1='205' y1='90' x2='230' y2='90' stroke='#3b82f6' stroke-width='1.5'/><polygon points='230,90 222,86 222,94' fill='#3b82f6'/><rect x='230' y='62' width='110' height='56' rx='5' fill='#1a1f0a' stroke='#22c55e' stroke-width='2'/><text x='285' y='82' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='700' fill='#86efac'>FortiGuard</text><text x='285' y='96' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='700' fill='#86efac'>App Signatures</text><text x='285' y='110' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>milliers d'applis</text><line x1='340' y1='90' x2='365' y2='90' stroke='#22c55e' stroke-width='1.5'/><polygon points='365,90 357,86 357,94' fill='#22c55e'/><rect x='365' y='68' width='80' height='44' rx='5' fill='#1a0f2d' stroke='#a855f7' stroke-width='2'/><text x='405' y='87' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='700' fill='#d8b4fe'>Catégorie</text><text x='405' y='101' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>P2P, VoIP, Game...</text><line x1='445' y1='90' x2='465' y2='90' stroke='#a855f7' stroke-width='1.5'/><polygon points='465,90 457,86 457,94' fill='#a855f7'/><rect x='465' y='68' width='65' height='44' rx='5' fill='#2d0f0f' stroke='#ef4444' stroke-width='2'/><text x='497' y='87' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='700' fill='#fca5a5'>Action</text><text x='497' y='101' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>Block/Allow...</text><text x='270' y='148' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#f97316'>BitTorrent sur port 80 → identifié comme P2P → Block</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel mécanisme l'Application Control utilise-t-il pour identifier les applications ?",
+      "choices": [
+        "Le filtrage par numéro de port TCP/IP uniquement",
+        "Le DPI (Deep Packet Inspection — inspection approfondie des paquets)",
+        "La comparaison d'adresses IP avec une liste noire",
+        "L'analyse des certificats SSL des connexions"
+      ],
+      "answer": 1,
+      "explain": "L'Application Control utilise le DPI (Deep Packet Inspection) pour identifier les applications par leur comportement réseau, indépendamment du port TCP/IP utilisé."
+    },
+    {
+      "q": "Que contient la base FortiGuard Application Control ?",
+      "choices": [
+        "Les règles firewall prédéfinies pour les applications courantes",
+        "Des milliers d'applications avec leurs signatures comportementales",
+        "Les adresses IP des serveurs d'applications connus",
+        "Les certificats racine des applications sécurisées"
+      ],
+      "answer": 1,
+      "explain": "La base FortiGuard Application Control répertorie des milliers d'applications avec leurs signatures comportementales, mise à jour régulièrement."
+    },
+    {
+      "q": "Quelle catégorie d'applications inclut BitTorrent et eMule ?",
+      "choices": [
+        "Storage.Backup",
+        "Network.Service",
+        "P2P",
+        "General.Interest"
+      ],
+      "answer": 2,
+      "explain": "BitTorrent et eMule sont classés dans la catégorie P2P (peer-to-peer) dans la base FortiGuard Application Control."
+    },
+    {
+      "q": "Quelle est la différence fondamentale entre IPS et Application Control ?",
+      "choices": [
+        "IPS inspecte les fichiers ; Application Control inspecte les paquets",
+        "IPS détecte les attaques et exploits ; Application Control identifie et contrôle les usages applicatifs",
+        "IPS s'applique au trafic entrant ; Application Control au trafic sortant",
+        "IPS nécessite une licence séparée ; Application Control est inclus par défaut"
+      ],
+      "answer": 1,
+      "explain": "IPS détecte les attaques et exploits (menaces actives). Application Control identifie et contrôle les usages applicatifs légitimes ou non."
+    },
+    {
+      "q": "Comment FortiGate identifie-t-il BitTorrent si l'application utilise le port 80 ?",
+      "choices": [
+        "Il ne peut pas l'identifier, seul le port 80 est considéré",
+        "Par DPI (Deep Packet Inspection) qui analyse le comportement et le contenu du flux",
+        "Par l'adresse IP destination du serveur BitTorrent",
+        "Par le nom DNS résolu lors de la connexion"
+      ],
+      "answer": 1,
+      "explain": "Par DPI (Deep Packet Inspection), FortiGate analyse le comportement et le contenu du flux. BitTorrent sur le port 80 sera identifié comme P2P, non comme HTTP."
+    },
+    {
+      "q": "À quoi servent les application overrides dans un profil Application Control ?",
+      "choices": [
+        "À désactiver toute la catégorie d'une application",
+        "À définir des règles spécifiques pour une application qui écrasent la règle de catégorie",
+        "À créer de nouvelles catégories d'applications personnalisées",
+        "À bloquer automatiquement toutes les applications non reconnues"
+      ],
+      "answer": 1,
+      "explain": "Les application overrides permettent de définir des règles spécifiques pour une application particulière qui écrasent la règle de catégorie — utiles pour les exceptions."
+    },
+    {
+      "q": "Quelle catégorie d'applications inclut Teams, Zoom et Slack ?",
+      "choices": [
+        "Business",
+        "Social.Media",
+        "Collaboration",
+        "VoIP"
+      ],
+      "answer": 2,
+      "explain": "Teams, Zoom et Slack sont classés dans la catégorie Collaboration dans la base FortiGuard Application Control."
+    },
+    {
+      "q": "L'Application Control dépend-il du port TCP/IP utilisé par l'application ?",
+      "choices": [
+        "Oui, chaque application est identifiée par son port standard",
+        "Non, l'identification est indépendante du port TCP/IP utilisé",
+        "Oui, mais des exceptions peuvent être configurées par port",
+        "Non, uniquement pour les applications P2P"
+      ],
+      "answer": 1,
+      "explain": "L'Application Control fonctionne indépendamment du port TCP/IP utilisé. L'identification repose sur le comportement réseau analysé par DPI."
+    },
+    {
+      "q": "Quelles actions sont disponibles par catégorie dans un profil Application Control ?",
+      "choices": [
+        "Allow, Monitor, Block, Quarantine",
+        "Allow, Block, Reset, Default",
+        "Permit, Deny, Log, Alert",
+        "Allow, Monitor, Redirect, Sandbox"
+      ],
+      "answer": 0,
+      "explain": "Les actions disponibles dans Application Control sont : Allow, Monitor, Block et Quarantine — pour chaque catégorie ou application."
+    },
+    {
+      "q": "IPS et Application Control peuvent-ils coexister dans la même politique firewall ?",
+      "choices": [
+        "Non, ils sont mutuellement exclusifs",
+        "Oui, ils sont complémentaires et peuvent être activés simultanément",
+        "Oui, mais uniquement en mode VDOM",
+        "Non, l'activation de l'un désactive automatiquement l'autre"
+      ],
+      "answer": 1,
+      "explain": "IPS et Application Control sont complémentaires et peuvent être activés simultanément dans la même politique firewall."
+    },
+    {
+      "q": "Quelle catégorie d'applications inclut YouTube, Netflix et Spotify ?",
+      "choices": [
+        "Social.Media",
+        "Collaboration",
+        "Video.Audio",
+        "General.Interest"
+      ],
+      "answer": 2,
+      "explain": "YouTube, Netflix et Spotify sont classés dans la catégorie Video.Audio dans la base FortiGuard Application Control."
+    },
+    {
+      "q": "Quel est l'avantage de l'Application Control sur le simple filtrage par port ?",
+      "choices": [
+        "Il est plus rapide car il ne lit pas le contenu des paquets",
+        "Il identifie les applications même si elles utilisent des ports non standards",
+        "Il consomme moins de ressources CPU que le filtrage par port",
+        "Il ne nécessite pas de licence FortiGuard"
+      ],
+      "answer": 1,
+      "explain": "L'Application Control identifie les applications même si elles utilisent des ports non standards — contrairement au simple filtrage par port qui se base uniquement sur le numéro de port."
+    },
+    {
+      "q": "Quelle catégorie d'applications inclut Dropbox et Google Drive ?",
+      "choices": [
+        "Business",
+        "Cloud.Apps",
+        "Storage.Backup",
+        "Network.Service"
+      ],
+      "answer": 2,
+      "explain": "Dropbox et Google Drive sont classés dans la catégorie Storage.Backup dans la base FortiGuard Application Control."
+    },
+    {
+      "q": "Comment un profil Application Control est-il appliqué dans FortiGate ?",
+      "choices": [
+        "Via une interface dédiée Application Control dans les paramètres système",
+        "En attachant le profil Application Control à une politique firewall",
+        "Via une route statique dédiée au trafic applicatif",
+        "Automatiquement sur toutes les politiques dès son activation"
+      ],
+      "answer": 1,
+      "explain": "Un profil Application Control est attaché à une politique firewall — il s'applique uniquement au trafic correspondant à cette politique."
+    },
+    {
+      "q": "Dans quel ordre FortiGate traite-t-il Application Control et IPS sur le même trafic ?",
+      "choices": [
+        "IPS inspecte d'abord, puis Application Control identifie",
+        "Application Control identifie l'application d'abord, puis IPS inspecte le contenu de l'application identifiée",
+        "Les deux s'exécutent simultanément en parallèle",
+        "L'ordre dépend de la configuration de la politique firewall"
+      ],
+      "answer": 1,
+      "explain": "Application Control identifie l'application d'abord, puis IPS inspecte le contenu de l'application identifiée — c'est l'ordre d'évaluation standard."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quel mécanisme l'Application Control utilise-t-il pour identifier les applications ?",
+      "choices": [
+        "Le filtrage par numéro de port TCP/IP uniquement",
+        "Le DPI (Deep Packet Inspection — inspection approfondie des paquets)",
+        "La comparaison d'adresses IP avec une liste noire",
+        "L'analyse des certificats SSL des connexions"
+      ],
+      "answer": 1,
+      "explain": "L'Application Control utilise le DPI (Deep Packet Inspection) pour identifier les applications par leur comportement réseau, indépendamment du port TCP/IP utilisé."
+    },
+    {
+      "q": "Quelle est la différence fondamentale entre IPS et Application Control ?",
+      "choices": [
+        "IPS inspecte les fichiers ; Application Control inspecte les paquets",
+        "IPS détecte les attaques et exploits ; Application Control identifie et contrôle les usages applicatifs",
+        "IPS s'applique au trafic entrant ; Application Control au trafic sortant",
+        "IPS nécessite une licence séparée ; Application Control est inclus par défaut"
+      ],
+      "answer": 1,
+      "explain": "IPS détecte les attaques et exploits (menaces actives). Application Control identifie et contrôle les usages applicatifs légitimes ou non."
+    },
+    {
+      "q": "À quoi servent les application overrides dans un profil Application Control ?",
+      "choices": [
+        "À désactiver toute la catégorie d'une application",
+        "À définir des règles spécifiques pour une application qui écrasent la règle de catégorie",
+        "À créer de nouvelles catégories d'applications personnalisées",
+        "À bloquer automatiquement toutes les applications non reconnues"
+      ],
+      "answer": 1,
+      "explain": "Les application overrides permettent de définir des règles spécifiques pour une application particulière qui écrasent la règle de catégorie — utiles pour les exceptions."
+    },
+    {
+      "q": "Quelle catégorie d'applications inclut BitTorrent et eMule ?",
+      "choices": [
+        "Storage.Backup",
+        "Network.Service",
+        "P2P",
+        "General.Interest"
+      ],
+      "answer": 2,
+      "explain": "BitTorrent et eMule sont classés dans la catégorie P2P (peer-to-peer) dans la base FortiGuard Application Control."
+    },
+    {
+      "q": "L'Application Control dépend-il du port TCP/IP utilisé par l'application ?",
+      "choices": [
+        "Oui, chaque application est identifiée par son port standard",
+        "Non, l'identification est indépendante du port TCP/IP utilisé",
+        "Oui, mais des exceptions peuvent être configurées par port",
+        "Non, uniquement pour les applications P2P"
+      ],
+      "answer": 1,
+      "explain": "L'Application Control fonctionne indépendamment du port TCP/IP utilisé. L'identification repose sur le comportement réseau analysé par DPI."
+    }
+  ]
+}

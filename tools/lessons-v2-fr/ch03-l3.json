@@ -1,0 +1,181 @@
+{
+  "id": "ch03-l3",
+  "module": "Firewall Policies and NAT",
+  "title": "Ordre, organisation et best practices",
+  "durationMin": 7,
+  "content": "## L'ordre des politiques est critique\n\nLe FortiGate applique la **première politique qui matche** (first match wins). L'ordre dans lequel les politiques sont placées dans la liste est donc fondamental. Une erreur d'ordre peut avoir des conséquences inattendues.\n\n**Règle d'or** : les politiques les plus **spécifiques** doivent être placées **au-dessus** des politiques plus **générales**. Si une règle générale est placée trop **haut**, elle matche avant les règles spécifiques qui ne seront jamais atteintes.\n\nExemple : une règle « permit all from LAN to Internet » placée avant une règle « deny Social Media » empêchera cette dernière de s'appliquer.\n\n## Policy ID : immuable même quand on déplace une règle\n\nLe **Policy ID** est attribué automatiquement à la création d'une politique. Il est **immuable** : il **ne change pas** même si la politique est déplacée dans la liste. Il sert de référence stable pour les logs et les scripts.\n\nLe **nom** d'une politique est un label libre pour la lisibilité humaine.\n\nVia les **Policy Advanced Options** (activable dans Feature Visibility), on peut assigner un ID manuellement. Spécifier **ID = 0** déclenche l'**attribution automatique** du prochain ID disponible.\n\n\n![Règles spécifiques au-dessus des règles générales](diagram:0)\n\n## Vues GUI\n\n- **Interface Pair View** : affiche les politiques groupées par paires d'interfaces (ex. : LAN→WAN, WAN→DMZ). Utile pour visualiser les règles par périmètre réseau.\n- **By Sequence / Sequence Grouping View** : affiche toutes les politiques dans leur **ordre global** d'évaluation. C'est dans cette vue que le **Move by ID** est disponible, permettant de déplacer une politique en saisissant un numéro d'ID cible.\n\n## ICMP et web filter\n\nSi une politique autorise le trafic **ICMP** (ping) avec un profil **web filter** attaché : il n'y a **aucune inspection** effectuée. L'ICMP n'est pas un protocole web-filtrable — le profil est ignoré pour ce type de trafic.\n\n## Policy ID 0\n\nLorsqu'un administrateur crée une politique et spécifie **Policy ID = 0**, le système attribue **automatiquement** le prochain ID disponible. C'est le comportement par défaut à la création.\n\n> L'**implicit deny** est **implicite**, **non configurable**, **toujours active** en bas de liste.",
+  "diagrams": [
+    {
+      "caption": "Règles spécifiques au-dessus des règles générales",
+      "height": 140,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 140'><rect width='600' height='140' fill='#f8f9fa'/><rect x='30' y='10' width='240' height='28' rx='4' fill='#28a745'/><text x='150' y='29' text-anchor='middle' font-family='sans-serif' font-size='12' fill='white' font-weight='bold'>1. Deny Social Media (spécifique)</text><rect x='30' y='46' width='240' height='28' rx='4' fill='#28a745'/><text x='150' y='65' text-anchor='middle' font-family='sans-serif' font-size='12' fill='white' font-weight='bold'>2. Permit HTTPS only (spécifique)</text><rect x='30' y='82' width='240' height='28' rx='4' fill='#4a90d9'/><text x='150' y='101' text-anchor='middle' font-family='sans-serif' font-size='12' fill='white'>3. Permit all LAN→WAN (général)</text><rect x='30' y='118' width='240' height='18' rx='4' fill='#dc3545'/><text x='150' y='131' text-anchor='middle' font-family='sans-serif' font-size='11' fill='white'>Implicit Deny</text><text x='320' y='20' font-family='sans-serif' font-size='12' fill='#28a745' font-weight='bold'>OK : spécifique au-dessus</text><text x='320' y='40' font-family='sans-serif' font-size='11' fill='#555'>Règles précises évaluées d'abord</text><rect x='310' y='60' width='240' height='28' rx='4' fill='#dc3545'/><text x='430' y='79' text-anchor='middle' font-family='sans-serif' font-size='11' fill='white'>Permit all LAN→WAN (général haut)</text><rect x='310' y='96' width='240' height='28' rx='4' fill='#888'/><text x='430' y='115' text-anchor='middle' font-family='sans-serif' font-size='11' fill='white'>Deny Social Media (jamais atteint)</text><text x='320' y='55' font-family='sans-serif' font-size='12' fill='#dc3545' font-weight='bold'>Erreur : général trop haut</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Le Policy ID d'une règle FortiGate change-t-il quand on déplace cette règle dans la liste ?",
+      "choices": [
+        "Oui, il est réattribué séquentiellement après chaque déplacement",
+        "Non, le Policy ID est immuable — il ne change jamais une fois attribué",
+        "Oui, mais uniquement si on déplace via le CLI",
+        "Non, sauf si on désactive puis réactive la politique"
+      ],
+      "answer": 1,
+      "explain": "Le Policy ID est immuable : il est attribué à la création et ne change jamais, même si la politique est déplacée, renommée ou modifiée."
+    },
+    {
+      "q": "Où doit-on placer une politique spécifique par rapport à une politique générale ?",
+      "choices": [
+        "En dessous de la politique générale",
+        "Au même niveau — l'ordre n'a pas d'importance",
+        "Au-dessus de la politique générale",
+        "En bas de liste, juste avant l'implicit deny"
+      ],
+      "answer": 2,
+      "explain": "Les règles spécifiques doivent être placées au-dessus des règles générales. Si la règle générale est trop haute, elle matche en premier et la règle spécifique n'est jamais atteinte."
+    },
+    {
+      "q": "Dans quelle vue GUI le 'Move by ID' est-il disponible pour déplacer une politique ?",
+      "choices": [
+        "Interface Pair View",
+        "Security Profile View",
+        "Sequence Grouping View (By Sequence)",
+        "Dashboard Overview"
+      ],
+      "answer": 2,
+      "explain": "La fonctionnalité Move by ID est disponible dans la Sequence Grouping View (By Sequence), où les politiques sont affichées dans leur ordre global d'évaluation."
+    },
+    {
+      "q": "Qu'arrive-t-il si une politique ICMP (ping) a un profil web filter attaché ?",
+      "choices": [
+        "Le trafic ICMP est bloqué par le profil web filter",
+        "Le profil web filter inspecte les données ICMP",
+        "Aucune inspection n'est effectuée — l'ICMP n'est pas web-filtrable",
+        "Le FortiGate convertit le trafic ICMP pour l'inspecter"
+      ],
+      "answer": 2,
+      "explain": "L'ICMP n'est pas un protocole web-filtrable. Si un profil web filter est attaché à une politique ICMP, il est simplement ignoré pour ce type de trafic."
+    },
+    {
+      "q": "Que signifie spécifier Policy ID = 0 lors de la création d'une politique ?",
+      "choices": [
+        "La politique est désactivée par défaut",
+        "La politique reçoit la priorité la plus haute",
+        "Le système attribue automatiquement le prochain ID disponible",
+        "La politique est créée sans ID (anonyme)"
+      ],
+      "answer": 2,
+      "explain": "Policy ID = 0 est une convention qui demande au système d'attribuer automatiquement le prochain ID disponible. C'est le comportement par défaut à la création."
+    },
+    {
+      "q": "Quelle est la conséquence principale d'une règle générale placée trop haut dans la liste des politiques ?",
+      "choices": [
+        "Les règles spécifiques sous elle ne sont jamais évaluées car la règle générale matche en premier",
+        "La règle générale est ignorée au profit des règles spécifiques",
+        "Le FortiGate génère une alerte de configuration",
+        "Les performances du firewall sont dégradées"
+      ],
+      "answer": 0,
+      "explain": "Si une règle générale est placée trop haut, elle matche le trafic en premier (first match wins). Les règles spécifiques situées en dessous ne sont jamais atteintes."
+    },
+    {
+      "q": "Quelle vue GUI affiche les politiques groupées par paires d'interfaces (ex. : LAN→WAN) ?",
+      "choices": [
+        "By Sequence View",
+        "Security Profile View",
+        "Interface Pair View",
+        "Policy Summary View"
+      ],
+      "answer": 2,
+      "explain": "L'Interface Pair View regroupe les politiques par paires d'interfaces (incoming→outgoing), ce qui facilite la visualisation des règles par périmètre réseau."
+    },
+    {
+      "q": "Comment activer la possibilité d'assigner un Policy ID manuellement à la création d'une politique ?",
+      "choices": [
+        "Via le CLI uniquement, commande 'set policy-id'",
+        "En activant Policy Advanced Options dans Feature Visibility",
+        "En passant en mode conserve",
+        "C'est toujours disponible par défaut dans l'interface GUI"
+      ],
+      "answer": 1,
+      "explain": "L'option d'assignation manuelle du Policy ID est disponible via Policy Advanced Options, qui doit être activé dans Feature Visibility."
+    },
+    {
+      "q": "Pourquoi l'ordre des politiques firewall est-il critique sur FortiGate ?",
+      "choices": [
+        "Parce que le FortiGate applique la première politique qui matche et ignore les suivantes",
+        "Parce que les politiques sont exécutées en parallèle selon leur priorité",
+        "Parce que les politiques inférieures ont une priorité plus élevée",
+        "Parce que la dernière politique qui matche est appliquée"
+      ],
+      "answer": 0,
+      "explain": "Le FortiGate utilise first match wins : dès qu'une politique correspond au trafic, elle est appliquée et l'évaluation s'arrête. L'ordre détermine donc quelle règle s'applique."
+    },
+    {
+      "q": "L'implicit deny est-il configurable par l'administrateur ?",
+      "choices": [
+        "Oui, il peut être modifié pour accepter certains protocoles",
+        "Non, c'est une règle implicite non configurable toujours active en bas de liste",
+        "Oui, mais uniquement via le CLI",
+        "Il peut être supprimé si une politique ANY/ANY existe"
+      ],
+      "answer": 1,
+      "explain": "L'implicit deny est une règle implicite non configurable. Elle est toujours présente en bas de la liste et rejette tout trafic ne correspondant à aucune politique explicite."
+    },
+    {
+      "q": "Quelle est la différence entre le Policy ID et le nom d'une politique ?",
+      "choices": [
+        "Le Policy ID est modifiable, le nom est immuable",
+        "Le Policy ID est immuable et sert de référence technique ; le nom est un label libre pour la lisibilité",
+        "Ils sont synonymes et peuvent être utilisés de façon interchangeable",
+        "Le Policy ID est visible uniquement dans les logs, le nom uniquement dans la GUI"
+      ],
+      "answer": 1,
+      "explain": "Le Policy ID est immuable et sert de référence stable dans les logs et les scripts. Le nom est un label libre choisi par l'administrateur pour la lisibilité humaine."
+    },
+    {
+      "q": "Qu'est-ce que la Sequence Grouping View dans la GUI FortiGate ?",
+      "choices": [
+        "Une vue qui affiche uniquement les politiques actives",
+        "Une vue qui affiche toutes les politiques dans leur ordre global d'évaluation",
+        "Une vue qui trie les politiques par volume de trafic",
+        "Une vue qui affiche les politiques groupées par zone de sécurité"
+      ],
+      "answer": 1,
+      "explain": "La Sequence Grouping View (By Sequence) affiche toutes les politiques dans leur ordre global d'évaluation, indépendamment des interfaces. C'est là que le Move by ID est disponible."
+    },
+    {
+      "q": "Un administrateur crée une politique avec ID=0. Quel sera l'ID effectif de la politique ?",
+      "choices": [
+        "La politique aura l'ID 0 comme défini",
+        "Le système attribuera automatiquement le prochain ID disponible",
+        "La politique sera refusée — l'ID 0 est réservé à l'implicit deny",
+        "La politique aura l'ID 1 par défaut"
+      ],
+      "answer": 1,
+      "explain": "Spécifier ID=0 est la convention pour demander l'attribution automatique. Le FortiGate assigne alors le prochain ID disponible."
+    },
+    {
+      "q": "Un administrateur glisse-dépose une politique du rang 5 au rang 2. Son Policy ID change-t-il ?",
+      "choices": [
+        "Oui, il devient 2 pour correspondre à sa nouvelle position",
+        "Non, le Policy ID reste inchangé — il est immuable",
+        "Oui, les IDs de toutes les politiques sont renumérotés",
+        "Non, mais son nom est automatiquement mis à jour"
+      ],
+      "answer": 1,
+      "explain": "Le Policy ID est immuable. Déplacer une politique dans la liste (par glisser-déposer ou Move by ID) ne modifie pas son Policy ID."
+    },
+    {
+      "q": "Quelle est la bonne pratique pour l'organisation des politiques firewall sur FortiGate ?",
+      "choices": [
+        "Placer les politiques générales en haut et les spécifiques en bas",
+        "Placer les politiques spécifiques au-dessus des politiques générales",
+        "Mélanger les politiques pour équilibrer la charge CPU",
+        "Toujours utiliser une seule politique ANY/ANY avec des profils UTM"
+      ],
+      "answer": 1,
+      "explain": "La bonne pratique est de placer les règles spécifiques au-dessus des règles générales. Cela garantit que les exceptions et restrictions particulières sont évaluées avant la règle générale."
+    }
+  ]
+}

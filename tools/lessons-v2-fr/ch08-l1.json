@@ -1,0 +1,238 @@
+{
+  "id": "ch08-l1",
+  "module": "Antivirus",
+  "title": "Bases de l'antivirus FortiGate",
+  "durationMin": 7,
+  "content": "## Protocoles inspectés par l'antivirus FortiGate\n\nLe moteur antivirus (AV) du FortiGate peut inspecter le trafic sur de nombreux protocoles. Les protocoles supportés incluent : **HTTP**, **HTTPS** (uniquement avec l'inspection SSL complète — full SSL inspection), **FTP**, **SMTP**, **IMAP**, **POP3**, **MAPI**, **CIFS**, **SMB** et **SSH**. Pour que le trafic HTTPS soit scanné par l'AV, le FortiGate doit déchiffrer le flux via la full SSL inspection.\n\n## Les deux moteurs d'analyse AV\n\nFortiGate propose deux moteurs d'analyse antivirus :\n\n| Moteur | Comportement | Performances |\n|---|---|---|\n| **Flow-based** | Analyse le flux paquet par paquet, sans bufferiser le fichier | Rapide, faible latence, moins de RAM |\n| **Proxy-based** | Bufferise le fichier entier avant l'analyse — buffering complet | Analyse plus complète, plus de RAM, latence plus élevée |\n\nLe moteur **flow-based** analyse le contenu en temps réel pendant le transfert, sans attendre la fin du fichier. Il est plus rapide et consomme moins de RAM. Le moteur **proxy-based** met en tampon (buffering) le fichier entier avant de l'analyser, ce qui permet une détection plus avancée mais introduit une latence.\n\n\n![Position du scan AV dans le flux de traitement FortiGate — protocoles inspectés](diagram:0)\n\n## Base de signatures FortiGuard AV\n\nLa base de signatures AV est fournie par le service **FortiGuard AV Service**. Ce service de licence permet au FortiGate de recevoir automatiquement les mises à jour de définitions de virus depuis les serveurs FortiGuard. La base contient les définitions de virus utilisées pour le pattern matching.\n\n> La mise à jour automatique de la base AV depuis FortiGuard garantit une protection contre les menaces récentes.\n\n## Types de détection AV\n\nFortiGate utilise plusieurs méthodes de détection :\n\n- **Signatures classiques** : pattern matching sur le contenu des fichiers — comparaison avec les définitions de virus connues dans la base de signatures\n- **Heuristique** : détection basée sur le comportement suspect d'un fichier, sans signature connue\n- **Sandbox** : les fichiers inconnus sont envoyés à FortiSandbox pour une analyse dynamique dans un environnement isolé — le verdict est renvoyé au FortiGate (block ou allow)\n\n## Scan des archives ZIP et RAR\n\nFortiGate peut scanner les archives **ZIP** et **RAR**. La profondeur de décompression (depth) est configurable — il est possible de définir le nombre de niveaux d'archives imbriquées à analyser. Si une archive est chiffrée, FortiGate ne peut pas décompresser son contenu et peut être configuré pour la bloquer.\n\n## Fichiers oversized\n\nSi un fichier dépasse la taille limite configurée (oversized limit), le FortiGate applique une action configurable : **pass** (laisser passer sans scanner) ou **block** (bloquer le fichier). Cette limite permet de contrôler l'impact sur les performances pour les très gros fichiers.\n\n> L'**oversized limit** : selon la **configuration** du profil AV, le fichier trop volumineux est **passé** (pass) ou **bloqué** (block).",
+  "diagrams": [
+    {
+      "caption": "Position du scan AV dans le flux de traitement FortiGate — protocoles inspectés",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='10' y='20' width='100' height='40' rx='6' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='60' y='35' text-anchor='middle' fill='#e2e8f0' font-size='11' font-family='monospace'>Trafic</text><text x='60' y='50' text-anchor='middle' fill='#e2e8f0' font-size='11' font-family='monospace'>entrant</text><polygon points='115,40 128,35 128,45' fill='#3b82f6'/><rect x='130' y='20' width='100' height='40' rx='6' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='180' y='35' text-anchor='middle' fill='#e2e8f0' font-size='11' font-family='monospace'>Firewall</text><text x='180' y='50' text-anchor='middle' fill='#e2e8f0' font-size='11' font-family='monospace'>Policy</text><polygon points='235,40 248,35 248,45' fill='#3b82f6'/><rect x='250' y='10' width='110' height='60' rx='6' fill='#14532d' stroke='#22c55e' stroke-width='2'/><text x='305' y='30' text-anchor='middle' fill='#22c55e' font-size='12' font-family='monospace' font-weight='bold'>Moteur AV</text><text x='305' y='48' text-anchor='middle' fill='#e2e8f0' font-size='10' font-family='monospace'>flow / proxy</text><polygon points='365,40 378,35 378,45' fill='#3b82f6'/><rect x='380' y='20' width='100' height='40' rx='6' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='430' y='35' text-anchor='middle' fill='#e2e8f0' font-size='11' font-family='monospace'>Trafic</text><text x='430' y='50' text-anchor='middle' fill='#e2e8f0' font-size='11' font-family='monospace'>sortant</text><text x='10' y='100' fill='#94a3b8' font-size='10' font-family='monospace'>Protocoles inspectés :</text><text x='10' y='118' fill='#22c55e' font-size='10' font-family='monospace'>HTTP  HTTPS  FTP  SMTP  IMAP  POP3</text><text x='10' y='135' fill='#22c55e' font-size='10' font-family='monospace'>MAPI  CIFS  SMB  SSH</text><text x='10' y='155' fill='#94a3b8' font-size='10' font-family='monospace'>* HTTPS : full SSL inspection requise</text><rect x='370' y='95' width='160' height='70' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1'/><text x='450' y='112' text-anchor='middle' fill='#3b82f6' font-size='10' font-family='monospace' font-weight='bold'>FortiGuard AV</text><text x='450' y='127' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>Signatures ZIP RAR</text><text x='450' y='142' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>Heuristique</text><text x='450' y='157' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>Sandbox (FortiSandbox)</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel protocole nécessite la full SSL inspection pour être analysé par l'AV FortiGate ?",
+      "choices": [
+        "FTP",
+        "HTTPS",
+        "SMTP",
+        "SSH"
+      ],
+      "answer": 1,
+      "explain": "HTTPS chiffre le trafic TLS. Le FortiGate doit activer la full SSL inspection pour déchiffrer et scanner le contenu HTTPS avec le moteur AV."
+    },
+    {
+      "q": "Quel moteur AV FortiGate bufferise le fichier entier avant l'analyse ?",
+      "choices": [
+        "Flow-based",
+        "NTurbo",
+        "Proxy-based",
+        "Heuristique"
+      ],
+      "answer": 2,
+      "explain": "Le moteur proxy-based effectue un buffering complet du fichier avant de l'analyser, ce qui introduit une latence mais permet une analyse plus complète."
+    },
+    {
+      "q": "Quel moteur AV FortiGate analyse le trafic paquet par paquet sans buffering ?",
+      "choices": [
+        "Proxy-based",
+        "Sandbox",
+        "CDR",
+        "Flow-based"
+      ],
+      "answer": 3,
+      "explain": "Le moteur flow-based analyse le flux en temps réel, paquet par paquet, sans attendre la fin du fichier. Il est plus rapide et consomme moins de RAM."
+    },
+    {
+      "q": "Quel service fournit les mises à jour automatiques de la base de signatures AV sur FortiGate ?",
+      "choices": [
+        "FortiManager",
+        "FortiSandbox",
+        "FortiGuard AV Service",
+        "FortiAnalyzer"
+      ],
+      "answer": 2,
+      "explain": "Le FortiGuard AV Service est le service de licence qui permet au FortiGate de recevoir automatiquement les mises à jour de définitions de virus depuis les serveurs FortiGuard."
+    },
+    {
+      "q": "Quelle méthode de détection AV analyse le comportement suspect d'un fichier sans signature connue ?",
+      "choices": [
+        "Pattern matching",
+        "Heuristique",
+        "Sandbox",
+        "CDR"
+      ],
+      "answer": 1,
+      "explain": "La méthode heuristique détecte les menaces basées sur le comportement suspect d'un fichier, même sans signature connue dans la base AV."
+    },
+    {
+      "q": "Quels types d'archives FortiGate peut-il scanner avec le moteur AV ?",
+      "choices": [
+        "ZIP et RAR uniquement",
+        "TAR et GZ uniquement",
+        "ZIP, RAR et TAR",
+        "Aucune archive"
+      ],
+      "answer": 0,
+      "explain": "FortiGate peut scanner les archives ZIP et RAR. La profondeur de décompression est configurable pour définir le nombre de niveaux imbriqués à analyser."
+    },
+    {
+      "q": "Qu'est-ce que la profondeur de décompression (depth) dans le scan d'archives AV ?",
+      "choices": [
+        "La taille maximale d'une archive",
+        "Le nombre de niveaux d'archives imbriquées à analyser",
+        "Le nombre de fichiers dans une archive",
+        "La vitesse d'analyse"
+      ],
+      "answer": 1,
+      "explain": "La profondeur (depth) définit le nombre de niveaux d'archives imbriquées que FortiGate analysera. Par exemple, une archive ZIP contenant une autre archive ZIP."
+    },
+    {
+      "q": "Que fait FortiGate avec un fichier qui dépasse la taille limite configurée (oversized limit) ?",
+      "choices": [
+        "Il le supprime automatiquement",
+        "Le fichier est passé ou bloqué selon la configuration de l'oversized limit",
+        "Il l'envoie toujours à FortiSandbox",
+        "Il le met en quarantaine"
+      ],
+      "answer": 1,
+      "explain": "Quand un fichier dépasse l'oversized limit, FortiGate applique l'action configurée : pass (laisser passer sans scanner) ou block (bloquer le fichier)."
+    },
+    {
+      "q": "Quel avantage principal offre le moteur flow-based par rapport au proxy-based ?",
+      "choices": [
+        "Meilleure détection des virus",
+        "Support CDR",
+        "Plus rapide, moins de RAM, faible latence",
+        "Scan des archives chiffrées"
+      ],
+      "answer": 2,
+      "explain": "Le moteur flow-based est plus rapide, consomme moins de RAM et génère moins de latence car il analyse le flux en temps réel sans buffering du fichier entier."
+    },
+    {
+      "q": "Comment les fichiers inconnus sont-ils analysés en mode sandbox dans FortiGate ?",
+      "choices": [
+        "Directement sur le FortiGate",
+        "Via FortiSandbox dans un environnement isolé, avec renvoi du verdict",
+        "Via FortiManager",
+        "En mode heuristique uniquement"
+      ],
+      "answer": 1,
+      "explain": "Les fichiers inconnus sont envoyés à FortiSandbox pour une analyse dynamique dans un environnement isolé. Le verdict (block ou allow) est renvoyé au FortiGate."
+    },
+    {
+      "q": "Lequel des protocoles suivants est inspecté par l'AV FortiGate ?",
+      "choices": [
+        "RDP",
+        "LDAP",
+        "MAPI",
+        "SNMP"
+      ],
+      "answer": 2,
+      "explain": "MAPI (protocole de messagerie Microsoft Exchange) est l'un des protocoles inspectés par le moteur AV FortiGate, avec HTTP, FTP, SMTP, IMAP, POP3, CIFS, SMB et SSH."
+    },
+    {
+      "q": "Lequel des protocoles suivants est inspecté par l'AV FortiGate ?",
+      "choices": [
+        "BGP",
+        "CIFS",
+        "OSPF",
+        "NTP"
+      ],
+      "answer": 1,
+      "explain": "CIFS (Common Internet File System, utilisé pour le partage de fichiers Windows) est inspecté par le moteur AV FortiGate, comme SMB, HTTP, FTP, SMTP, IMAP, POP3 et SSH."
+    },
+    {
+      "q": "La base de signatures AV FortiGuard contient principalement quoi ?",
+      "choices": [
+        "Les règles firewall",
+        "Les définitions de virus pour le pattern matching",
+        "Les politiques de filtrage web",
+        "Les certificats SSL"
+      ],
+      "answer": 1,
+      "explain": "La base de signatures FortiGuard AV contient les définitions de virus utilisées pour le pattern matching sur le contenu des fichiers analysés par le moteur AV."
+    },
+    {
+      "q": "Quel protocole de partage de fichiers réseau, en plus de CIFS, est inspecté par l'AV FortiGate ?",
+      "choices": [
+        "NFS",
+        "SMB",
+        "iSCSI",
+        "AFP"
+      ],
+      "answer": 1,
+      "explain": "SMB (Server Message Block) est inspecté par le moteur AV FortiGate. SMB et CIFS sont tous deux des protocoles de partage de fichiers réseau Windows inspectés par l'AV."
+    },
+    {
+      "q": "Pourquoi le moteur proxy-based consomme-t-il plus de RAM que le flow-based ?",
+      "choices": [
+        "Il utilise plus de CPU",
+        "Il effectue le buffering du fichier entier en mémoire avant l'analyse",
+        "Il analyse plus de protocoles",
+        "Il génère plus de logs"
+      ],
+      "answer": 1,
+      "explain": "Le moteur proxy-based doit stocker le fichier entier en mémoire (buffering) avant de commencer l'analyse, ce qui consomme plus de RAM que le flow-based qui analyse paquet par paquet."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quel protocole nécessite la full SSL inspection pour être analysé par l'AV FortiGate ?",
+      "choices": [
+        "FTP",
+        "HTTPS",
+        "SMTP",
+        "SSH"
+      ],
+      "answer": 1,
+      "explain": "HTTPS chiffre le trafic TLS. Le FortiGate doit activer la full SSL inspection pour déchiffrer et scanner le contenu HTTPS avec le moteur AV."
+    },
+    {
+      "q": "Quel moteur AV FortiGate bufferise le fichier entier avant l'analyse ?",
+      "choices": [
+        "Flow-based",
+        "NTurbo",
+        "Proxy-based",
+        "Heuristique"
+      ],
+      "answer": 2,
+      "explain": "Le moteur proxy-based effectue un buffering complet du fichier avant de l'analyser, ce qui introduit une latence mais permet une analyse plus complète."
+    },
+    {
+      "q": "Quel service fournit les mises à jour automatiques de la base de signatures AV sur FortiGate ?",
+      "choices": [
+        "FortiManager",
+        "FortiSandbox",
+        "FortiGuard AV Service",
+        "FortiAnalyzer"
+      ],
+      "answer": 2,
+      "explain": "Le FortiGuard AV Service est le service de licence qui permet au FortiGate de recevoir automatiquement les mises à jour de définitions de virus depuis les serveurs FortiGuard."
+    },
+    {
+      "q": "Que fait FortiGate avec un fichier qui dépasse la taille limite configurée (oversized limit) ?",
+      "choices": [
+        "Il le supprime automatiquement",
+        "Il applique l'action pass ou block selon la configuration",
+        "Il l'envoie toujours à FortiSandbox",
+        "Il le met en quarantaine"
+      ],
+      "answer": 1,
+      "explain": "Quand un fichier dépasse l'oversized limit, FortiGate applique l'action configurée : pass (laisser passer sans scanner) ou block (bloquer le fichier)."
+    },
+    {
+      "q": "Quels types d'archives FortiGate peut-il scanner avec le moteur AV ?",
+      "choices": [
+        "ZIP et RAR uniquement",
+        "TAR et GZ uniquement",
+        "ZIP, RAR et TAR",
+        "Aucune archive"
+      ],
+      "answer": 0,
+      "explain": "FortiGate peut scanner les archives ZIP et RAR. La profondeur de décompression est configurable pour définir le nombre de niveaux imbriqués à analyser."
+    }
+  ]
+}

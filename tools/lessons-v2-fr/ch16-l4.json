@@ -1,0 +1,238 @@
+{
+  "id": "ch16-l4",
+  "module": "Secure Access Service Edge (SASE)",
+  "title": "SPA, ZTNA et intégration SD-WAN",
+  "durationMin": 8,
+  "content": "## SPA : Secure Private Access\n\n**SPA** (Secure Private Access) désigne l'accès sécurisé aux applications privées (on-premises ou datacenter) depuis n'importe où via FortiSASE et ZTNA. SPA remplace le VPN traditionnel pour l'accès aux applications internes en appliquant le principe du **moindre privilège** : l'utilisateur accède uniquement à l'application autorisée, pas au réseau complet.\n\n## ZTNA : Zero Trust Network Access\n\n**ZTNA** (Zero Trust Network Access) est basé sur le principe Zero Trust : **ne jamais faire confiance implicitement, toujours vérifier**. L'accès à chaque application est accordé de manière granulaire selon plusieurs critères :\n\n- **Identité de l'utilisateur** : authentification forte, MFA\n- **Etat du endpoint** : OS à jour, patches appliqués, antivirus actif\n- **Localisation** : réseau de confiance ou non\n- **Heure** : accès autorisé uniquement pendant les heures de travail\n\n\n![Flux ZTNA : vérification identité, ZTNA tags et accès granulaire à l'application](diagram:0)\n\n## ZTNA vs VPN traditionnel\n\n| Critère | VPN traditionnel | ZTNA |\n|---|---|---|\n| Accès accordé | A tout le réseau après connexion | Uniquement à l'application autorisée |\n| Lateral movement | Possible | Bloqué par principe |\n| Vérification continue | Non | Oui (contexte réévalué) |\n| Principe appliqué | Confiance implicite | Moindre privilège |\n\n> **Lateral movement** : capacité d'un attaquant connecté via VPN à se déplacer latéralement dans le réseau. ZTNA élimine ce risque en ne donnant accès qu'à l'application spécifique.\n\n## ZTNA tags : évaluation du endpoint\n\nLes **ZTNA tags** sont des marqueurs d'état évalués par **FortiClient** sur le endpoint :\n\n1. FortiClient collecte des informations sur l'état du endpoint (OS, patches, antivirus, compliance)\n2. FortiClient génère un tag ZTNA et l'envoie à **FortiGate** ou FortiSASE\n3. La politique ZTNA est basée sur ce tag pour autoriser ou refuser l'accès à l'application\n\n## Composants de l'architecture ZTNA\n\n- **FortiClient** : agent endpoint — évalue l'état du poste et génère les ZTNA tags\n- **FortiGate / FortiSASE** : access proxy ZTNA — reçoit les tags et applique les politiques\n- **FortiAuthenticator** : gestion de l'identité et du MFA (Multi-Factor Authentication)\n\n## MFA : Multi-Factor Authentication\n\nLe **MFA** (Multi-Factor Authentication) est fortement recommandé avec ZTNA pour renforcer la vérification d'identité. **FortiAuthenticator** gère l'authentification MFA dans l'architecture Fortinet ZTNA.\n\n## Intégration SD-WAN + SASE\n\nL'intégration **SD-WAN + SASE** permet une solution hybride complète pour les entreprises :\n\n- Les branches sont équipées de **FortiGate** avec **SD-WAN**\n- Les branches routent le trafic via SD-WAN vers **FortiSASE** pour l'inspection sécurité\n- Les utilisateurs distants se connectent directement à FortiSASE via FortiClient\n- Les politiques ZTNA s'appliquent aussi bien aux branches qu'aux utilisateurs distants\n\nCette architecture hybride permet aux entreprises de migrer progressivement vers SASE tout en conservant leurs investissements FortiGate SD-WAN existants.",
+  "diagrams": [
+    {
+      "caption": "Flux ZTNA : vérification identité, ZTNA tags et accès granulaire à l'application",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='10' y='50' width='95' height='55' rx='5' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='57' y='70' fill='#3b82f6' font-size='9' text-anchor='middle' font-family='monospace'>FortiClient</text><text x='57' y='83' fill='#e2e8f0' font-size='8' text-anchor='middle' font-family='monospace'>ZTNA tags</text><text x='57' y='96' fill='#e2e8f0' font-size='8' text-anchor='middle' font-family='monospace'>endpoint state</text><path d='M105 77 L145 77' stroke='#3b82f6' stroke-width='2' marker-end='url(#za)'/><rect x='145' y='35' width='110' height='85' rx='5' fill='#0f172a' stroke='#22c55e' stroke-width='1.5'/><text x='200' y='55' fill='#22c55e' font-size='9' text-anchor='middle' font-family='monospace'>FortiSASE</text><text x='200' y='68' fill='#22c55e' font-size='8' text-anchor='middle' font-family='monospace'>ZTNA Proxy</text><rect x='155' y='74' width='90' height='18' rx='3' fill='#1e293b' stroke='#22c55e' stroke-width='1'/><text x='200' y='87' fill='#e2e8f0' font-size='8' text-anchor='middle' font-family='monospace'>Identite + MFA</text><rect x='155' y='96' width='90' height='18' rx='3' fill='#1e293b' stroke='#22c55e' stroke-width='1'/><text x='200' y='109' fill='#e2e8f0' font-size='8' text-anchor='middle' font-family='monospace'>Device posture</text><path d='M255 77 L295 77' stroke='#22c55e' stroke-width='2' marker-end='url(#zb)'/><rect x='295' y='50' width='80' height='30' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='1.5'/><text x='335' y='63' fill='#22c55e' font-size='9' text-anchor='middle' font-family='monospace'>Verify OK</text><text x='335' y='75' fill='#22c55e' font-size='8' text-anchor='middle' font-family='monospace'>acces accorde</text><path d='M375 65 L410 65' stroke='#22c55e' stroke-width='2' marker-end='url(#zc)'/><rect x='410' y='50' width='115' height='30' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='1.5'/><text x='467' y='63' fill='#22c55e' font-size='9' text-anchor='middle' font-family='monospace'>Application seule</text><text x='467' y='75' fill='#22c55e' font-size='8' text-anchor='middle' font-family='monospace'>(pas le reseau)</text><text x='57' y='140' fill='#3b82f6' font-size='8' text-anchor='middle' font-family='monospace'>FortiAuthenticator</text><text x='57' y='152' fill='#3b82f6' font-size='8' text-anchor='middle' font-family='monospace'>MFA</text><path d='M200 120 L200 155' stroke='#334155' stroke-width='1' stroke-dasharray='3,3'/><text x='200' y='152' fill='#334155' font-size='7' text-anchor='middle' font-family='monospace'>VPN: acces reseau complet</text><text x='200' y='163' fill='#ef4444' font-size='7' text-anchor='middle' font-family='monospace'>lateral movement possible</text><defs><marker id='za' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#3b82f6'/></marker><marker id='zb' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#22c55e'/></marker><marker id='zc' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#22c55e'/></marker></defs></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Que signifie SPA dans le contexte FortiSASE ?",
+      "choices": [
+        "Secure Public Access",
+        "Secure Private Access : acces securise aux applications privees on-premises via FortiSASE et ZTNA",
+        "Software Protocol Agent",
+        "Standard Proxy Architecture"
+      ],
+      "answer": 1,
+      "explain": "SPA signifie Secure Private Access. C'est l'accès sécurisé aux applications privées (on-premises ou datacenter) depuis n'importe où via FortiSASE et ZTNA."
+    },
+    {
+      "q": "Quel est le principe fondamental de ZTNA ?",
+      "choices": [
+        "Faire confiance a tous les utilisateurs du reseau interne",
+        "Ne jamais faire confiance implicitement, toujours verifier, acces granulaire par application",
+        "Chiffrer tout le trafic avec IPsec",
+        "Autoriser l'acces des que le VPN est connecte"
+      ],
+      "answer": 1,
+      "explain": "ZTNA est basé sur le principe Zero Trust : ne jamais faire confiance implicitement, toujours vérifier. L'accès est accordé de manière granulaire à chaque application selon l'identité, le contexte et l'état du endpoint."
+    },
+    {
+      "q": "Quelle est la différence principale entre VPN traditionnel et ZTNA ?",
+      "choices": [
+        "Le VPN est plus securise que ZTNA",
+        "Le VPN donne acces a tout le reseau (lateral movement possible), ZTNA donne acces uniquement a l'application autorisee",
+        "ZTNA ne supporte pas le chiffrement",
+        "Le VPN utilise l'identite de l'utilisateur, pas ZTNA"
+      ],
+      "answer": 1,
+      "explain": "Le VPN traditionnel donne accès à tout le réseau une fois connecté (lateral movement possible), tandis que ZTNA limite l'accès uniquement à l'application autorisée, appliquant le principe du moindre privilège."
+    },
+    {
+      "q": "Que sont les ZTNA tags ?",
+      "choices": [
+        "Des etiquettes VLAN pour segmenter le reseau",
+        "Des marqueurs d'etat evalues par FortiClient (OS, patches, antivirus, compliance) envoyes a FortiGate",
+        "Des certificats SSL pour le chiffrement",
+        "Des regles de pare-feu pour le filtrage web"
+      ],
+      "answer": 1,
+      "explain": "Les ZTNA tags sont des marqueurs d'état évalués par FortiClient sur le endpoint (OS, patches, antivirus, compliance) et envoyés à FortiGate ou FortiSASE pour baser les politiques ZTNA."
+    },
+    {
+      "q": "Quel composant Fortinet gère l'identité et le MFA dans l'architecture ZTNA ?",
+      "choices": [
+        "FortiManager",
+        "FortiAnalyzer",
+        "FortiAuthenticator",
+        "FortiSIEM"
+      ],
+      "answer": 2,
+      "explain": "FortiAuthenticator gère l'identité et le MFA (Multi-Factor Authentication) dans l'architecture Fortinet ZTNA."
+    },
+    {
+      "q": "Que signifie MFA ?",
+      "choices": [
+        "Multi-Firewall Architecture",
+        "Multi-Factor Authentication : authentification a plusieurs facteurs pour renforcer la verification d'identite",
+        "Managed Forwarding Agent",
+        "Maximum Firewall Access"
+      ],
+      "answer": 1,
+      "explain": "MFA signifie Multi-Factor Authentication. Il est fortement recommandé avec ZTNA pour renforcer la vérification d'identité via FortiAuthenticator."
+    },
+    {
+      "q": "Comment l'intégration SD-WAN + SASE fonctionne-t-elle pour les branches ?",
+      "choices": [
+        "Les branches n'ont pas acces a FortiSASE",
+        "Les branches avec FortiGate SD-WAN routent le trafic vers FortiSASE pour inspection securite",
+        "Les branches remplacent SD-WAN par MPLS",
+        "Les branches utilisent uniquement le VPN pour acceder au cloud"
+      ],
+      "answer": 1,
+      "explain": "Dans l'intégration SD-WAN + SASE, les branches équipées de FortiGate avec SD-WAN routent le trafic via SD-WAN vers FortiSASE pour l'inspection sécurité."
+    },
+    {
+      "q": "Quel risque le VPN traditionnel expose-t-il par rapport a ZTNA ?",
+      "choices": [
+        "Absence de chiffrement du trafic",
+        "Le lateral movement : un utilisateur VPN connecte peut se deplacer sur tout le reseau",
+        "Impossibilite de se connecter aux applications SaaS",
+        "Latence trop élevée pour les applications temps réel"
+      ],
+      "answer": 1,
+      "explain": "Le VPN traditionnel expose au risque de lateral movement : une fois connecté, un attaquant peut se déplacer latéralement sur tout le réseau. ZTNA élimine ce risque en ne donnant accès qu'à l'application spécifique."
+    },
+    {
+      "q": "Quel agent Fortinet évalue l'état du endpoint et génère les ZTNA tags ?",
+      "choices": [
+        "FortiManager",
+        "FortiAuthenticator",
+        "FortiClient",
+        "FortiAnalyzer"
+      ],
+      "answer": 2,
+      "explain": "FortiClient est l'agent endpoint qui collecte les informations sur l'état du poste (OS, patches, antivirus, compliance) et génère les ZTNA tags envoyés à FortiGate ou FortiSASE."
+    },
+    {
+      "q": "Quel est le rôle de FortiGate ou FortiSASE dans l'architecture ZTNA ?",
+      "choices": [
+        "Générer les ZTNA tags sur les endpoints",
+        "Access proxy ZTNA : recevoir les tags de FortiClient et appliquer les politiques d'acces",
+        "Gérer les licences FortiClient",
+        "Chiffrer les emails d'entreprise"
+      ],
+      "answer": 1,
+      "explain": "FortiGate ou FortiSASE joue le rôle d'access proxy ZTNA : il reçoit les ZTNA tags de FortiClient et applique les politiques d'accès pour autoriser ou refuser l'accès à l'application."
+    },
+    {
+      "q": "Selon quels critères ZTNA accorde-t-il l'accès à une application ?",
+      "choices": [
+        "Uniquement l'adresse IP de l'utilisateur",
+        "Identite, etat du endpoint, localisation et heure",
+        "Uniquement le nom d'utilisateur et mot de passe",
+        "Uniquement le type de navigateur utilise"
+      ],
+      "answer": 1,
+      "explain": "ZTNA accorde l'accès selon l'identité de l'utilisateur, l'état du endpoint (OS, patches, antivirus), la localisation et l'heure d'accès."
+    },
+    {
+      "q": "Que remplace SPA (Secure Private Access) dans une architecture SASE ?",
+      "choices": [
+        "Le protocole OSPF pour le routage interne",
+        "Le VPN traditionnel pour l'acces aux applications internes",
+        "Le pare-feu physique en datacenter",
+        "Le switch de couche 2 dans les branches"
+      ],
+      "answer": 1,
+      "explain": "SPA remplace le VPN traditionnel pour l'accès aux applications internes, en appliquant le principe du moindre privilège via ZTNA."
+    },
+    {
+      "q": "Quel principe applique ZTNA pour l'acces aux applications privees ?",
+      "choices": [
+        "Confiance implicite pour tous les utilisateurs du reseau",
+        "Principe du moindre privilege : acces uniquement a l'application autorisee, pas au reseau complet",
+        "Acces complet au reseau apres authentification unique",
+        "Confiance basee sur l'adresse MAC de l'appareil"
+      ],
+      "answer": 1,
+      "explain": "ZTNA applique le principe du moindre privilège : l'utilisateur accède uniquement à l'application autorisée, pas au réseau complet, contrairement au VPN traditionnel."
+    },
+    {
+      "q": "Pourquoi l'intégration SD-WAN + SASE est-elle qualifiée de solution hybride ?",
+      "choices": [
+        "Elle combine deux fabricants différents",
+        "Elle combine FortiGate SD-WAN pour les branches et FortiSASE pour les utilisateurs distants dans une architecture complete",
+        "Elle utilise deux protocoles de chiffrement differents",
+        "Elle combine le cloud public et prive"
+      ],
+      "answer": 1,
+      "explain": "L'intégration SD-WAN + SASE est hybride car elle combine FortiGate SD-WAN pour les branches et FortiSASE pour les utilisateurs distants, formant une architecture complète et cohérente."
+    },
+    {
+      "q": "Quel composant FortiSASE agit comme access proxy dans l'architecture ZTNA ?",
+      "choices": [
+        "FortiClient sur le endpoint",
+        "FortiAuthenticator pour l'identite",
+        "FortiGate ou FortiSASE (access proxy ZTNA) qui applique les politiques basees sur les ZTNA tags",
+        "FortiManager pour la gestion centralisee"
+      ],
+      "answer": 2,
+      "explain": "FortiGate ou FortiSASE joue le rôle d'access proxy ZTNA. Il reçoit les ZTNA tags de FortiClient et applique les politiques d'accès basées sur ces tags."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Que signifie SPA dans le contexte FortiSASE ?",
+      "choices": [
+        "Secure Public Access",
+        "Secure Private Access : acces securise aux applications privees on-premises via FortiSASE et ZTNA",
+        "Software Protocol Agent",
+        "Standard Proxy Architecture"
+      ],
+      "answer": 1,
+      "explain": "SPA signifie Secure Private Access. C'est l'accès sécurisé aux applications privées (on-premises ou datacenter) depuis n'importe où via FortiSASE et ZTNA."
+    },
+    {
+      "q": "Quel est le principe fondamental de ZTNA ?",
+      "choices": [
+        "Faire confiance a tous les utilisateurs du reseau interne",
+        "Ne jamais faire confiance implicitement, toujours verifier, acces granulaire par application",
+        "Chiffrer tout le trafic avec IPsec",
+        "Autoriser l'acces des que le VPN est connecte"
+      ],
+      "answer": 1,
+      "explain": "ZTNA est basé sur le principe Zero Trust : ne jamais faire confiance implicitement, toujours vérifier. L'accès est accordé de manière granulaire à chaque application selon l'identité, le contexte et l'état du endpoint."
+    },
+    {
+      "q": "Que sont les ZTNA tags ?",
+      "choices": [
+        "Des etiquettes VLAN pour segmenter le reseau",
+        "Des marqueurs d'etat evalues par FortiClient (OS, patches, antivirus, compliance) envoyes a FortiGate",
+        "Des certificats SSL pour le chiffrement",
+        "Des regles de pare-feu pour le filtrage web"
+      ],
+      "answer": 1,
+      "explain": "Les ZTNA tags sont des marqueurs d'état évalués par FortiClient sur le endpoint (OS, patches, antivirus, compliance) et envoyés à FortiGate ou FortiSASE pour baser les politiques ZTNA."
+    },
+    {
+      "q": "Quel composant Fortinet gère l'identité et le MFA dans l'architecture ZTNA ?",
+      "choices": [
+        "FortiManager",
+        "FortiAnalyzer",
+        "FortiAuthenticator",
+        "FortiSIEM"
+      ],
+      "answer": 2,
+      "explain": "FortiAuthenticator gère l'identité et le MFA (Multi-Factor Authentication) dans l'architecture Fortinet ZTNA."
+    },
+    {
+      "q": "Quel risque le VPN traditionnel expose-t-il par rapport a ZTNA ?",
+      "choices": [
+        "Absence de chiffrement du trafic",
+        "Le lateral movement : un utilisateur VPN connecte peut se deplacer sur tout le reseau",
+        "Impossibilite de se connecter aux applications SaaS",
+        "Latence trop élevée pour les applications temps réel"
+      ],
+      "answer": 1,
+      "explain": "Le VPN traditionnel expose au risque de lateral movement : une fois connecté, un attaquant peut se déplacer latéralement sur tout le réseau. ZTNA élimine ce risque en ne donnant accès qu'à l'application spécifique."
+    }
+  ]
+}

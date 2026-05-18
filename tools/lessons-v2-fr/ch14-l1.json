@@ -1,0 +1,238 @@
+{
+  "id": "ch14-l1",
+  "module": "Diagnostics and Troubleshooting",
+  "title": "Diagnostic général et baseline",
+  "durationMin": 7,
+  "content": "## Approche méthodique du diagnostic\n\nAvant tout incident, il est indispensable de collecter une **baseline** (état de référence normal) du FortiGate. Cette baseline sert de point de comparaison lorsqu'un problème survient : sans elle, il est impossible de savoir si une valeur observée est anormale ou simplement habituelle pour cet équipement.\n\n## Commandes essentielles de baseline\n\n| Commande | Informations fournies |\n|---|---|\n| `get system status` | Version FortiOS, hostname, serial number, modèle, mode opérationnel |\n| `get system performance status` | CPU usage, mémoire utilisée, sessions actives, uptime |\n| `diagnose sys top` | Processus en cours avec utilisation CPU et mémoire en temps réel |\n| `get hardware nic <interface>` | Statistiques réseau d'une interface : paquets, erreurs, collisions, vitesse |\n| `diagnose hardware sysinfo memory` | État détaillé de la mémoire système : total, used, free, buffers |\n| `diagnose sys session stat` | Statistiques des sessions actives : total sessions, TCP, UDP, ICMP |\n\n\n![Workflow de collecte de baseline FortiGate](diagram:0)\n\n## Détail des commandes\n\n**`get system status`** est la première commande à exécuter lors de tout diagnostic. Elle affiche la version FortiOS installée, le hostname configuré, le serial number de l'appliance, le modèle matériel et le mode opérationnel (NAT ou transparent).\n\n**`get system performance status`** retourne une vue synthétique de la santé du système : le CPU usage global, le pourcentage de mémoire utilisée, le nombre de sessions actives et l'uptime depuis le dernier redémarrage.\n\n**`diagnose sys top`** affiche en temps réel les processus FortiOS avec leur consommation CPU et mémoire. La liste se rafraîchit automatiquement, permettant de détecter un processus anormal.\n\n**`diagnose sys session stat`** fournit les statistiques des sessions actives par protocole (TCP, UDP, ICMP), utile pour détecter une anomalie de trafic.\n\n## Indicateurs d'une baseline saine\n\nUne baseline est considérée saine si :\n- **CPU usage** inférieur à 80% en moyenne\n- **Mémoire libre** supérieure à 30%\n- **Pas d'erreurs** sur les interfaces réseau\n- **Sessions actives** dans les plages habituelles\n\n## Valeurs à collecter\n\nLors de la constitution d'une baseline, on collecte systématiquement : le CPU moyen sur plusieurs cycles, le pourcentage de mémoire utilisée, le nombre de sessions actives, la version FortiOS et le serial number de l'appliance.\n\n> **Bonne pratique** : Exécutez ces commandes à intervalles réguliers (matin, midi, soir) pendant une semaine normale pour établir des plages de référence fiables avant tout incident.",
+  "diagrams": [
+    {
+      "caption": "Workflow de collecte de baseline FortiGate",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='10' y='60' width='100' height='50' rx='6' fill='#1e293b' stroke='#22c55e' stroke-width='1.5'/><text x='60' y='80' text-anchor='middle' fill='#e2e8f0' font-size='10' font-family='monospace'>Etat</text><text x='60' y='95' text-anchor='middle' fill='#22c55e' font-size='10' font-family='monospace'>NORMAL</text><text x='60' y='108' text-anchor='middle' fill='#94a3b8' font-size='9' font-family='monospace'>reference</text><polygon points='115,85 128,80 128,90' fill='#3b82f6'/><line x1='110' y1='85' x2='128' y2='85' stroke='#3b82f6' stroke-width='1.5'/><rect x='130' y='50' width='120' height='70' rx='6' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='190' y='68' text-anchor='middle' fill='#3b82f6' font-size='9' font-family='monospace' font-weight='bold'>Collecter metriques</text><text x='190' y='83' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>CPU usage</text><text x='190' y='96' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>memoire utilisee</text><text x='190' y='109' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>sessions actives</text><polygon points='255,85 268,80 268,90' fill='#3b82f6'/><line x1='250' y1='85' x2='268' y2='85' stroke='#3b82f6' stroke-width='1.5'/><rect x='270' y='60' width='100' height='50' rx='6' fill='#1e293b' stroke='#22c55e' stroke-width='1.5'/><text x='320' y='80' text-anchor='middle' fill='#e2e8f0' font-size='10' font-family='monospace'>Stocker</text><text x='320' y='95' text-anchor='middle' fill='#22c55e' font-size='10' font-family='monospace'>BASELINE</text><text x='320' y='108' text-anchor='middle' fill='#94a3b8' font-size='9' font-family='monospace'>reference OK</text><polygon points='375,85 388,80 388,90' fill='#ef4444'/><line x1='370' y1='85' x2='388' y2='85' stroke='#ef4444' stroke-width='1.5'/><rect x='390' y='55' width='100' height='60' rx='6' fill='#1e293b' stroke='#ef4444' stroke-width='1.5'/><text x='440' y='75' text-anchor='middle' fill='#ef4444' font-size='10' font-family='monospace'>INCIDENT</text><text x='440' y='90' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='monospace'>Comparer avec</text><text x='440' y='103' text-anchor='middle' fill='#22c55e' font-size='9' font-family='monospace'>baseline</text><text x='270' y='155' text-anchor='middle' fill='#94a3b8' font-size='9' font-family='monospace'>get system status | get system performance status | diagnose sys top</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quelle commande affiche la version FortiOS, le hostname et le serial number ?",
+      "choices": [
+        "get system status",
+        "get system performance status",
+        "diagnose sys top",
+        "diagnose hardware sysinfo memory"
+      ],
+      "answer": 0,
+      "explain": "La commande 'get system status' affiche la version FortiOS, le hostname, le serial number, le modèle et le mode opérationnel."
+    },
+    {
+      "q": "Quelle commande permet de voir les processus en temps réel avec leur utilisation CPU et mémoire ?",
+      "choices": [
+        "get system performance status",
+        "diagnose sys top",
+        "diagnose hardware sysinfo memory",
+        "get system status"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose sys top' affiche les processus en cours avec leur utilisation CPU et mémoire en temps réel, avec rafraîchissement continu."
+    },
+    {
+      "q": "Quel seuil de CPU usage indique un risque de dégradation des performances ?",
+      "choices": [
+        "CPU usage supérieur à 50%",
+        "CPU usage supérieur à 80%",
+        "CPU usage supérieur à 95%",
+        "CPU usage supérieur à 60%"
+      ],
+      "answer": 1,
+      "explain": "Un CPU usage supérieur à 80% est le seuil à partir duquel on considère qu'il y a un risque de dégradation des performances et de drop de paquets."
+    },
+    {
+      "q": "Quelle commande fournit les statistiques des sessions actives par protocole (TCP, UDP, ICMP) ?",
+      "choices": [
+        "get system performance status",
+        "diagnose hardware sysinfo memory",
+        "diagnose sys session stat",
+        "get hardware nic"
+      ],
+      "answer": 2,
+      "explain": "La commande 'diagnose sys session stat' fournit les statistiques des sessions actives, incluant le total sessions, TCP, UDP et ICMP."
+    },
+    {
+      "q": "Pourquoi collecter une baseline avant un incident ?",
+      "choices": [
+        "Pour configurer les alertes automatiques",
+        "Pour avoir un état de référence normal permettant la comparaison",
+        "Pour sauvegarder la configuration FortiGate",
+        "Pour mettre à jour FortiOS"
+      ],
+      "answer": 1,
+      "explain": "La baseline constitue un état de référence normal du FortiGate. Sans elle, il est impossible de savoir si une valeur observée lors d'un incident est anormale ou habituelle."
+    },
+    {
+      "q": "Quelle commande affiche les statistiques réseau d'une interface (paquets, erreurs, collisions) ?",
+      "choices": [
+        "diagnose sys session stat",
+        "get system performance status",
+        "diagnose hardware sysinfo memory",
+        "get hardware nic <interface>"
+      ],
+      "answer": 3,
+      "explain": "La commande 'get hardware nic <interface>' affiche les statistiques réseau d'une interface : paquets, erreurs, collisions et vitesse."
+    },
+    {
+      "q": "Quelle valeur de mémoire libre est considérée comme saine dans une baseline FortiGate ?",
+      "choices": [
+        "Mémoire libre supérieure à 10%",
+        "Mémoire libre supérieure à 30%",
+        "Mémoire libre supérieure à 50%",
+        "Mémoire libre supérieure à 70%"
+      ],
+      "answer": 1,
+      "explain": "Une baseline saine indique une mémoire libre supérieure à 30%. En dessous de ce seuil, le FortiGate peut entrer en conserve mode."
+    },
+    {
+      "q": "Quelle commande retourne l'état détaillé de la mémoire système (total, used, free, buffers) ?",
+      "choices": [
+        "get system performance status",
+        "diagnose sys top",
+        "diagnose hardware sysinfo memory",
+        "diagnose sys session stat"
+      ],
+      "answer": 2,
+      "explain": "La commande 'diagnose hardware sysinfo memory' retourne l'état détaillé de la mémoire système incluant total, used, free et buffers."
+    },
+    {
+      "q": "Quelle information N'est PAS fournie par 'get system status' ?",
+      "choices": [
+        "Version FortiOS",
+        "Serial number",
+        "CPU usage en temps réel",
+        "Mode opérationnel (NAT ou transparent)"
+      ],
+      "answer": 2,
+      "explain": "La commande 'get system status' fournit la version FortiOS, le hostname, le serial number, le modèle et le mode opérationnel. Le CPU usage en temps réel est fourni par 'get system performance status'."
+    },
+    {
+      "q": "Parmi les valeurs suivantes, laquelle est collectée lors d'une baseline FortiGate ?",
+      "choices": [
+        "Clés de chiffrement IPsec",
+        "CPU moyen et nombre de sessions actives",
+        "Mots de passe administrateurs",
+        "Adresses MAC des clients"
+      ],
+      "answer": 1,
+      "explain": "Lors d'une baseline, on collecte le CPU moyen, la mémoire utilisée, le nombre de sessions actives, la version FortiOS et le serial number."
+    },
+    {
+      "q": "Quelle commande affiche l'uptime du FortiGate ainsi que les sessions actives ?",
+      "choices": [
+        "diagnose sys top",
+        "get system status",
+        "get system performance status",
+        "diagnose hardware sysinfo memory"
+      ],
+      "answer": 2,
+      "explain": "La commande 'get system performance status' retourne le CPU usage, la mémoire utilisée, les sessions actives et l'uptime depuis le dernier redémarrage."
+    },
+    {
+      "q": "Quelle est la bonne pratique pour établir une baseline fiable ?",
+      "choices": [
+        "Collecter les métriques une seule fois lors de l'installation",
+        "Collecter les métriques uniquement lors d'un incident",
+        "Collecter les métriques à intervalles réguliers pendant une semaine normale",
+        "Collecter les métriques uniquement la nuit"
+      ],
+      "answer": 2,
+      "explain": "La bonne pratique est d'exécuter les commandes de baseline à intervalles réguliers (matin, midi, soir) pendant une semaine normale pour établir des plages de référence fiables."
+    },
+    {
+      "q": "Dans 'diagnose sys top', que signifie un rafraîchissement continu de l'affichage ?",
+      "choices": [
+        "Que la commande écrit dans un fichier de log",
+        "Que les données sont mises à jour en temps réel pour voir l'utilisation CPU et mémoire par processus",
+        "Que le FortiGate redémarre automatiquement",
+        "Que le debug est activé"
+      ],
+      "answer": 1,
+      "explain": "Le rafraîchissement continu de 'diagnose sys top' permet de voir en temps réel l'évolution de l'utilisation CPU et mémoire par processus, facilitant la détection d'un pic ou d'un processus anormal."
+    },
+    {
+      "q": "Quelle information permet d'identifier un modèle FortiGate précis dans une baseline ?",
+      "choices": [
+        "L'adresse IP du port de management",
+        "Le serial number et le modèle du FortiGate",
+        "La table de routage",
+        "Les politiques firewall actives"
+      ],
+      "answer": 1,
+      "explain": "Le serial number et le modèle, affichés par 'get system status', permettent d'identifier précisément un équipement FortiGate dans une baseline."
+    },
+    {
+      "q": "Que signifie l'absence d'erreurs sur les interfaces dans une baseline saine ?",
+      "choices": [
+        "Que le câblage réseau n'est pas connecté",
+        "Que les interfaces ne transmettent aucun trafic",
+        "Aucune erreur réseau, collisions ou paquets droppés sur les interfaces",
+        "Que le FortiGate est en mode transparent"
+      ],
+      "answer": 2,
+      "explain": "Dans une baseline saine, l'absence d'erreurs sur les interfaces indique que celles-ci fonctionnent correctement, sans collisions ni erreurs de transmission détectées par 'get hardware nic'."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quelle commande affiche la version FortiOS, le hostname et le serial number ?",
+      "choices": [
+        "get system status",
+        "get system performance status",
+        "diagnose sys top",
+        "diagnose hardware sysinfo memory"
+      ],
+      "answer": 0,
+      "explain": "La commande 'get system status' affiche la version FortiOS, le hostname, le serial number, le modèle et le mode opérationnel."
+    },
+    {
+      "q": "Quelle commande permet de voir les processus en temps réel avec leur utilisation CPU et mémoire ?",
+      "choices": [
+        "get system performance status",
+        "diagnose sys top",
+        "diagnose hardware sysinfo memory",
+        "get system status"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose sys top' affiche les processus en cours avec leur utilisation CPU et mémoire en temps réel, avec rafraîchissement continu."
+    },
+    {
+      "q": "Quel seuil de CPU usage indique un risque de dégradation des performances ?",
+      "choices": [
+        "CPU usage supérieur à 50%",
+        "CPU usage supérieur à 80%",
+        "CPU usage supérieur à 95%",
+        "CPU usage supérieur à 60%"
+      ],
+      "answer": 1,
+      "explain": "Un CPU usage supérieur à 80% est le seuil à partir duquel on considère qu'il y a un risque de dégradation des performances et de drop de paquets."
+    },
+    {
+      "q": "Quelle valeur de mémoire libre est considérée comme saine dans une baseline FortiGate ?",
+      "choices": [
+        "Mémoire libre supérieure à 10%",
+        "Mémoire libre supérieure à 30%",
+        "Mémoire libre supérieure à 50%",
+        "Mémoire libre supérieure à 70%"
+      ],
+      "answer": 1,
+      "explain": "Une baseline saine indique une mémoire libre supérieure à 30%. En dessous de ce seuil, le FortiGate peut entrer en conserve mode."
+    },
+    {
+      "q": "Quelle commande retourne l'état détaillé de la mémoire système (total, used, free, buffers) ?",
+      "choices": [
+        "get system performance status",
+        "diagnose sys top",
+        "diagnose hardware sysinfo memory",
+        "diagnose sys session stat"
+      ],
+      "answer": 2,
+      "explain": "La commande 'diagnose hardware sysinfo memory' retourne l'état détaillé de la mémoire système incluant total, used, free et buffers."
+    }
+  ]
+}

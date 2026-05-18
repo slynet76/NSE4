@@ -1,0 +1,181 @@
+{
+  "id": "ch05-l1",
+  "module": "Firewall Authentication",
+  "title": "Concepts d'authentification firewall",
+  "durationMin": 7,
+  "content": "## Authentification sur FortiGate\n\nLe filtrage basé sur l'**IP** identifie un **appareil**, pas une **personne**. Pour identifier les utilisateurs, FortiGate propose un mécanisme d'authentification qui associe un utilisateur ou un groupe à une politique firewall.\n\n## Types d'authentification\n\n### Locale\nLa base de données des utilisateurs est stockée **directement sur le FortiGate**. Simple à configurer, mais difficile à maintenir sur plusieurs équipements.\n\n### Serveur distant (server-based)\nLes identifiants sont vérifiés sur un serveur externe : **LDAP**, **RADIUS** ou **TACACS+**. Cette méthode est **recommandée lorsque plusieurs FortiGates** partagent la même base d'utilisateurs, car elle centralise la gestion.\n\n### Certificat (PKI)\nL'authentification repose sur un **certificat numérique** émis par une autorité de confiance. Aucun mot de passe n'est requis.\n\n\n![Comparaison des types d'authentification (locale / serveur / certificat + active / passive)](diagram:0)\n\n## Authentification active vs passive\n\n### Active\nL'utilisateur est **sollicité explicitement** (challenge HTTP/HTTPS). FortiGate affiche une page de login et attend les identifiants avant d'autoriser le flux.\n\n### Passive (transparente)\nL'utilisateur est identifié **sans intervention** via **FSSO** (Fortinet Single Sign-On). Le navigateur n'affiche aucune invite : l'identité est récupérée depuis un agent installé sur le contrôleur de domaine.\n\n## Authentification à deux facteurs (2FA)\n\nLa 2FA **ajoute un second facteur à une méthode existante**. Elle ne remplace pas l'authentification principale : elle l'enrichit avec un deuxième élément de preuve (token, application mobile, etc.).\n\n## Protocoles d'authentification distante\n\nFortiGate supporte : **LDAP**, **RADIUS**, **TACACS+**.\n\n> **POP3 n'est PAS** un protocole d'authentification distante supporté par FortiGate.\n\n> **Facteurs 2FA** : quelque chose que vous **connaissez** (mot de passe) + quelque chose que vous **possédez** (token, FortiToken, OTP).\n\n> Les utilisateurs et groupes à authentifier sont configurés dans le **champ source** d'une politique firewall.",
+  "diagrams": [
+    {
+      "caption": "Comparaison des types d'authentification (locale / serveur / certificat + active / passive)",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8f9fa' rx='8'/><rect x='20' y='20' width='160' height='120' rx='6' fill='#dbeafe' stroke='#3b82f6' stroke-width='1.5'/><text x='100' y='42' text-anchor='middle' font-size='12' font-weight='bold' fill='#1e40af'>Locale</text><text x='100' y='62' text-anchor='middle' font-size='10' fill='#1e3a8a'>DB sur FortiGate</text><text x='100' y='78' text-anchor='middle' font-size='10' fill='#1e3a8a'>1 seul équipement</text><text x='100' y='94' text-anchor='middle' font-size='10' fill='#1e3a8a'>Active seulement</text><rect x='200' y='20' width='180' height='120' rx='6' fill='#dcfce7' stroke='#22c55e' stroke-width='1.5'/><text x='290' y='42' text-anchor='middle' font-size='12' font-weight='bold' fill='#166534'>Serveur distant</text><text x='290' y='62' text-anchor='middle' font-size='10' fill='#14532d'>LDAP / RADIUS / TACACS+</text><text x='290' y='78' text-anchor='middle' font-size='10' fill='#14532d'>Multi-FortiGates</text><text x='290' y='94' text-anchor='middle' font-size='10' fill='#14532d'>Active ou Passive (FSSO)</text><rect x='400' y='20' width='180' height='120' rx='6' fill='#fef9c3' stroke='#eab308' stroke-width='1.5'/><text x='490' y='42' text-anchor='middle' font-size='12' font-weight='bold' fill='#713f12'>Certificat (PKI)</text><text x='490' y='62' text-anchor='middle' font-size='10' fill='#713f12'>Certificat numérique</text><text x='490' y='78' text-anchor='middle' font-size='10' fill='#713f12'>Sans mot de passe</text><text x='490' y='94' text-anchor='middle' font-size='10' fill='#713f12'>Active seulement</text><text x='490' y='110' text-anchor='middle' font-size='10' fill='#713f12'>Autorité de confiance</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Le filtrage par adresse IP identifie quel élément sur le réseau ?",
+      "choices": [
+        "Un utilisateur nommément identifié",
+        "Un appareil identifié par son adresse IP",
+        "Un groupe Active Directory",
+        "Un certificat PKI"
+      ],
+      "answer": 1,
+      "explain": "Le filtrage basé sur l'IP identifie un appareil, pas une personne. Pour identifier un utilisateur, il faut une authentification."
+    },
+    {
+      "q": "Quelle méthode d'authentification est recommandée lorsque plusieurs FortiGates partagent la même base d'utilisateurs ?",
+      "choices": [
+        "Authentification locale",
+        "Authentification par certificat",
+        "Authentification serveur distant (LDAP/RADIUS/TACACS+)",
+        "Authentification passive FSSO"
+      ],
+      "answer": 2,
+      "explain": "L'authentification server-based (serveur distant) est recommandée pour les environnements multi-FortiGates car elle centralise la gestion des identifiants."
+    },
+    {
+      "q": "Que fait la 2FA par rapport à une méthode d'authentification existante ?",
+      "choices": [
+        "Elle la remplace entièrement",
+        "Elle ajoute un second facteur à une méthode existante",
+        "Elle désactive LDAP au profit de RADIUS",
+        "Elle supprime le besoin de mot de passe"
+      ],
+      "answer": 1,
+      "explain": "La 2FA ajoute un second facteur à une méthode existante. Elle ne remplace pas l'authentification principale."
+    },
+    {
+      "q": "Quel mécanisme correspond à l'authentification passive sur FortiGate ?",
+      "choices": [
+        "Challenge HTTP avec page de login",
+        "RADIUS ACCESS-CHALLENGE",
+        "FSSO — Fortinet Single Sign-On",
+        "Certificat PKI présenté au navigateur"
+      ],
+      "answer": 2,
+      "explain": "L'authentification passive est transparente : FSSO identifie l'utilisateur sans l'inviter à saisir ses identifiants."
+    },
+    {
+      "q": "Lequel de ces protocoles n'est PAS supporté comme protocole d'authentification distante par FortiGate ?",
+      "choices": [
+        "LDAP",
+        "RADIUS",
+        "TACACS+",
+        "POP3"
+      ],
+      "answer": 3,
+      "explain": "POP3 est un protocole de messagerie, pas un protocole d'authentification distante. FortiGate supporte LDAP, RADIUS et TACACS+."
+    },
+    {
+      "q": "Comment fonctionne l'authentification active sur FortiGate ?",
+      "choices": [
+        "L'utilisateur est identifié automatiquement via un agent domaine",
+        "FortiGate présente un challenge HTTP/HTTPS et attend les identifiants",
+        "Un certificat est vérifié sans interaction",
+        "L'IP source est comparée à une liste autorisée"
+      ],
+      "answer": 1,
+      "explain": "L'authentification active sollicite explicitement l'utilisateur via une page de login HTTP/HTTPS."
+    },
+    {
+      "q": "Où est stockée la base de données des utilisateurs dans le mode d'authentification locale ?",
+      "choices": [
+        "Sur un serveur LDAP dédié",
+        "Sur un serveur RADIUS externe",
+        "Directement sur le FortiGate",
+        "Dans le cloud FortiGuard"
+      ],
+      "answer": 2,
+      "explain": "L'authentification locale stocke les utilisateurs directement dans la base de données du FortiGate."
+    },
+    {
+      "q": "Quels sont les trois protocoles d'authentification distante supportés par FortiGate ?",
+      "choices": [
+        "LDAP, RADIUS, POP3",
+        "RADIUS, TACACS+, SMTP",
+        "LDAP, RADIUS, TACACS+",
+        "Kerberos, LDAP, RADIUS"
+      ],
+      "answer": 2,
+      "explain": "FortiGate supporte LDAP, RADIUS et TACACS+ comme protocoles d'authentification distante."
+    },
+    {
+      "q": "Quel type d'authentification repose sur un certificat numérique émis par une autorité de confiance ?",
+      "choices": [
+        "Locale",
+        "RADIUS",
+        "Passive FSSO",
+        "PKI (certificat)"
+      ],
+      "answer": 3,
+      "explain": "L'authentification par certificat (PKI) utilise un certificat numérique. Aucun mot de passe n'est requis."
+    },
+    {
+      "q": "La 2FA repose sur deux facteurs. Lesquels ?",
+      "choices": [
+        "Quelque chose que vous connaissez + quelque chose que vous êtes",
+        "Quelque chose que vous connaissez + quelque chose que vous possédez",
+        "Quelque chose que vous possédez + quelque chose que vous êtes",
+        "Deux mots de passe distincts"
+      ],
+      "answer": 1,
+      "explain": "La 2FA combine 'quelque chose que vous connaissez' (mot de passe) et 'quelque chose que vous possédez' (token, smartphone)."
+    },
+    {
+      "q": "Dans quel ordre FortiGate traite-t-il l'authentification d'un utilisateur sur une politique ?",
+      "choices": [
+        "Il vérifie l'IP, puis applique la politique sans auth",
+        "Il déclenche un challenge d'authentification si un utilisateur/groupe est en source",
+        "Il authentifie tous les flux indépendamment de la politique",
+        "Il consulte d'abord FortiGuard"
+      ],
+      "answer": 1,
+      "explain": "FortiGate déclenche un challenge d'authentification lorsqu'un utilisateur ou groupe est présent dans le champ source de la politique."
+    },
+    {
+      "q": "Dans quel cas privilégie-t-on l'authentification server-based (serveur distant) ?",
+      "choices": [
+        "Pour un seul FortiGate avec peu d'utilisateurs",
+        "Lorsqu'on utilise uniquement des certificats",
+        "Lorsque plusieurs FortiGates doivent partager la même base d'utilisateurs",
+        "Pour l'authentification passive FSSO uniquement"
+      ],
+      "answer": 2,
+      "explain": "Le mode serveur distant est recommandé quand plusieurs FortiGates doivent authentifier les mêmes utilisateurs."
+    },
+    {
+      "q": "Quelle est la différence principale entre l'authentification active et passive ?",
+      "choices": [
+        "Active = certificat, passive = mot de passe",
+        "Active = l'utilisateur est sollicité (challenge), passive = identification transparente (FSSO)",
+        "Active = RADIUS, passive = LDAP",
+        "Active = locale, passive = distante"
+      ],
+      "answer": 1,
+      "explain": "L'authentification active demande les identifiants à l'utilisateur via un challenge. La passive (FSSO) identifie l'utilisateur de façon transparente."
+    },
+    {
+      "q": "Dans une politique firewall, où est déclaré l'utilisateur ou le groupe à authentifier ?",
+      "choices": [
+        "Dans le champ destination",
+        "Dans le champ service",
+        "Dans le champ source",
+        "Dans le champ action"
+      ],
+      "answer": 2,
+      "explain": "L'authentification est appliquée dans le champ source de la politique firewall, en y ajoutant un utilisateur ou un groupe."
+    },
+    {
+      "q": "Quel exemple illustre l'authentification passive ?",
+      "choices": [
+        "L'utilisateur saisit son login sur une page web FortiGate",
+        "FSSO récupère l'identité depuis un agent sur le contrôleur de domaine",
+        "Un certificat client est présenté lors du handshake TLS",
+        "L'utilisateur saisit un OTP reçu par SMS"
+      ],
+      "answer": 1,
+      "explain": "FSSO est l'exemple typique d'authentification passive : l'identité est récupérée via un agent domaine sans prompt pour l'utilisateur."
+    }
+  ]
+}

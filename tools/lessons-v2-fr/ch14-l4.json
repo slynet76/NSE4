@@ -1,0 +1,238 @@
+{
+  "id": "ch14-l4",
+  "module": "Diagnostics and Troubleshooting",
+  "title": "Diagnostic CPU et processus",
+  "durationMin": 7,
+  "content": "## Commandes de diagnostic CPU\n\nLe diagnostic de la charge CPU sur FortiGate utilise trois commandes principales :\n\n| Commande | Usage |\n|---|---|\n| `diagnose sys top` | Affichage en temps réel des processus (CPU%, RAM%, PID) avec rafraîchissement |\n| `diagnose sys top-summary` | Snapshot ponctuel de l'utilisation CPU et mémoire par processus |\n| `get system performance status` | CPU global (user, system, idle) et utilisation mémoire en pourcentage |\n\n**`diagnose sys top`** affiche la liste des processus FortiOS qui se rafraîchit automatiquement, indiquant le CPU%, le RAM% et le PID (Process ID) de chaque processus en temps réel.\n\n**`diagnose sys top-summary`** fournit un snapshot ponctuel sans rafraîchissement, utile pour analyser à un instant précis.\n\n**`get system performance status`** retourne les métriques CPU globales : utilisation user (processus applicatifs), system (noyau), idle (ressources libres), ainsi que la mémoire totale utilisée en pourcentage.\n\n## Processus FortiOS et leurs rôles\n\n| Processus | Rôle |\n|---|---|\n| `ipsengine` | Moteur IPS (Intrusion Prevention System) et Application Control |\n| `scanunit` | Moteur antivirus (scan des fichiers et contenus) |\n| `pyfcgid` | Interface web GUI (HTTPS admin) |\n| `miglogd` | Gestion et envoi des logs vers FortiAnalyzer ou Syslog |\n| `dnsproxy` | Proxy DNS du FortiGate |\n| `forticron` | Planificateur de tâches FortiOS |\n| `sshd` | Service SSH pour accès admin |\n\n\n![Processus FortiOS et leur fonction](diagram:0)\n\n## Seuils critiques\n\n- **CPU > 80%** : risque de dégradation des performances et drop de paquets. Le FortiGate commence à ne plus pouvoir traiter tous les paquets en temps réel.\n- **RAM > 90%** : déclenchement du conserve mode. Les processus de scan peuvent passer en fail-open pour libérer des ressources mémoire.\n\n## Causes fréquentes de CPU élevé\n\nPlusieurs scénarios provoquent un CPU élevé :\n1. **Full SSL inspection intensive** : le déchiffrement SSL/TLS sur de nombreuses connexions simultanées consomme beaucoup de CPU\n2. **Scan antivirus de gros fichiers** : le processus `scanunit` consomme intensément le CPU lors du scan de fichiers volumineux\n3. **Attaque DoS** : un afflux massif de paquets (Denial of Service) sature le CPU FortiGate\n\n## Méthodologie de diagnostic CPU\n\n1. Vérifier le CPU global avec `get system performance status`\n2. Identifier le processus consommateur avec `diagnose sys top`\n3. Si `ipsengine` est en cause : réduire les profils IPS ou Application Control\n4. Si `scanunit` est en cause : réduire le scan antivirus (taille max des fichiers scannés)\n5. Si une attaque DoS est suspectée : vérifier les sessions avec `diagnose sys session stat`\n\n> **Note** : Un CPU élevé passager lors d'un pic de trafic est normal. Un CPU élevé persistant indique un problème de dimensionnement ou une attaque.",
+  "diagrams": [
+    {
+      "caption": "Processus FortiOS et leur fonction",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='10' y='10' width='520' height='30' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='270' y='30' text-anchor='middle' fill='#3b82f6' font-size='11' font-family='monospace' font-weight='bold'>FortiOS — Processus principaux</text><rect x='10' y='52' width='100' height='50' rx='4' fill='#1e293b' stroke='#ef4444' stroke-width='1.5'/><text x='60' y='70' text-anchor='middle' fill='#ef4444' font-size='9' font-family='monospace' font-weight='bold'>ipsengine</text><text x='60' y='84' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>IPS</text><text x='60' y='96' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>AppCtrl</text><rect x='120' y='52' width='100' height='50' rx='4' fill='#1e293b' stroke='#ef4444' stroke-width='1.5'/><text x='170' y='70' text-anchor='middle' fill='#ef4444' font-size='9' font-family='monospace' font-weight='bold'>scanunit</text><text x='170' y='84' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>Antivirus</text><text x='170' y='96' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>scan fichiers</text><rect x='230' y='52' width='100' height='50' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='1.5'/><text x='280' y='70' text-anchor='middle' fill='#22c55e' font-size='9' font-family='monospace' font-weight='bold'>miglogd</text><text x='280' y='84' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>Gestion</text><text x='280' y='96' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>logs</text><rect x='340' y='52' width='100' height='50' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='1.5'/><text x='390' y='70' text-anchor='middle' fill='#22c55e' font-size='9' font-family='monospace' font-weight='bold'>dnsproxy</text><text x='390' y='84' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>Proxy DNS</text><text x='390' y='96' text-anchor='middle' fill='#94a3b8' font-size='8' font-family='monospace'>FortiGate</text><rect x='450' y='52' width='80' height='50' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='490' y='70' text-anchor='middle' fill='#3b82f6' font-size='9' font-family='monospace' font-weight='bold'>pyfcgid</text><text x='490' y='84' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>GUI</text><text x='490' y='96' text-anchor='middle' fill='#e2e8f0' font-size='8' font-family='monospace'>HTTPS</text><rect x='10' y='120' width='520' height='48' rx='4' fill='#1e293b' stroke='#94a3b8' stroke-width='1'/><text x='270' y='136' text-anchor='middle' fill='#94a3b8' font-size='9' font-family='monospace'>Diagnostic : diagnose sys top | diagnose sys top-summary</text><text x='270' y='152' text-anchor='middle' fill='#94a3b8' font-size='9' font-family='monospace'>Seuils : CPU &gt; 80% = dégradation | RAM &gt; 90% = conserve mode</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel processus FortiOS est responsable du moteur IPS et de l'Application Control ?",
+      "choices": [
+        "scanunit",
+        "ipsengine",
+        "miglogd",
+        "pyfcgid"
+      ],
+      "answer": 1,
+      "explain": "Le processus 'ipsengine' est le moteur IPS (Intrusion Prevention System) et Application Control sur FortiGate."
+    },
+    {
+      "q": "Quelle commande fournit un snapshot ponctuel de l'utilisation CPU et mémoire par processus ?",
+      "choices": [
+        "diagnose sys top",
+        "diagnose sys top-summary",
+        "get system performance status",
+        "diagnose hardware sysinfo memory"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose sys top-summary' fournit un snapshot ponctuel de l'utilisation CPU et mémoire par processus, sans rafraîchissement continu."
+    },
+    {
+      "q": "Quel est le seuil de CPU au-delà duquel il y a risque de dégradation des performances et drop de paquets ?",
+      "choices": [
+        "CPU > 50%",
+        "CPU > 70%",
+        "CPU > 80%",
+        "CPU > 95%"
+      ],
+      "answer": 2,
+      "explain": "Un CPU supérieur à 80% indique un risque de dégradation des performances et de drop de paquets sur le FortiGate."
+    },
+    {
+      "q": "Quel processus FortiOS gère l'interface web GUI (HTTPS admin) ?",
+      "choices": [
+        "sshd",
+        "dnsproxy",
+        "pyfcgid",
+        "miglogd"
+      ],
+      "answer": 2,
+      "explain": "Le processus 'pyfcgid' gère l'interface web GUI en HTTPS pour l'administration du FortiGate."
+    },
+    {
+      "q": "Quelle est une cause fréquente de CPU élevé sur FortiGate ?",
+      "choices": [
+        "Trop de routes statiques configurées",
+        "Full SSL inspection intensive sur de nombreuses connexions simultanées",
+        "Un nombre élevé d'interfaces configurées",
+        "Un firmware FortiOS obsolète"
+      ],
+      "answer": 1,
+      "explain": "La full SSL inspection intensive est une cause fréquente de CPU élevé, car le déchiffrement SSL/TLS sur de nombreuses connexions simultanées consomme beaucoup de CPU."
+    },
+    {
+      "q": "Quel processus FortiOS gère la collecte et l'envoi des logs ?",
+      "choices": [
+        "ipsengine",
+        "forticron",
+        "miglogd",
+        "scanunit"
+      ],
+      "answer": 2,
+      "explain": "Le processus 'miglogd' gère la collecte et l'envoi des logs vers FortiAnalyzer ou Syslog sur FortiGate."
+    },
+    {
+      "q": "À partir de quel seuil de RAM le conserve mode se déclenche-t-il ?",
+      "choices": [
+        "RAM > 70%",
+        "RAM > 80%",
+        "RAM > 90%",
+        "RAM > 95%"
+      ],
+      "answer": 2,
+      "explain": "Le conserve mode se déclenche quand la RAM utilisée dépasse 90% (mémoire libre inférieure à environ 10-15%). Les processus de scan peuvent passer en fail-open."
+    },
+    {
+      "q": "Quelle commande affiche les métriques CPU globales incluant user, system et idle ?",
+      "choices": [
+        "diagnose sys top",
+        "diagnose sys top-summary",
+        "get system performance status",
+        "diagnose hardware sysinfo memory"
+      ],
+      "answer": 2,
+      "explain": "La commande 'get system performance status' retourne les métriques CPU globales : utilisation user (processus applicatifs), system (noyau) et idle (ressources libres)."
+    },
+    {
+      "q": "Si le processus 'scanunit' consomme trop de CPU, quelle action corrective est appropriée ?",
+      "choices": [
+        "Réduire les profils IPS",
+        "Désactiver le proxy DNS",
+        "Réduire le scan antivirus ou la taille maximale des fichiers scannés",
+        "Augmenter le nombre de sessions autorisées"
+      ],
+      "answer": 2,
+      "explain": "Le processus 'scanunit' est le moteur antivirus. Si sa consommation CPU est excessive, on peut réduire le scan antivirus ou la taille maximale des fichiers scannés dans les profils de sécurité."
+    },
+    {
+      "q": "Quel processus FortiOS correspond au service SSH pour l'accès admin ?",
+      "choices": [
+        "pyfcgid",
+        "sshd",
+        "dnsproxy",
+        "forticron"
+      ],
+      "answer": 1,
+      "explain": "Le processus 'sshd' est le service SSH du FortiGate, permettant l'accès admin via SSH."
+    },
+    {
+      "q": "Quelle commande affiche en temps réel le CPU%, RAM% et PID de chaque processus FortiOS ?",
+      "choices": [
+        "diagnose sys top-summary",
+        "get system performance status",
+        "diagnose sys top",
+        "diagnose hardware sysinfo memory"
+      ],
+      "answer": 2,
+      "explain": "La commande 'diagnose sys top' affiche en temps réel les processus FortiOS avec leur CPU%, RAM% et PID, avec rafraîchissement automatique."
+    },
+    {
+      "q": "Quel processus FortiOS gère le proxy DNS ?",
+      "choices": [
+        "miglogd",
+        "pyfcgid",
+        "dnsproxy",
+        "forticron"
+      ],
+      "answer": 2,
+      "explain": "Le processus 'dnsproxy' est le proxy DNS du FortiGate."
+    },
+    {
+      "q": "Qu'est-ce que le processus 'forticron' sur FortiGate ?",
+      "choices": [
+        "Le moteur de chiffrement des VPN",
+        "Le planificateur de tâches FortiOS",
+        "Le processus de synchronisation HA",
+        "Le moteur de gestion des certificats"
+      ],
+      "answer": 1,
+      "explain": "Le processus 'forticron' est le planificateur de tâches FortiOS, responsable de l'exécution des tâches planifiées."
+    },
+    {
+      "q": "Pourquoi un CPU élevé persistant est-il préoccupant sur un FortiGate ?",
+      "choices": [
+        "Il indique que les logs sont trop nombreux",
+        "Il indique un problème de dimensionnement ou une possible attaque DoS",
+        "Il signifie que le FortiGate va redémarrer automatiquement",
+        "Il n'est jamais préoccupant"
+      ],
+      "answer": 1,
+      "explain": "Un CPU élevé persistant (au-dessus de 80%) indique un problème de dimensionnement ou une possible attaque DoS. Le FortiGate peut ne plus traiter tous les paquets et provoquer des drops."
+    },
+    {
+      "q": "Quelle action corrective pour un CPU élevé causé par ipsengine ?",
+      "choices": [
+        "Réduire les profils IPS ou Application Control actifs",
+        "Réduire la taille maximale des fichiers scannés",
+        "Désactiver le processus miglogd",
+        "Augmenter la mémoire RAM"
+      ],
+      "answer": 0,
+      "explain": "Si le processus 'ipsengine' consomme trop de CPU, on réduit les profils IPS ou Application Control actifs dans les politiques firewall."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quel processus FortiOS est responsable du moteur IPS et de l'Application Control ?",
+      "choices": [
+        "scanunit",
+        "ipsengine",
+        "miglogd",
+        "pyfcgid"
+      ],
+      "answer": 1,
+      "explain": "Le processus 'ipsengine' est le moteur IPS (Intrusion Prevention System) et Application Control sur FortiGate."
+    },
+    {
+      "q": "Quel est le seuil de CPU au-delà duquel il y a risque de dégradation des performances et drop de paquets ?",
+      "choices": [
+        "CPU > 50%",
+        "CPU > 70%",
+        "CPU > 80%",
+        "CPU > 95%"
+      ],
+      "answer": 2,
+      "explain": "Un CPU supérieur à 80% indique un risque de dégradation des performances et de drop de paquets sur le FortiGate."
+    },
+    {
+      "q": "Quelle commande fournit un snapshot ponctuel de l'utilisation CPU et mémoire par processus ?",
+      "choices": [
+        "diagnose sys top",
+        "diagnose sys top-summary",
+        "get system performance status",
+        "diagnose hardware sysinfo memory"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose sys top-summary' fournit un snapshot ponctuel de l'utilisation CPU et mémoire par processus, sans rafraîchissement continu."
+    },
+    {
+      "q": "Quel processus FortiOS gère la collecte et l'envoi des logs ?",
+      "choices": [
+        "ipsengine",
+        "forticron",
+        "miglogd",
+        "scanunit"
+      ],
+      "answer": 2,
+      "explain": "Le processus 'miglogd' gère la collecte et l'envoi des logs vers FortiAnalyzer ou Syslog sur FortiGate."
+    },
+    {
+      "q": "Quelle est une cause fréquente de CPU élevé sur FortiGate ?",
+      "choices": [
+        "Trop de routes statiques configurées",
+        "Full SSL inspection intensive sur de nombreuses connexions simultanées",
+        "Un nombre élevé d'interfaces configurées",
+        "Un firmware FortiOS obsolète"
+      ],
+      "answer": 1,
+      "explain": "La full SSL inspection intensive est une cause fréquente de CPU élevé, car le déchiffrement SSL/TLS sur de nombreuses connexions simultanées consomme beaucoup de CPU."
+    }
+  ]
+}

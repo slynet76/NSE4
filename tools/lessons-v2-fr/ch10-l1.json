@@ -1,0 +1,205 @@
+{
+  "id": "ch10-l1",
+  "module": "Intrusion Prevention and Application Control",
+  "title": "Composants de l'IPS FortiGate",
+  "durationMin": 6,
+  "content": "## Rôle de l'IPS\n\nL'**Intrusion Prevention System (IPS)** de FortiGate détecte les attaques réseau et empêche la compromission des hôtes protégés. Il combine plusieurs techniques :\n- Signatures d'exploits connus\n- Décodeurs de protocole\n- Heuristique (analyse comportementale)\n- Threat intelligence FortiGuard Labs\n- Détection avancée (zero-day)\n\nL'IPS peut effectuer du **deep packet inspection** sur du trafic chiffré.\n\n## Les trois composants principaux\n\n![Composants IPS FortiGate](diagram:0)\n\n### 1. Signatures IPS\n\nFortiGate s'appuie sur des bases de **signatures** pour détecter des exploits connus.\n\n**Signatures rate-based** : détectent les **anomalies comportementales** — par exemple une montée en CPU anormale ou un volume de trafic atypique. Elles font partie de l'analyse comportementale, au même titre que :\n- Les **politiques DoS**\n- L'**inspection des contraintes de protocole**\n\nLes signatures rate-based peuvent parfois bloquer ou atténuer une nouvelle attaque non encore répertoriée.\n\n### 2. Protocol decoders\n\nAnalysent chaque paquet selon les **spécifications du protocole** (RFC). En comprenant le protocole, ils peuvent détecter des anomalies cachées sous un comportement légitime.\n\nExemple : si un paquet envoie des **commandes invalides** non prévues par la RFC, le decoder le signale.\n\n### 3. IPS engine\n\nLe **moteur IPS** est responsable de :\n- L'IPS lui-même\n- Les protocol decoders\n- L'**application control**\n- L'**antivirus flow-based**\n- Le **filtrage web** (flow-based)\n- Le **filtrage email** (flow-based)\n\n## Mises à jour et gestion des signatures\n\nLes mises à jour arrivent via le **package FortiGuard IPS**. Après téléchargement, chaque signature dispose d'une **action par défaut** :\n\n| Action | Description |\n|---|---|\n| **Block** | Bloque le paquet |\n| **Allow** | Laisse passer |\n| **Monitor** (pass) | Laisse passer + log |\n| **Quarantine** | Isole le source |\n| **Reset** | Réinitialise la connexion TCP |\n\nL'action par défaut est généralement correcte. On la modifie dans deux cas :\n1. **L'éditeur a publié un patch** : continuer à scanner gaspille des ressources.\n2. **Faux positif** : une application interne déclenche la signature → on ajuste l'action en attendant la correction FortiGuard.\n\nLes signatures rate-based ciblent des **comportements anormaux** (volume, **fréquence**, débit) **plutôt** que des **patterns** d'exploits précis.",
+  "diagrams": [
+    {
+      "caption": "Les trois composants IPS et les autres fonctions qui s'appuient sur le moteur IPS.",
+      "height": 200,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 200'><rect x='180' y='10' width='180' height='50' rx='8' fill='#1e3a5f' stroke='#3b82f6' stroke-width='2'/><text x='270' y='32' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#93c5fd'>IPS Engine</text><text x='270' y='50' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>(moteur central)</text><rect x='20' y='100' width='120' height='36' rx='6' fill='#0d2a1a' stroke='#22c55e' stroke-width='1.5'/><text x='80' y='122' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#86efac'>Signatures IPS</text><rect x='160' y='100' width='120' height='36' rx='6' fill='#0d2a1a' stroke='#22c55e' stroke-width='1.5'/><text x='220' y='122' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#86efac'>Protocol Decoders</text><rect x='300' y='100' width='120' height='36' rx='6' fill='#0d2a1a' stroke='#22c55e' stroke-width='1.5'/><text x='360' y='122' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#86efac'>App Control</text><rect x='20' y='155' width='110' height='30' rx='4' fill='#2d2d00' stroke='#eab308' stroke-width='1'/><text x='75' y='174' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#fde047'>AV flow-based</text><rect x='140' y='155' width='110' height='30' rx='4' fill='#2d2d00' stroke='#eab308' stroke-width='1'/><text x='195' y='174' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#fde047'>Web Filter flow</text><rect x='260' y='155' width='110' height='30' rx='4' fill='#2d2d00' stroke='#eab308' stroke-width='1'/><text x='315' y='174' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#fde047'>Email Filter flow</text><line x1='270' y1='60' x2='80' y2='100' stroke='#3b82f6' stroke-width='1.5'/><polygon points='80,100 76,90 86,93' fill='#3b82f6'/><line x1='270' y1='60' x2='220' y2='100' stroke='#3b82f6' stroke-width='1.5'/><polygon points='220,100 216,90 226,93' fill='#3b82f6'/><line x1='270' y1='60' x2='360' y2='100' stroke='#3b82f6' stroke-width='1.5'/><polygon points='360,100 356,90 366,93' fill='#3b82f6'/></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quels sont les trois composants principaux de l'IPS FortiGate ?",
+      "choices": [
+        "Firewall, AV, IPS engine",
+        "Signatures, protocol decoders, IPS engine",
+        "IPS engine, App Control, Web Filter",
+        "Signatures, heuristique, sandbox"
+      ],
+      "answer": 1,
+      "explain": "Les trois composants : (1) Signatures IPS, (2) Protocol decoders, (3) IPS engine."
+    },
+    {
+      "q": "Que détectent les signatures rate-based ?",
+      "choices": [
+        "Des exploits connus dans les paquets",
+        "Des anomalies comportementales (montée CPU, volume atypique)",
+        "Des malwares dans les fichiers",
+        "Des connexions chiffrées non autorisées"
+      ],
+      "answer": 1,
+      "explain": "Les signatures rate-based détectent les anomalies comportementales — elles font partie de l'analyse heuristique avec les politiques DoS et l'inspection de contraintes de protocole."
+    },
+    {
+      "q": "Quelles autres fonctions s'appuient sur l'IPS engine (en plus de l'IPS lui-même) ?",
+      "choices": [
+        "SSL inspection et NAT",
+        "Application control, antivirus flow-based, web filter, email filter",
+        "FSSO et authentification",
+        "SD-WAN et monitoring"
+      ],
+      "answer": 1,
+      "explain": "L'IPS engine gère aussi : application control, AV flow-based, filtrage web flow-based et filtrage email flow-based."
+    },
+    {
+      "q": "Quand modifier l'action par défaut d'une signature IPS ?",
+      "choices": [
+        "Jamais, l'action par défaut est toujours correcte",
+        "Après un patch éditeur (économie de ressources) ou un faux positif",
+        "Uniquement pour les signatures FortiGuard VOS",
+        "Uniquement en mode actif-actif"
+      ],
+      "answer": 1,
+      "explain": "On modifie l'action : (1) quand l'éditeur a patché la vulnérabilité (inutile de continuer à scanner), (2) en cas de faux positif sur une application interne."
+    },
+    {
+      "q": "Quelles actions une signature IPS peut-elle avoir ?",
+      "choices": [
+        "Block, allow, monitor, quarantine, reset",
+        "Block, allow, drop, redirect",
+        "Allow, block, warn, override",
+        "Monitor, block, sandbox, quarantine"
+      ],
+      "answer": 0,
+      "explain": "Les actions disponibles : Block, Allow, Monitor (pass + log), Quarantine, Reset."
+    },
+    {
+      "q": "Que font les protocol decoders dans l'IPS ?",
+      "choices": [
+        "Ils déchiffrent le trafic SSL",
+        "Ils analysent les paquets selon les spécifications RFC du protocole pour détecter des anomalies",
+        "Ils décodent les encodages d'obfuscation",
+        "Ils convertissent IPv6 en IPv4"
+      ],
+      "answer": 1,
+      "explain": "Les protocol decoders analysent les paquets selon les RFCs — ils détectent les commandes invalides ou comportements non conformes."
+    },
+    {
+      "q": "L'IPS FortiGate peut-il inspecter le trafic chiffré ?",
+      "choices": [
+        "Non, le trafic chiffré est toujours ignoré",
+        "Oui, via le deep packet inspection sur trafic chiffré",
+        "Uniquement si la clé privée du serveur est importée",
+        "Uniquement avec FortiSandbox"
+      ],
+      "answer": 1,
+      "explain": "L'IPS peut effectuer du deep packet inspection sur du trafic chiffré pour détecter des menaces connues et inconnues (zero-day)."
+    },
+    {
+      "q": "Comment FortiGate reçoit-il les mises à jour de signatures IPS ?",
+      "choices": [
+        "Via le package FortiGuard IPS téléchargé automatiquement",
+        "Manuellement depuis le portail Fortinet",
+        "Via FortiManager uniquement",
+        "Via des fichiers CSV uploadés par l'admin"
+      ],
+      "answer": 0,
+      "explain": "Les mises à jour de signatures arrivent via le package FortiGuard IPS — téléchargé automatiquement depuis les serveurs FortiGuard."
+    },
+    {
+      "q": "Qu'est-ce que l'action Quarantine dans une signature IPS ?",
+      "choices": [
+        "Bloque le paquet uniquement",
+        "Isole la source du trafic malveillant",
+        "Envoie le fichier à FortiSandbox",
+        "Désactive temporairement la signature"
+      ],
+      "answer": 1,
+      "explain": "Quarantine isole la source — l'adresse IP est bloquée pendant un temps configurable, pas seulement le paquet en cours."
+    },
+    {
+      "q": "Quelle est la différence entre Monitor et Allow dans les actions IPS ?",
+      "choices": [
+        "Monitor bloque, Allow autorise",
+        "Monitor autorise et log ; Allow autorise sans log IPS",
+        "Aucune différence",
+        "Monitor log et envoie à FortiSandbox"
+      ],
+      "answer": 1,
+      "explain": "Monitor (pass) laisse passer le trafic et génère un log. Allow laisse passer sans log IPS."
+    },
+    {
+      "q": "Pourquoi l'action Reset est-elle disponible dans les signatures IPS ?",
+      "choices": [
+        "Pour redémarrer l'IPS engine",
+        "Pour réinitialiser la connexion TCP sans bloquer d'autres paquets",
+        "Pour réinitialiser les compteurs de la signature",
+        "Pour remettre à zéro le profil IPS"
+      ],
+      "answer": 1,
+      "explain": "Reset envoie un paquet RST pour terminer la connexion TCP — plus propre que Block pour les protocoles TCP qui détectent les coupures."
+    },
+    {
+      "q": "Comment les signatures rate-based se distinguent-elles des signatures classiques ?",
+      "choices": [
+        "Elles détectent des exploits connus dans les paquets",
+        "Elles détectent des comportements anormaux (volume, fréquence) plutôt que des patterns d'exploits",
+        "Elles s'appliquent uniquement au trafic UDP",
+        "Elles ne nécessitent pas de licence FortiGuard"
+      ],
+      "answer": 1,
+      "explain": "Les signatures rate-based analysent le comportement (volume, fréquence, montée CPU) — pas des patterns d'exploits dans les paquets."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quels sont les trois composants principaux de l'IPS FortiGate ?",
+      "choices": [
+        "Firewall, AV, IPS engine",
+        "Signatures, protocol decoders, IPS engine",
+        "IPS engine, App Control, Web Filter",
+        "Signatures, heuristique, sandbox"
+      ],
+      "answer": 1,
+      "explain": "Les trois composants : Signatures IPS, Protocol decoders, IPS engine."
+    },
+    {
+      "q": "Que détectent les signatures rate-based ?",
+      "choices": [
+        "Des exploits connus dans les paquets",
+        "Des anomalies comportementales (montée CPU, volume atypique)",
+        "Des malwares dans les fichiers",
+        "Des connexions chiffrées non autorisées"
+      ],
+      "answer": 1,
+      "explain": "Les signatures rate-based détectent les anomalies comportementales — elles font partie de l'analyse heuristique."
+    },
+    {
+      "q": "Quelles autres fonctions s'appuient sur l'IPS engine ?",
+      "choices": [
+        "SSL inspection et NAT",
+        "Application control, AV flow-based, web filter, email filter",
+        "FSSO et authentification",
+        "SD-WAN et monitoring"
+      ],
+      "answer": 1,
+      "explain": "L'IPS engine gère aussi : application control, AV flow-based, filtrage web et email flow-based."
+    },
+    {
+      "q": "Quand modifier l'action par défaut d'une signature IPS ?",
+      "choices": [
+        "Jamais",
+        "Après un patch éditeur ou un faux positif",
+        "Uniquement pour les signatures FortiGuard VOS",
+        "Uniquement en actif-actif"
+      ],
+      "answer": 1,
+      "explain": "On modifie l'action après un patch éditeur (économie de ressources) ou en cas de faux positif."
+    },
+    {
+      "q": "Quelles actions une signature IPS peut-elle avoir ?",
+      "choices": [
+        "Block, allow, monitor, quarantine, reset",
+        "Block, allow, drop, redirect",
+        "Allow, block, warn, override",
+        "Monitor, block, sandbox, quarantine"
+      ],
+      "answer": 0,
+      "explain": "Les actions disponibles : Block, Allow, Monitor (pass + log), Quarantine, Reset."
+    }
+  ]
+}

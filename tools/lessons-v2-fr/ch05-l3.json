@@ -1,0 +1,181 @@
+{
+  "id": "ch05-l3",
+  "module": "Firewall Authentication",
+  "title": "RADIUS : AAA et configuration",
+  "durationMin": 7,
+  "content": "## Qu'est-ce que RADIUS ?\n\n**RADIUS** (Remote Authentication Dial-In User Service) est un protocole réseau fournissant des services **AAA** centralisés :\n\n- **Authentication** (Authentification) : *Qui êtes-vous ?*\n- **Authorization** (Autorisation) : *Que pouvez-vous faire ?*\n- **Accounting** (Traçabilité) : *Suivi des actions et sessions.*\n\n## Rôle de FortiGate\n\nFortiGate agit comme un **client RADIUS** (NAS — Network Access Server). Il transmet les demandes d'authentification au serveur RADIUS et applique les décisions.\n\n\n![Flux d'authentification RADIUS : FortiGate → ACCESS-REQUEST → serveur → types de réponses](diagram:0)\n\n## Flux d'authentification RADIUS\n\n1. L'utilisateur tente de se connecter via FortiGate.\n2. FortiGate envoie un **ACCESS-REQUEST** au serveur RADIUS.\n3. Le serveur répond par :\n   - **ACCESS-ACCEPT** : authentification réussie.\n   - **ACCESS-REJECT** : authentification échouée.\n   - **ACCESS-CHALLENGE** : le serveur demande un **second facteur** (2FA).\n\n## Déclaration NAS client\n\nPour que le serveur RADIUS traite les requêtes de FortiGate, **FortiGate doit être déclaré comme NAS client** sur le serveur RADIUS. Sans cette déclaration, le serveur ignore toutes les requêtes.\n\n## Méthodes d'authentification RADIUS\n\nFortiGate supporte les méthodes : **PAP**, **CHAP**, **MS-CHAP**, **MS-CHAPv2**.\n\n> **Kerberos n'est PAS** une méthode d'authentification RADIUS supportée par FortiGate.\n\n## VSA — Vendor Specific Attributes\n\nLes **VSA** (Vendor Specific Attributes) sont des **extensions propriétaires Fortinet** au protocole RADIUS standard. Ils permettent de transmettre des informations supplémentaires spécifiques à FortiGate (profil VPN, groupe utilisateur, etc.).\n\n> **RADIUS vs LDAP** : RADIUS est un protocole AAA — LDAP est un protocole d'accès à un annuaire. Ce sont deux protocoles distincts avec des rôles différents.\n\n> **Kerberos** n'est pas supporté comme méthode RADIUS sur FortiGate — c'est un protocole d'authentification propre aux environnements Windows/**AD** (Active Directory).",
+  "diagrams": [
+    {
+      "caption": "Flux d'authentification RADIUS : FortiGate → ACCESS-REQUEST → serveur → types de réponses",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8f9fa' rx='8'/><rect x='20' y='50' width='110' height='60' rx='6' fill='#dbeafe' stroke='#3b82f6' stroke-width='1.5'/><text x='75' y='76' text-anchor='middle' font-size='11' font-weight='bold' fill='#1e40af'>FortiGate</text><text x='75' y='92' text-anchor='middle' font-size='10' fill='#1e40af'>Client RADIUS</text><text x='75' y='104' text-anchor='middle' font-size='9' fill='#1e40af'>(NAS)</text><rect x='460' y='50' width='120' height='60' rx='6' fill='#dcfce7' stroke='#22c55e' stroke-width='1.5'/><text x='520' y='76' text-anchor='middle' font-size='11' font-weight='bold' fill='#166534'>Serveur</text><text x='520' y='92' text-anchor='middle' font-size='11' font-weight='bold' fill='#166534'>RADIUS</text><line x1='130' y1='72' x2='460' y2='72' stroke='#6b7280' stroke-width='1.5' marker-end='url(#arrow)'/><text x='295' y='68' text-anchor='middle' font-size='10' fill='#374151'>ACCESS-REQUEST</text><line x1='460' y1='92' x2='130' y2='92' stroke='#22c55e' stroke-width='1.5' stroke-dasharray='4'/><text x='295' y='89' text-anchor='middle' font-size='9' fill='#166534'>ACCESS-ACCEPT</text><line x1='460' y1='104' x2='130' y2='104' stroke='#ef4444' stroke-width='1.5' stroke-dasharray='4'/><text x='295' y='118' text-anchor='middle' font-size='9' fill='#991b1b'>ACCESS-REJECT / ACCESS-CHALLENGE (2FA)</text><text x='75' y='140' text-anchor='middle' font-size='9' fill='#6b7280'>PAP/CHAP/MS-CHAP</text><text x='520' y='140' text-anchor='middle' font-size='9' fill='#6b7280'>VSA Fortinet</text><defs><marker id='arrow' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L0,6 L8,3 z' fill='#6b7280'/></marker></defs></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Que signifie l'acronyme AAA dans le contexte de RADIUS ?",
+      "choices": [
+        "Authentication, Administration, Accounting",
+        "Authentication, Authorization, Accounting",
+        "Access, Authorization, Audit",
+        "Authentication, Authorization, Alerting"
+      ],
+      "answer": 1,
+      "explain": "AAA signifie Authentication (qui êtes-vous ?), Authorization (que pouvez-vous faire ?) et Accounting (traçabilité des actions)."
+    },
+    {
+      "q": "Que signifie un message ACCESS-CHALLENGE envoyé par un serveur RADIUS ?",
+      "choices": [
+        "L'authentification a réussi",
+        "L'authentification a échoué",
+        "Le serveur demande un second facteur d'authentification (2FA)",
+        "Le compte utilisateur est expiré"
+      ],
+      "answer": 2,
+      "explain": "ACCESS-CHALLENGE indique que le serveur RADIUS demande un second facteur, par exemple un OTP dans un flux 2FA."
+    },
+    {
+      "q": "Lequel de ces protocoles N'EST PAS une méthode d'authentification RADIUS supportée par FortiGate ?",
+      "choices": [
+        "PAP",
+        "CHAP",
+        "MS-CHAPv2",
+        "Kerberos"
+      ],
+      "answer": 3,
+      "explain": "Kerberos n'est pas une méthode d'authentification RADIUS supportée par FortiGate. Les méthodes supportées sont PAP, CHAP, MS-CHAP et MS-CHAPv2."
+    },
+    {
+      "q": "Pour que FortiGate puisse s'authentifier auprès d'un serveur RADIUS, que faut-il obligatoirement configurer sur le serveur ?",
+      "choices": [
+        "Un certificat PKI pour FortiGate",
+        "FortiGate doit être déclaré comme NAS client sur le serveur RADIUS",
+        "Un compte LDAP pour FortiGate",
+        "Un tunnel VPN entre FortiGate et le serveur RADIUS"
+      ],
+      "answer": 1,
+      "explain": "FortiGate doit être déclaré comme NAS client sur le serveur RADIUS. Sans cette déclaration, le serveur ignore toutes les requêtes de FortiGate."
+    },
+    {
+      "q": "À quoi servent les VSA (Vendor Specific Attributes) Fortinet ?",
+      "choices": [
+        "À chiffrer les échanges RADIUS avec TLS",
+        "À envoyer des extensions propriétaires Fortinet via RADIUS (profil VPN, groupe utilisateur...)",
+        "À remplacer LDAP pour l'authentification",
+        "À définir les méthodes PAP/CHAP"
+      ],
+      "answer": 1,
+      "explain": "Les VSA sont des extensions propriétaires Fortinet au protocole RADIUS standard. Ils permettent de transmettre des informations spécifiques FortiGate comme le profil VPN ou le groupe utilisateur."
+    },
+    {
+      "q": "Quel rôle joue FortiGate dans une architecture RADIUS ?",
+      "choices": [
+        "Serveur RADIUS principal",
+        "Client RADIUS (NAS — Network Access Server)",
+        "Proxy RADIUS transparent",
+        "Base de données RADIUS locale"
+      ],
+      "answer": 1,
+      "explain": "FortiGate est un client RADIUS (NAS). Il transmet les demandes d'authentification au serveur RADIUS et applique les décisions reçues."
+    },
+    {
+      "q": "Quelle réponse RADIUS indique une authentification réussie ?",
+      "choices": [
+        "ACCESS-REQUEST",
+        "ACCESS-CHALLENGE",
+        "ACCESS-ACCEPT",
+        "ACCESS-OK"
+      ],
+      "answer": 2,
+      "explain": "ACCESS-ACCEPT est la réponse du serveur RADIUS indiquant que l'authentification a réussi."
+    },
+    {
+      "q": "Quels sont les trois composants du service AAA fourni par RADIUS ?",
+      "choices": [
+        "Audit, Accounting, Authentication",
+        "Authentication, Authorization, Accounting",
+        "Access, Accounting, Authorization",
+        "Authentication, Authorization, Alerting"
+      ],
+      "answer": 1,
+      "explain": "Les trois composants AAA sont : Authentication (identification), Authorization (droits d'accès) et Accounting (traçabilité)."
+    },
+    {
+      "q": "Que se passe-t-il si FortiGate n'est pas déclaré comme NAS client sur le serveur RADIUS ?",
+      "choices": [
+        "Le serveur RADIUS accepte quand même les requêtes avec un avertissement",
+        "Le serveur RADIUS ignore toutes les requêtes de FortiGate",
+        "FortiGate bascule automatiquement sur LDAP",
+        "L'authentification se fait en local"
+      ],
+      "answer": 1,
+      "explain": "Sans déclaration comme NAS client, le serveur RADIUS ignore toutes les requêtes provenant de FortiGate."
+    },
+    {
+      "q": "Quelles sont les méthodes d'authentification supportées par FortiGate pour RADIUS ?",
+      "choices": [
+        "NTLM, Kerberos, PAP",
+        "PAP, CHAP, MS-CHAP, MS-CHAPv2",
+        "SSL, TLS, DTLS",
+        "MD5, SHA1, SHA256"
+      ],
+      "answer": 1,
+      "explain": "FortiGate supporte PAP, CHAP, MS-CHAP et MS-CHAPv2 comme méthodes d'authentification pour RADIUS."
+    },
+    {
+      "q": "En quoi RADIUS diffère-t-il de LDAP dans sa structure ?",
+      "choices": [
+        "RADIUS est un protocole AAA, LDAP est un protocole d'accès à un annuaire",
+        "RADIUS stocke les utilisateurs, LDAP ne le fait pas",
+        "RADIUS utilise TLS, LDAP utilise HTTPS",
+        "Ils sont identiques mais avec des ports différents"
+      ],
+      "answer": 0,
+      "explain": "RADIUS est un protocole AAA (authentification, autorisation, traçabilité). LDAP est un protocole d'accès à un annuaire d'entreprise. Leurs rôles sont complémentaires mais différents."
+    },
+    {
+      "q": "Que contient un message ACCESS-REQUEST envoyé par FortiGate au serveur RADIUS ?",
+      "choices": [
+        "Uniquement le nom d'utilisateur en clair",
+        "Les informations d'identification de l'utilisateur (nom + mot de passe chiffré) et l'identifiant NAS",
+        "Un certificat PKI signé",
+        "L'adresse MAC du poste client"
+      ],
+      "answer": 1,
+      "explain": "L'ACCESS-REQUEST contient les informations d'identification de l'utilisateur (nom + mot de passe chiffré avec le secret partagé) et l'identifiant du NAS (FortiGate)."
+    },
+    {
+      "q": "Quel composant AAA correspond à la traçabilité des sessions et actions des utilisateurs ?",
+      "choices": [
+        "Authentication",
+        "Authorization",
+        "Accounting",
+        "Auditing"
+      ],
+      "answer": 2,
+      "explain": "L'Accounting (traçabilité) est le composant AAA qui assure le suivi des sessions, des ressources consommées et des actions des utilisateurs."
+    },
+    {
+      "q": "Pourquoi Kerberos est-il exclu des méthodes RADIUS supportées par FortiGate ?",
+      "choices": [
+        "Kerberos est trop lent pour RADIUS",
+        "Kerberos n'est pas un protocole d'authentification RADIUS, c'est un protocole indépendant utilisé dans les environnements Windows/AD",
+        "Kerberos n'est plus supporté depuis FortiOS 7.0",
+        "Kerberos nécessite un certificat PKI séparé"
+      ],
+      "answer": 1,
+      "explain": "Kerberos est un protocole d'authentification indépendant de RADIUS, utilisé dans les environnements Active Directory via FSSO. Il ne fait pas partie des méthodes d'authentification RADIUS de FortiGate."
+    },
+    {
+      "q": "Dans quels cas les VSA Fortinet sont-ils particulièrement utiles ?",
+      "choices": [
+        "Pour chiffrer le tunnel RADIUS avec IPsec",
+        "Pour passer des attributs FortiGate-spécifiques comme l'assignation de profil VPN ou de groupe",
+        "Pour remplacer les méthodes PAP par MS-CHAPv2",
+        "Pour configurer l'accounting RADIUS"
+      ],
+      "answer": 1,
+      "explain": "Les VSA Fortinet permettent de transmettre des attributs propriétaires via RADIUS : profil SSL-VPN, groupe utilisateur FortiGate, niveau d'accès, etc."
+    }
+  ]
+}

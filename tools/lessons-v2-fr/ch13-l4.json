@@ -1,0 +1,205 @@
+{
+  "id": "ch13-l4",
+  "module": "High Availability",
+  "title": "Types de failover et virtual MAC",
+  "durationMin": 7,
+  "content": "## Les types de failover\n\nUn failover HA se déclenche quand le cluster détecte qu'un membre n'est plus en mesure de traiter le trafic. Il existe plusieurs causes.\n\n### Device failover\n\nLes secondaires arrêtent de recevoir les **hello packets** du primaire (panne matérielle, plantage logiciel, coupure d'alimentation). L'absence de hello packets déclenche une élection et un nouveau primaire est élu.\n\n### Link failover\n\nUne **interface monitorée** du primaire passe en `down`. On configure une ou plusieurs interfaces à surveiller (monitored interfaces) : si l'une tombe, le failover est déclenché.\n\n> **Bonne pratique** : monitorer les interfaces connectées aux switches et routeurs critiques — pas les interfaces heartbeat elles-mêmes.\n\n### Remote link failover\n\nUtilise le **link health monitor** pour vérifier la santé de liens vers des serveurs distants (« balises »). Si la pénalité cumulée des interfaces en défaut atteint le seuil configuré, le failover est déclenché. Utile quand la liaison montante est OK physiquement mais inaccessible logiquement.\n\n### Memory-based failover\n\nSe déclenche quand l'utilisation mémoire du primaire dépasse un **seuil configurable** pendant une durée de monitoring définie. Protège contre les situations où le primaire est tellement saturé qu'il ne peut plus traiter le trafic correctement.\n\n### SSD failover\n\nDéclenché si FortiOS détecte des **erreurs Ext-fs** sur le SSD du primaire. Évite qu'un disque défaillant n'affecte le service.\n\n### Failover manuel\n\nUn administrateur peut déclencher un failover explicitement (via CLI ou en modifiant les priorités HA).\n\n## Logs et alertes au failover\n\nÀ chaque failover, FortiGate génère un **event log**. On peut configurer :\n- Des **SNMP traps** pour notifier les outils de supervision.\n- Des **alertes e-mail** pour l'équipe réseau.\n\n## Virtual MAC (vMAC)\n\n![Failover et vMAC](diagram:0)\n\nQuand un primaire rejoint un cluster, chaque interface se voit assigner une **adresse MAC virtuelle** (vMAC) en plus de sa MAC physique. C'est la vMAC que le réseau voit.\n\n### Calcul de la vMAC\n\nLa vMAC est calculée à partir de :\n- Le **HA group ID**\n- Le **virtual cluster ID** (si les virtual clusters sont activés)\n- L'**index de l'interface**\n\n### Pourquoi les vMAC sont essentielles\n\nSans vMAC, après un failover le nouveau primaire aurait une MAC physique différente → les switches auraient leur table MAC obsolète → le trafic serait perdu le temps que la table se mette à jour.\n\nAvec vMAC :\n1. Le nouveau primaire **adopte les mêmes vMAC** sur ses interfaces équivalentes.\n2. Il envoie des **ARP gratuits** (Gratuitous ARP) pour annoncer au réseau : « ces vMAC sont maintenant joignables via moi ».\n3. Les switches mettent à jour leur table MAC → trafic restauré en quelques millisecondes.\n\n### Exception\n\nL'interface de **management HA réservée** conserve sa **MAC physique d'origine** (pas une vMAC). Cela permet de l'atteindre individuellement quel que soit son rôle dans le cluster.\n\n### Conflits de vMAC\n\nSi deux clusters partagent le **même HA group ID** dans le même domaine de broadcast → conflit MAC → comportement imprévisible.\n\n> ⚠️ **Toujours attribuer des group IDs différents** à des clusters distincts dans le même segment réseau.",
+  "diagrams": [
+    {
+      "caption": "Failover avec vMAC : le nouveau primaire adopte les mêmes vMAC et envoie des ARP gratuits pour mettre à jour les tables MAC des switches.",
+      "height": 240,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 560 240'><text x='140' y='18' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#e2e8f0'>Avant failover</text><text x='420' y='18' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#e2e8f0'>Après failover</text><rect x='30' y='30' width='110' height='40' rx='6' fill='#1e3a5f' stroke='#3b82f6' stroke-width='2'/><text x='85' y='50' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#93c5fd'>Primary</text><text x='85' y='63' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>vMAC=aa:bb:cc:01</text><rect x='30' y='100' width='110' height='40' rx='6' fill='#374151' stroke='#6b7280' stroke-width='1.5'/><text x='85' y='120' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#d1d5db'>Standby</text><text x='85' y='133' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>vMAC=aa:bb:cc:01</text><rect x='30' y='175' width='110' height='36' rx='6' fill='#1e1a1a' stroke='#475569' stroke-width='1.5'/><text x='85' y='197' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#94a3b8'>Switch</text><text x='85' y='210' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>MAC→port1 (primary)</text><line x1='85' y1='70' x2='85' y2='100' stroke='#6b7280' stroke-width='1.5' stroke-dasharray='4 3'/><text x='90' y='90' font-family='sans-serif' font-size='9' fill='#64748b'>sync</text><line x1='85' y1='140' x2='85' y2='175' stroke='#3b82f6' stroke-width='2'/><polygon points='81,175 89,175 85,183' fill='#3b82f6'/><text x='92' y='162' font-family='sans-serif' font-size='9' fill='#64748b'>trafic</text><rect x='310' y='30' width='110' height='40' rx='6' fill='#3b1a1a' stroke='#ef4444' stroke-width='2'/><text x='365' y='50' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#fca5a5'>Primary</text><text x='365' y='63' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>PANNE</text><rect x='310' y='100' width='110' height='40' rx='6' fill='#1e3a5f' stroke='#3b82f6' stroke-width='2'/><text x='365' y='120' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#93c5fd'>New Primary</text><text x='365' y='133' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#86efac'>vMAC=aa:bb:cc:01 ✓</text><rect x='310' y='175' width='110' height='36' rx='6' fill='#1e1a1a' stroke='#22c55e' stroke-width='1.5'/><text x='365' y='197' text-anchor='middle' font-family='sans-serif' font-size='11' font-weight='700' fill='#94a3b8'>Switch</text><text x='365' y='210' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#86efac'>MAC→port2 (new primary)</text><line x1='365' y1='140' x2='365' y2='175' stroke='#22c55e' stroke-width='2'/><polygon points='361,175 369,175 365,183' fill='#22c55e'/><text x='440' y='162' font-family='sans-serif' font-size='9' fill='#86efac'>GARP → update</text><line x1='365' y1='140' x2='450' y2='175' stroke='#f97316' stroke-width='1.5' stroke-dasharray='4 3'/><text x='420' y='183' font-family='sans-serif' font-size='9' fill='#f97316'>ARP gratuit</text><text x='140' y='228' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#94a3b8'>vMAC identique → switch sait déjà</text><text x='420' y='228' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#94a3b8'>GARP met à jour la table MAC → trafic restauré</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Qu'est-ce qui déclenche un device failover ?",
+      "choices": [
+        "L'utilisation CPU dépasse 90%",
+        "Les secondaires arrêtent de recevoir les hello packets du primaire",
+        "Une interface monitorée passe en down",
+        "La mémoire du primaire est saturée"
+      ],
+      "answer": 1,
+      "explain": "Device failover = absence de hello packets du primaire (panne matérielle, plantage logiciel)."
+    },
+    {
+      "q": "Qu'est-ce qui déclenche un link failover ?",
+      "choices": [
+        "Une interface quelconque passe en down",
+        "Une interface monitorée du primaire passe en down",
+        "La perte du lien heartbeat",
+        "La saturation de la bande passante"
+      ],
+      "answer": 1,
+      "explain": "Link failover se déclenche quand une interface monitorée (configured monitored interface) du primaire passe en down."
+    },
+    {
+      "q": "Que vérifie le memory-based failover ?",
+      "choices": [
+        "L'utilisation CPU au-delà d'un seuil",
+        "L'utilisation mémoire au-delà d'un seuil pendant une durée définie",
+        "Le nombre de sessions actives",
+        "La taille de la table de routage"
+      ],
+      "answer": 1,
+      "explain": "Memory-based failover se déclenche si l'utilisation mémoire du primaire dépasse un seuil configurable pendant une durée de monitoring."
+    },
+    {
+      "q": "Pourquoi FortiGate envoie-t-il des ARP gratuits (GARP) après un failover ?",
+      "choices": [
+        "Pour informer les clients de la panne",
+        "Pour annoncer que les vMAC sont désormais joignables via un nouveau port",
+        "Pour renouveler les baux DHCP",
+        "Pour réinitialiser les sessions IPsec"
+      ],
+      "answer": 1,
+      "explain": "Les GARP permettent aux switches de mettre à jour leur table MAC : les vMAC sont maintenant joignables via le nouveau primaire."
+    },
+    {
+      "q": "Quelle interface conserve sa MAC physique d'origine au lieu d'une vMAC ?",
+      "choices": [
+        "L'interface WAN principale",
+        "L'interface heartbeat",
+        "L'interface de management HA réservée",
+        "L'interface LAN de gestion"
+      ],
+      "answer": 2,
+      "explain": "L'interface de management HA réservée (out-of-band) garde sa MAC physique — ce qui permet de joindre chaque membre individuellement."
+    },
+    {
+      "q": "Comment éviter les conflits de vMAC entre deux clusters dans le même broadcast ?",
+      "choices": [
+        "Utiliser des priorités HA différentes",
+        "Utiliser des HA group IDs différents",
+        "Connecter les clusters à des switches distincts",
+        "Activer le mode actif-actif sur les deux"
+      ],
+      "answer": 1,
+      "explain": "Les vMAC sont calculées à partir du group ID — deux clusters avec le même group ID dans le même broadcast génèrent des conflits MAC."
+    },
+    {
+      "q": "Quels éléments entrent dans le calcul de la vMAC ?",
+      "choices": [
+        "Priorité HA, hostname, numéro de série",
+        "HA group ID, virtual cluster ID, index d'interface",
+        "Adresse IP, VLAN ID, index d'interface",
+        "Mode HA, group ID, priorité"
+      ],
+      "answer": 1,
+      "explain": "vMAC = f(HA group ID, virtual cluster ID, index d'interface)."
+    },
+    {
+      "q": "Qu'est-ce que le remote link failover vérifie ?",
+      "choices": [
+        "L'état des interfaces heartbeat",
+        "La santé de liens vers des serveurs distants via link health monitor",
+        "La connectivité vers le DNS primaire",
+        "Le statut des SA IPsec"
+      ],
+      "answer": 1,
+      "explain": "Remote link failover utilise le link health monitor pour vérifier des balises distantes — utile quand le lien est UP physiquement mais injoignable logiquement."
+    },
+    {
+      "q": "Qu'est-ce que le SSD failover ?",
+      "choices": [
+        "Failover déclenché par une saturation des IOPS",
+        "Failover déclenché si des erreurs Ext-fs sont détectées sur le SSD du primaire",
+        "Failover déclenché si le SSD est plein à 90%",
+        "Failover planifié pour remplacer un SSD"
+      ],
+      "answer": 1,
+      "explain": "SSD failover se déclenche si FortiOS détecte des erreurs Ext-fs sur le SSD du primaire — évite qu'un disque défaillant n'affecte le service."
+    },
+    {
+      "q": "Que se passe-t-il quand le nouveau primaire adopte les vMAC après un failover ?",
+      "choices": [
+        "Il génère de nouvelles vMAC différentes",
+        "Il adopte les mêmes vMAC et envoie des ARP gratuits pour mettre à jour les switches",
+        "Il désactive temporairement les interfaces",
+        "Il demande au DHCP de réassigner les IPs"
+      ],
+      "answer": 1,
+      "explain": "Le nouveau primaire adopte les mêmes vMAC sur ses interfaces équivalentes — le réseau ne voit pas de changement de MAC, seul le GARP met à jour le port physique."
+    },
+    {
+      "q": "Comment un admin peut-il être notifié d'un failover automatiquement ?",
+      "choices": [
+        "Uniquement en consultant les logs manuellement",
+        "Via SNMP traps et/ou alertes e-mail configurés",
+        "Via un appel API vers un serveur de supervision",
+        "Les failovers ne sont pas loggés par défaut"
+      ],
+      "answer": 1,
+      "explain": "À chaque failover, un event log est généré. On peut configurer des SNMP traps et des alertes e-mail pour la notification automatique."
+    },
+    {
+      "q": "Pourquoi utiliser des vMAC plutôt que des MAC physiques en HA ?",
+      "choices": [
+        "Les MAC physiques ne sont pas routables",
+        "Pour que le nouveau primaire puisse hériter de l'identité réseau du cluster sans attendre la mise à jour des tables MAC des switches",
+        "Les vMAC permettent le multicast HA",
+        "Les MAC physiques ne supportent pas le VLAN tagging"
+      ],
+      "answer": 1,
+      "explain": "Avec vMAC, le nouveau primaire hérite de la même identité MAC que l'ancien — les switches savent déjà où envoyer le trafic (après GARP). Sans vMAC, il faudrait attendre l'expiration des entrées MAC."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Qu'est-ce qui déclenche un device failover ?",
+      "choices": [
+        "L'utilisation CPU dépasse 90%",
+        "Les secondaires arrêtent de recevoir les hello packets du primaire",
+        "Une interface monitorée passe en down",
+        "La mémoire est saturée"
+      ],
+      "answer": 1,
+      "explain": "Device failover = absence de hello packets du primaire (panne matérielle, plantage logiciel)."
+    },
+    {
+      "q": "Pourquoi FortiGate envoie-t-il des ARP gratuits après un failover ?",
+      "choices": [
+        "Pour informer les clients de la panne",
+        "Pour annoncer que les vMAC sont désormais joignables via un nouveau port",
+        "Pour renouveler les baux DHCP",
+        "Pour réinitialiser les sessions IPsec"
+      ],
+      "answer": 1,
+      "explain": "Les GARP permettent aux switches de mettre à jour leur table MAC vers le nouveau primaire."
+    },
+    {
+      "q": "Quelle interface conserve sa MAC physique d'origine (pas de vMAC) ?",
+      "choices": [
+        "L'interface WAN",
+        "L'interface heartbeat",
+        "L'interface de management HA réservée",
+        "L'interface LAN"
+      ],
+      "answer": 2,
+      "explain": "L'interface de management HA réservée garde sa MAC physique pour être joignable individuellement."
+    },
+    {
+      "q": "Comment éviter les conflits de vMAC entre deux clusters dans le même broadcast ?",
+      "choices": [
+        "Utiliser des priorités HA différentes",
+        "Utiliser des HA group IDs différents",
+        "Connecter les clusters à des switches distincts",
+        "Activer le mode actif-actif"
+      ],
+      "answer": 1,
+      "explain": "Les vMAC sont calculées à partir du group ID — des group IDs différents évitent les conflits."
+    },
+    {
+      "q": "Que vérifie le memory-based failover ?",
+      "choices": [
+        "L'utilisation CPU au-delà d'un seuil",
+        "L'utilisation mémoire au-delà d'un seuil pendant une durée définie",
+        "Le nombre de sessions actives",
+        "La taille de la table de routage"
+      ],
+      "answer": 1,
+      "explain": "Memory-based failover se déclenche si la mémoire dépasse un seuil configurable pendant une durée de monitoring."
+    }
+  ]
+}

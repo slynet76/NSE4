@@ -1,0 +1,243 @@
+{
+  "id": "ch13-l1",
+  "module": "High Availability",
+  "title": "Modes HA actif-passif et actif-actif",
+  "durationMin": 7,
+  "content": "## Pourquoi la HA ?\n\nUn pare-feu est par construction un point de passage obligé. S'il tombe, tout le trafic tombe avec lui. La **High Availability (HA)** lie deux FortiGate (ou plus) en **cluster** pour assurer deux choses :\n\n- **Redondance** — si un membre meurt, un autre prend le relais (failover).\n- **Répartition de charge** — dans un mode précis, plusieurs membres traitent le trafic en même temps.\n\n## FGCP, le protocole maison\n\nFortiGate utilise **FGCP** (*FortiGate Clustering Protocol*) — pas VRRP, pas HSRP — pour :\n\n- découvrir les membres,\n- élire le **primaire**,\n- synchroniser les données entre membres,\n- surveiller la santé du cluster via les liens **heartbeat**.\n\n> Un cluster a **un seul primaire** à la fois. Les autres sont **secondaires** (alias *standby*). Le primaire pousse sa configuration complète vers les secondaires : leur configuration locale est écrasée, sauf quelques réglages spécifiques au matériel.\n\n## Les deux modes d'opération\n\n![Topologies HA](diagram:0)\n\n### Actif-Passif (le plus courant)\n\n- **Seul le primaire traite le trafic**.\n- Les secondaires sont en attente, ils ne font *que* synchroniser et surveiller.\n- En cas de panne du primaire, un secondaire est élu et reprend le rôle.\n\n### Actif-Actif\n\n- **Tous les membres traitent du trafic**.\n- Le primaire **distribue** les sessions supportées aux secondaires selon les réglages HA et le type de trafic (idéal pour les inspections lourdes : AV proxy, IPS).\n- Si un secondaire tombe, le primaire **réaffecte** ses sessions à un autre membre.\n- Comme en actif-passif, la synchronisation des sessions/FIB/etc. continue.\n\n## Conditions pour former un cluster\n\nTous les membres doivent **être identiques** sur ces points :\n\n| Critère | Doit être identique ? |\n|---|---|\n| Modèle matériel ou modèle VM | Oui |\n| Version de firmware | Oui |\n| Niveau de licences (FortiGuard, VDOM, FortiClient…) | Oui |\n| Configuration des disques durs (nombre, taille, partitions) | Oui |\n| Mode opérationnel (NAT ou transparent) du VDOM de gestion | Oui |\n| **Nom d'hôte (hostname)** | **Non — propre à chaque équipement** |\n| **HA priority** et **HA override** | **Non — non synchronisés** |\n\n> ⚠️ **Si les licences diffèrent**, le cluster s'aligne sur **le niveau le plus faible** parmi les membres. Exemple : un seul membre a la licence Web Filtering ? Aucun membre ne l'utilisera.\n\nCôté configuration HA elle-même, les membres doivent partager **même `group ID`, même nom de groupe, même mot de passe, mêmes interfaces heartbeat**.\n\n## Heartbeat — le pouls du cluster\n\n- Les interfaces heartbeat servent à **synchroniser les données** ET à **surveiller la santé** des membres.\n- **Bonne pratique : au moins deux interfaces heartbeat** (redondance). Si une chute, la suivante prend le relais.\n- L'ordre est défini par **la priorité et la position** dans la liste : *l'interface avec la valeur de priorité la **plus haute** est préférée* (FortiOS 7.6). Exemple du study guide : `port3 priority=10`, `port4 priority=20` → **port4 est l'interface préférée**.\n- Idéalement, mettre toutes les heartbeat dans le **même domaine de broadcast**. Pour un cluster à 2 membres, on les **connecte directement** (câble croisé entre les deux).\n- Si les interfaces du cluster utilisent **DHCP ou PPPoE**, **utiliser une IP statique pendant la formation** du cluster pour éviter des affectations incorrectes — on rebascule ensuite sur DHCP/PPPoE une fois le cluster formé.\n\n## Données synchronisées\n\nLe primaire pousse aux secondaires :\n\n- la **configuration** (sauf les bouts spécifiques au matériel),\n- les **entrées FIB** (Forwarding Information Base, table de routage active),\n- les **définitions FortiGuard**,\n- les **baux DHCP**,\n- la **table ARP**,\n- les **SA IPsec** (Security Associations des tunnels VPN),\n- optionnellement les **sessions** (à activer explicitement) — utile pour reprendre les flux existants après un failover sans coupure visible.\n\n**Non synchronisés** : `hostname`, `HA priority`, `HA override` — ces réglages doivent être faits manuellement sur chaque membre.\n\n## Élection du primaire\n\n![Critères d'élection](diagram:1)\n\nQuand le cluster se forme (ou après un failover), l'élection compare les critères **dans l'ordre**, et **s'arrête au premier qui désigne un gagnant**. Le comportement par défaut (HA override **désactivé**) :\n\n1. **Plus d'interfaces monitorées up** (le membre qui a perdu le moins de liens gagne).\n2. **HA uptime le plus élevé** (avec une marge d'au moins 5 minutes).\n3. **Priorité HA** la plus haute.\n4. **Numéro de série** le plus haut (départage final).\n\n> Quand `HA override` est **activé**, **la priorité passe avant l'uptime**. Avantage : on désigne formellement le primaire préféré. Inconvénient : à chaque fois que ce membre revient en ligne, il **reprend** le rôle (deux failovers au lieu d'un).\n\n### Forcer un failover\n\n- **Override désactivé** : exécuter `diagnose sys ha reset-uptime` sur le primaire — son HA uptime passe à 0, il perd l'élection. Cette commande **ne touche pas au system uptime**.\n- **Override activé** : modifier les **priorités HA** (augmenter celle d'un secondaire, ou baisser celle du primaire).\n\nNote : le HA uptime d'un membre est **aussi remis à 0** s'il reboot ou si une interface monitorée tombe.\n\n> En actif-passif : **uniquement** le primaire traite le trafic ; les secondaires sont en attente passive.",
+  "diagrams": [
+    {
+      "caption": "Actif-Passif vs Actif-Actif. En actif-passif, seul le primaire traite ; en actif-actif, le primaire distribue aux secondaires.",
+      "height": 220,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 220'><text x='150' y='20' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#1f2937'>Actif-Passif</text><text x='450' y='20' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#1f2937'>Actif-Actif</text><rect x='100' y='40' width='100' height='40' rx='6' fill='#3b82f6' stroke='#1f2937' stroke-width='1.5'/><text x='150' y='65' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#ffffff'>Primary</text><rect x='100' y='110' width='100' height='40' rx='6' fill='#94a3b8' stroke='#1f2937' stroke-width='1.5'/><text x='150' y='135' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#ffffff'>Standby</text><line x1='150' y1='80' x2='150' y2='110' stroke='#94a3b8' stroke-width='1.5' stroke-dasharray='4 3'/><text x='155' y='100' font-family='sans-serif' font-size='10' fill='#475569'>sync</text><line x1='30' y1='60' x2='100' y2='60' stroke='#3b82f6' stroke-width='2.5'/><polygon points='100,60 92,56 92,64' fill='#3b82f6'/><text x='35' y='53' font-family='sans-serif' font-size='10' fill='#475569'>trafic</text><line x1='200' y1='60' x2='270' y2='60' stroke='#3b82f6' stroke-width='2.5'/><polygon points='270,60 262,56 262,64' fill='#3b82f6'/><line x1='30' y1='130' x2='100' y2='130' stroke='#cbd5e1' stroke-width='1.5' stroke-dasharray='4 3'/><line x1='200' y1='130' x2='270' y2='130' stroke='#cbd5e1' stroke-width='1.5' stroke-dasharray='4 3'/><text x='210' y='124' font-family='sans-serif' font-size='10' fill='#94a3b8'>(pas de trafic)</text><rect x='400' y='40' width='100' height='40' rx='6' fill='#3b82f6' stroke='#1f2937' stroke-width='1.5'/><text x='450' y='65' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#ffffff'>Primary</text><rect x='400' y='110' width='100' height='40' rx='6' fill='#22c55e' stroke='#1f2937' stroke-width='1.5'/><text x='450' y='135' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#ffffff'>Active 2</text><line x1='450' y1='80' x2='450' y2='110' stroke='#94a3b8' stroke-width='1.5' stroke-dasharray='4 3'/><text x='455' y='100' font-family='sans-serif' font-size='10' fill='#475569'>sync</text><line x1='330' y1='60' x2='400' y2='60' stroke='#3b82f6' stroke-width='2.5'/><polygon points='400,60 392,56 392,64' fill='#3b82f6'/><line x1='500' y1='60' x2='570' y2='60' stroke='#3b82f6' stroke-width='2.5'/><polygon points='570,60 562,56 562,64' fill='#3b82f6'/><line x1='330' y1='130' x2='400' y2='130' stroke='#3b82f6' stroke-width='2.5'/><polygon points='400,130 392,126 392,134' fill='#3b82f6'/><line x1='500' y1='130' x2='570' y2='130' stroke='#3b82f6' stroke-width='2.5'/><polygon points='570,130 562,126 562,134' fill='#3b82f6'/><text x='335' y='53' font-family='sans-serif' font-size='10' fill='#475569'>trafic</text><text x='335' y='124' font-family='sans-serif' font-size='10' fill='#475569'>trafic</text><line x1='370' y1='75' x2='370' y2='115' stroke='#3b82f6' stroke-width='1.5' stroke-dasharray='3 3'/><polygon points='370,115 366,107 374,107' fill='#3b82f6'/><text x='340' y='98' font-family='sans-serif' font-size='10' fill='#3b82f6'>distrib.</text><text x='150' y='200' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#475569'>1 seul actif</text><text x='450' y='200' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#475569'>Tous actifs</text></svg>"
+    },
+    {
+      "caption": "Critères d'élection du primaire (HA override désactivé). On s'arrête au premier critère qui désigne un gagnant.",
+      "height": 320,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 320'><rect x='30' y='10' width='460' height='55' rx='8' fill='#eef4ff' stroke='#3b82f6' stroke-width='2'/><text x='260' y='32' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#1f2937'>1. Plus d'interfaces monitorées « up »</text><text x='260' y='52' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#475569'>(le membre qui a perdu le moins de liens gagne)</text><line x1='260' y1='65' x2='260' y2='80' stroke='#666' stroke-width='1.5'/><polygon points='254,80 266,80 260,90' fill='#666'/><rect x='30' y='90' width='460' height='55' rx='8' fill='#eef4ff' stroke='#3b82f6' stroke-width='2'/><text x='260' y='112' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#1f2937'>2. HA uptime le plus élevé (≥ 5 min de marge)</text><text x='260' y='132' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#475569'>diagnose sys ha reset-uptime → force un failover</text><line x1='260' y1='145' x2='260' y2='160' stroke='#666' stroke-width='1.5'/><polygon points='254,160 266,160 260,170' fill='#666'/><rect x='30' y='170' width='460' height='55' rx='8' fill='#eef4ff' stroke='#3b82f6' stroke-width='2'/><text x='260' y='192' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#1f2937'>3. Priorité HA la plus haute</text><text x='260' y='212' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#475569'>(non synchronisée — à régler sur chaque membre)</text><line x1='260' y1='225' x2='260' y2='240' stroke='#666' stroke-width='1.5'/><polygon points='254,240 266,240 260,250' fill='#666'/><rect x='30' y='250' width='460' height='55' rx='8' fill='#e8f9ee' stroke='#22c55e' stroke-width='2'/><text x='260' y='272' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#1f2937'>4. Numéro de série le plus haut (départage)</text><text x='260' y='292' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#475569'>→ ce membre devient primaire</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel protocole FortiGate utilise-t-il pour la gestion du cluster HA ?",
+      "choices": [
+        "VRRP",
+        "FGCP",
+        "HSRP",
+        "OSPF"
+      ],
+      "answer": 1,
+      "explain": "FGCP (FortiGate Clustering Protocol) gère la découverte, l'élection, la synchro et le monitoring."
+    },
+    {
+      "q": "En mode actif-passif, qui traite le trafic ?",
+      "choices": [
+        "Tous les membres",
+        "Uniquement le primaire",
+        "Le secondaire avec le plus haut SN",
+        "Aucun, mode bloqué"
+      ],
+      "answer": 1,
+      "explain": "En actif-passif, seul le primaire traite le trafic ; les secondaires restent en standby."
+    },
+    {
+      "q": "En mode actif-actif, comment le trafic est-il réparti ?",
+      "choices": [
+        "Round-robin DNS",
+        "Le primaire distribue les sessions aux secondaires",
+        "Chaque membre traite ses propres VLAN",
+        "Le routage ECMP côté switch"
+      ],
+      "answer": 1,
+      "explain": "En actif-actif, le primaire distribue les sessions supportées aux secondaires selon les réglages HA et le type de trafic."
+    },
+    {
+      "q": "Quel critère ne doit PAS forcément être identique entre membres du cluster ?",
+      "choices": [
+        "Le modèle matériel",
+        "La version de firmware",
+        "Le nom d'hôte (hostname)",
+        "Les licences"
+      ],
+      "answer": 2,
+      "explain": "Le hostname est spécifique à chaque équipement et n'est pas synchronisé."
+    },
+    {
+      "q": "Lequel de ces paramètres N'EST PAS synchronisé dans un cluster HA ?",
+      "choices": [
+        "FIB",
+        "HA priority",
+        "Définitions FortiGuard",
+        "Baux DHCP"
+      ],
+      "answer": 1,
+      "explain": "HA priority, HA override et hostname ne sont pas synchronisés — à régler manuellement sur chaque membre."
+    },
+    {
+      "q": "Si les licences diffèrent entre membres, quel niveau s'applique ?",
+      "choices": [
+        "Le plus élevé",
+        "La moyenne",
+        "Le plus faible",
+        "Celui du primaire"
+      ],
+      "answer": 2,
+      "explain": "Le cluster s'aligne sur le niveau de licence le plus bas parmi les membres."
+    },
+    {
+      "q": "Combien d'interfaces heartbeat est-il recommandé de configurer ?",
+      "choices": [
+        "Une seule",
+        "Au moins deux",
+        "Toujours quatre",
+        "Aucune n'est obligatoire"
+      ],
+      "answer": 1,
+      "explain": "Au moins deux interfaces heartbeat : si la principale tombe, la suivante prend le relais."
+    },
+    {
+      "q": "Avec deux interfaces heartbeat (port3 priority=10, port4 priority=20), laquelle est utilisée en priorité ?",
+      "choices": [
+        "port3",
+        "port4",
+        "Les deux en simultané",
+        "Aléatoire"
+      ],
+      "answer": 1,
+      "explain": "Sur FortiOS 7.6, l'interface heartbeat préférée est celle avec la valeur de priorité la PLUS HAUTE — donc port4 (priority 20). Source : study guide FortiOS 7.6 p.451."
+    },
+    {
+      "q": "Quel critère est évalué EN PREMIER lors de l'élection du primaire (HA override désactivé) ?",
+      "choices": [
+        "Le numéro de série",
+        "La priorité HA",
+        "Le HA uptime",
+        "Le nombre d'interfaces monitorées up"
+      ],
+      "answer": 3,
+      "explain": "Ordre par défaut : (1) interfaces monitorées up, (2) HA uptime, (3) priorité, (4) numéro de série."
+    },
+    {
+      "q": "Que change l'activation de HA override sur l'élection ?",
+      "choices": [
+        "Désactive l'élection",
+        "La priorité passe avant le HA uptime",
+        "Force le mode actif-actif",
+        "Empêche tout failover"
+      ],
+      "answer": 1,
+      "explain": "Avec override activé, la priorité est évaluée avant le HA uptime — utile pour désigner un primaire préféré, mais déclenche un failover de retour quand il revient en ligne."
+    },
+    {
+      "q": "Quelle commande force un failover quand HA override est désactivé ?",
+      "choices": [
+        "execute reboot",
+        "diagnose sys ha reset-uptime",
+        "config system ha set failover enable",
+        "execute ha failover"
+      ],
+      "answer": 1,
+      "explain": "diagnose sys ha reset-uptime remet le HA uptime à 0 sur le membre où on l'exécute, ce qui le fait perdre l'élection."
+    },
+    {
+      "q": "Que signifie « FGCP » ?",
+      "choices": [
+        "FortiGate Cluster Pairing",
+        "FortiGate Clustering Protocol",
+        "Fortinet General Configuration Protocol",
+        "Failover Group Control Protocol"
+      ],
+      "answer": 1,
+      "explain": "FortiGate Clustering Protocol — protocole propriétaire Fortinet pour la HA."
+    },
+    {
+      "q": "Avec deux FortiGate seulement, comment relier au mieux les interfaces heartbeat ?",
+      "choices": [
+        "Via un switch dédié obligatoire",
+        "Connexion directe entre les deux (câble)",
+        "Via un VLAN routé",
+        "Par tunnel IPsec dédié"
+      ],
+      "answer": 1,
+      "explain": "Pour un cluster à 2 membres, la connexion directe entre les heartbeats évite tout équipement intermédiaire et minimise la latence."
+    },
+    {
+      "q": "Que fait le primaire avec la configuration des secondaires qui rejoignent le cluster ?",
+      "choices": [
+        "Il fusionne les configurations",
+        "Il ne touche à rien",
+        "Il écrase la config des secondaires avec la sienne",
+        "Il sauvegarde puis applique la sienne"
+      ],
+      "answer": 2,
+      "explain": "Le primaire pousse sa configuration complète aux secondaires, écrasant la leur — sauf quelques réglages device-spécifiques (hostname, HA priority, HA override)."
+    },
+    {
+      "q": "Si vous utilisez DHCP ou PPPoE sur les interfaces, que faut-il faire pendant la formation du cluster ?",
+      "choices": [
+        "Rien de spécial",
+        "Configurer une IP statique temporairement",
+        "Désactiver toutes les interfaces sauf le management",
+        "Utiliser uniquement le mode transparent"
+      ],
+      "answer": 1,
+      "explain": "On configure une IP statique pendant la formation du cluster pour éviter les affectations incorrectes, puis on rebascule en DHCP/PPPoE une fois formé."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Quel protocole FortiGate utilise-t-il pour la gestion du cluster HA ?",
+      "choices": [
+        "VRRP",
+        "FGCP",
+        "HSRP",
+        "OSPF"
+      ],
+      "answer": 1,
+      "explain": "FGCP (FortiGate Clustering Protocol) gère la découverte, l'élection, la synchro et le monitoring."
+    },
+    {
+      "q": "En mode actif-passif, qui traite le trafic ?",
+      "choices": [
+        "Tous les membres",
+        "Uniquement le primaire",
+        "Le secondaire avec le plus haut SN",
+        "Aucun, mode bloqué"
+      ],
+      "answer": 1,
+      "explain": "En actif-passif, seul le primaire traite le trafic ; les secondaires restent en standby."
+    },
+    {
+      "q": "Quel critère ne doit PAS forcément être identique entre membres du cluster ?",
+      "choices": [
+        "Le modèle matériel",
+        "La version de firmware",
+        "Le nom d'hôte (hostname)",
+        "Les licences"
+      ],
+      "answer": 2,
+      "explain": "Le hostname est spécifique à chaque équipement et n'est pas synchronisé."
+    },
+    {
+      "q": "Combien d'interfaces heartbeat est-il recommandé de configurer ?",
+      "choices": [
+        "Une seule",
+        "Au moins deux",
+        "Toujours quatre",
+        "Aucune n'est obligatoire"
+      ],
+      "answer": 1,
+      "explain": "Au moins deux interfaces heartbeat : si la principale tombe, la suivante prend le relais."
+    },
+    {
+      "q": "Si les licences diffèrent entre membres, quel niveau s'applique ?",
+      "choices": [
+        "Le plus élevé",
+        "La moyenne",
+        "Le plus faible",
+        "Celui du primaire"
+      ],
+      "answer": 2,
+      "explain": "Le cluster s'aligne sur le niveau de licence le plus bas parmi les membres."
+    }
+  ]
+}

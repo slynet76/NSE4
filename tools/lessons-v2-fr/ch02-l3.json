@@ -1,0 +1,181 @@
+{
+  "id": "ch02-l3",
+  "module": "Logging and Monitoring",
+  "title": "FortiAnalyzer : modes et workflow",
+  "durationMin": 7,
+  "content": "## FortiAnalyzer : modes et workflow\n\n![Workflow FortiAnalyzer : collecte, stockage et consultation des logs](diagram:0)\n\n### Workflow général\n\nLe flux de traitement des logs dans FortiAnalyzer suit ces étapes :\n\n1. Les **devices sont enregistrés** auprès de FAZ (FortiGate envoie une requête, l'admin FAZ accepte, ou ajout manuel).\n2. Les logs arrivent sur FAZ et sont d'abord stockés en format **raw** (archive brute).\n3. Les logs raw sont ensuite indexés dans une **base SQL** pour permettre la recherche rapide.\n4. Les logs SQL sont consultables via **FortiView** et **Log View**.\n\n**Important** : les logs raw (archive) ne sont pas visibles dans FortiView. Seuls les logs indexés en base SQL apparaissent dans FortiView.\n\n---\n\n### Mode Analyzer (mode par défaut)\n- Stocke les logs localement.\n- Indexe en base SQL.\n- Permet toutes les fonctionnalités : FortiView, Log View, rapports, Chart Builder.\n- C'est le **mode par défaut** de FortiAnalyzer.\n\n---\n\n### Mode Collector\n- Collecte les logs des FortiGates.\n- **Transfère les logs en format binaire** vers un autre FAZ en aval (Analyzer).\n- **Pas d'analyse locale** : aucune indexation SQL, aucun FortiView.\n- Utilisé pour la scalabilité : plusieurs Collectors alimentent un Analyzer central.\n\n**Architecture scalable** : Collector 1 + Collector 2 + Collector N → 1 Analyzer central.\n\n---\n\n### ADOM (Administrative Domain)\n- Cloisonnement logique des logs et des devices par organisation ou client.\n- Permet à plusieurs administrateurs de travailler sur des périmètres isolés.\n- Les nouveaux devices enregistrés vont par défaut dans l'ADOM **root**.\n- Les ADOMs peuvent être créés manuellement pour segmenter par client, VDOM, ou géographie.\n\n---\n\n### Device Registration\n- Le FortiGate envoie une **requête d'enregistrement** à FAZ.\n- L'administrateur FAZ **accepte** la requête (ou peut ajouter le device manuellement).\n- Une fois enregistré, le device peut envoyer ses logs.\n\n---\n\n### Log Groups\n- Objets **logiques virtuels** regroupant plusieurs devices.\n- **Sans base de données propre** : les données restent dans les ADOMs des devices membres.\n- Utilisés pour générer des **rapports multi-devices** couvrant plusieurs FortiGates en un seul rapport.\n\n---\n\n### Chart Builder\n- Outil de création de graphiques personnalisés dans FAZ.\n- Nécessite obligatoirement une **vue historique** (données indexées en base SQL sur une période passée).\n- Ne fonctionne pas en temps réel seul.\n\n> Les logs **raw** permettent de **conserver** une **copie fidèle** et brute des logs **originaux** — utile pour **audit** ou **réindexation** ultérieure.",
+  "diagrams": [
+    {
+      "caption": "Workflow FortiAnalyzer : collecte, stockage et consultation des logs",
+      "height": 160,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'><rect width='600' height='160' fill='#f8f9fa' rx='8'/><rect x='10' y='60' width='90' height='40' rx='5' fill='#1a73e8'/><text x='55' y='85' font-family='Arial' font-size='11' font-weight='bold' fill='white' text-anchor='middle'>FortiGate</text><polygon points='105,80 115,74 115,86' fill='#555'/><rect x='118' y='55' width='90' height='50' rx='5' fill='#34a853'/><text x='163' y='78' font-family='Arial' font-size='10' font-weight='bold' fill='white' text-anchor='middle'>Collector</text><text x='163' y='93' font-family='Arial' font-size='9' fill='#e8f5e9' text-anchor='middle'>(optionnel)</text><polygon points='212,80 222,74 222,86' fill='#555'/><rect x='225' y='55' width='100' height='50' rx='5' fill='#1a73e8'/><text x='275' y='75' font-family='Arial' font-size='10' font-weight='bold' fill='white' text-anchor='middle'>FAZ Analyzer</text><text x='275' y='90' font-family='Arial' font-size='9' fill='#bbdefb' text-anchor='middle'>raw → SQL DB</text><polygon points='329,80 339,74 339,86' fill='#555'/><rect x='342' y='40' width='110' height='30' rx='5' fill='#fbbc04'/><text x='397' y='60' font-family='Arial' font-size='10' font-weight='bold' fill='#333' text-anchor='middle'>FortiView</text><rect x='342' y='80' width='110' height='30' rx='5' fill='#ea4335'/><text x='397' y='100' font-family='Arial' font-size='10' font-weight='bold' fill='white' text-anchor='middle'>Log View / Reports</text><line x1='329' y1='70' x2='342' y2='55' stroke='#555' stroke-width='1.5'/><line x1='329' y1='90' x2='342' y2='95' stroke='#555' stroke-width='1.5'/><rect x='460' y='55' width='125' height='50' rx='5' fill='#7b1fa2'/><text x='522' y='75' font-family='Arial' font-size='10' font-weight='bold' fill='white' text-anchor='middle'>ADOM</text><text x='522' y='90' font-family='Arial' font-size='9' fill='#e1bee7' text-anchor='middle'>root (défaut) / custom</text><line x1='452' y1='80' x2='460' y2='80' stroke='#aaa' stroke-width='1' stroke-dasharray='3,3'/><text x='300' y='145' font-family='Arial' font-size='10' fill='#888' text-anchor='middle'>Logs raw = archive non visible dans FortiView | SQL = consultable FortiView/Log View</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel est le mode par défaut de FortiAnalyzer ?",
+      "choices": [
+        "Collector",
+        "Forwarder",
+        "Analyzer",
+        "Passive"
+      ],
+      "answer": 2,
+      "explain": "Le mode Analyzer est le mode par défaut de FortiAnalyzer. Il stocke, indexe en SQL et permet toutes les fonctionnalités d'analyse."
+    },
+    {
+      "q": "Que fait FortiAnalyzer en mode Collector ?",
+      "choices": [
+        "Il analyse les logs et génère des rapports",
+        "Il collecte les logs et les transfère en format binaire vers un Analyzer en aval, sans analyse locale",
+        "Il stocke les logs en SQL localement",
+        "Il agit comme un proxy entre FortiGate et le SIEM"
+      ],
+      "answer": 1,
+      "explain": "En mode Collector, FAZ collecte les logs et les transfère en binaire vers un Analyzer en aval. Il n'y a pas d'analyse locale, pas d'indexation SQL."
+    },
+    {
+      "q": "Après réception, dans quel format les logs sont-ils d'abord stockés sur FortiAnalyzer ?",
+      "choices": [
+        "Format SQL compressé",
+        "Format JSON chiffré",
+        "Format raw (archive brute)",
+        "Format CSV indexé"
+      ],
+      "answer": 2,
+      "explain": "Les logs arrivent sur FAZ et sont d'abord stockés en format raw (archive brute), puis indexés en base SQL pour la recherche."
+    },
+    {
+      "q": "Les logs raw (archive) sont-ils visibles dans FortiView ?",
+      "choices": [
+        "Oui, avec un filtre spécifique",
+        "Oui, mais uniquement dans l'ADOM root",
+        "Non, seuls les logs indexés en base SQL apparaissent dans FortiView",
+        "Oui, en mode lecture seule"
+      ],
+      "answer": 2,
+      "explain": "Les logs raw ne sont pas visibles dans FortiView. Seuls les logs indexés en base SQL apparaissent dans FortiView et Log View."
+    },
+    {
+      "q": "À quoi sert un ADOM (Administrative Domain) dans FortiAnalyzer ?",
+      "choices": [
+        "À définir les règles de pare-feu",
+        "À cloisonner les logs et les devices par organisation ou client",
+        "À configurer les interfaces réseau de FAZ",
+        "À planifier les sauvegardes des logs"
+      ],
+      "answer": 1,
+      "explain": "Les ADOMs permettent le cloisonnement logique par organisation ou client, permettant à plusieurs administrateurs de gérer des périmètres isolés."
+    },
+    {
+      "q": "Dans quel ADOM un nouveau device enregistré est-il placé par défaut ?",
+      "choices": [
+        "ADOM global",
+        "ADOM admin",
+        "ADOM root",
+        "ADOM default"
+      ],
+      "answer": 2,
+      "explain": "Les nouveaux devices enregistrés vont par défaut dans l'ADOM 'root'. L'administrateur peut ensuite les déplacer vers un ADOM dédié."
+    },
+    {
+      "q": "Comment se déroule l'enregistrement d'un FortiGate sur FortiAnalyzer ?",
+      "choices": [
+        "FAZ détecte automatiquement le FortiGate via SNMP",
+        "Le FortiGate envoie une requête d'enregistrement, puis l'admin FAZ l'accepte (ou ajout manuel)",
+        "L'admin FortiGate configure un certificat sur FAZ",
+        "Le FortiGate télécharge automatiquement sa configuration depuis FAZ"
+      ],
+      "answer": 1,
+      "explain": "Le processus : FortiGate envoie une requête d'enregistrement à FAZ, l'administrateur FAZ accepte la requête. L'ajout manuel est aussi possible."
+    },
+    {
+      "q": "Qu'est-ce qu'un Log Group dans FortiAnalyzer ?",
+      "choices": [
+        "Une base de données dédiée pour un groupe de devices",
+        "Un objet logique virtuel regroupant plusieurs devices, sans base de données propre, utilisé pour les rapports multi-devices",
+        "Un ADOM secondaire avec des droits restreints",
+        "Un type de log spécifique aux clusters HA"
+      ],
+      "answer": 1,
+      "explain": "Un Log Group est un objet logique virtuel regroupant plusieurs devices. Il n'a pas de base de données propre : les données restent dans les ADOMs des membres. Utile pour les rapports multi-devices."
+    },
+    {
+      "q": "Qu'est-ce que le Chart Builder FAZ nécessite obligatoirement ?",
+      "choices": [
+        "Une connexion temps réel active",
+        "Une vue historique (données SQL indexées sur une période passée)",
+        "Un ADOM dédié aux graphiques",
+        "Un accès en lecture seule au FortiGate"
+      ],
+      "answer": 1,
+      "explain": "Le Chart Builder de FAZ nécessite une vue historique, c'est-à-dire des données déjà indexées en base SQL sur une période passée. Il ne fonctionne pas en pur temps réel."
+    },
+    {
+      "q": "Quelle architecture FAZ permet de traiter un très grand nombre de logs ?",
+      "choices": [
+        "Un seul FAZ en mode Analyzer avec RAID",
+        "Plusieurs Collectors alimentant un Analyzer central",
+        "FortiCloud comme Collector et FAZ comme Analyzer",
+        "Plusieurs FAZ en mode Analyzer avec réplication"
+      ],
+      "answer": 1,
+      "explain": "L'architecture scalable utilise plusieurs Collectors (qui collectent et transfèrent en binaire) alimentant un Analyzer central qui fait l'indexation SQL et l'analyse."
+    },
+    {
+      "q": "À quoi servent les logs raw (archive) sur FortiAnalyzer ?",
+      "choices": [
+        "À alimenter FortiView en temps réel",
+        "À conserver une copie fidèle et brute des logs originaux pour audit ou réindexation",
+        "À compresser les logs SQL anciens",
+        "À détecter les anomalies réseau"
+      ],
+      "answer": 1,
+      "explain": "Les logs raw sont une archive fidèle et brute des logs originaux. Ils servent à la conservation légale, à l'audit, ou à la réindexation SQL si nécessaire."
+    },
+    {
+      "q": "Quelles fonctionnalités sont disponibles uniquement en mode Analyzer et pas en mode Collector ?",
+      "choices": [
+        "La réception des logs des FortiGates",
+        "L'indexation SQL, FortiView, Log View et les rapports",
+        "Le transfert des logs en binaire",
+        "L'enregistrement des devices"
+      ],
+      "answer": 1,
+      "explain": "Le mode Analyzer offre toutes les fonctionnalités : indexation SQL, FortiView, Log View, rapports. Le Collector se limite à la collecte et au transfert."
+    },
+    {
+      "q": "Comment bascule-t-on FortiAnalyzer entre le mode Analyzer et le mode Collector ?",
+      "choices": [
+        "En modifiant la licence FAZ",
+        "En changeant le mode dans les paramètres système de FAZ (System Settings)",
+        "En réinitialisant FAZ aux paramètres d'usine",
+        "En configurant un ADOM spécifique"
+      ],
+      "answer": 1,
+      "explain": "Le basculement entre mode Analyzer et mode Collector se fait dans les paramètres système de FAZ (System Settings → Mode). Cela nécessite en général un redémarrage."
+    },
+    {
+      "q": "Quelle est la différence de traitement entre un Collector et un Analyzer ?",
+      "choices": [
+        "Le Collector chiffre les logs, l'Analyzer ne le fait pas",
+        "Le Collector transfère les logs en binaire sans analyse locale ; l'Analyzer indexe en SQL et permet l'analyse complète",
+        "Le Collector stocke plus longtemps que l'Analyzer",
+        "Il n'y a pas de différence fonctionnelle"
+      ],
+      "answer": 1,
+      "explain": "Le Collector collecte et transfère en binaire sans indexation ni analyse. L'Analyzer reçoit, indexe en SQL et offre toutes les fonctionnalités d'analyse et de consultation."
+    },
+    {
+      "q": "Un administrateur veut voir les logs d'un FortiGate dans FortiView. Quelle condition doit être remplie ?",
+      "choices": [
+        "Les logs doivent être en format raw uniquement",
+        "Le FortiGate doit être enregistré sur FAZ et ses logs indexés en base SQL",
+        "FortiView nécessite un accès direct SSH au FortiGate",
+        "Les logs doivent être stockés sur le disque du FortiGate"
+      ],
+      "answer": 1,
+      "explain": "Pour consulter les logs dans FortiView, le FortiGate doit être enregistré sur FAZ et ses logs doivent avoir été indexés en base SQL (pas simplement en raw)."
+    }
+  ]
+}

@@ -1,0 +1,238 @@
+{
+  "id": "ch15-l1",
+  "module": "FortiGate in the Cloud",
+  "title": "Défis et solutions cloud Fortinet",
+  "durationMin": 7,
+  "content": "## Les défis du cloud pour la sécurité réseau\n\nLe passage au cloud introduit des défis de sécurité spécifiques que les outils on-premises traditionnels ne couvrent pas :\n\n- **Visibilité réduite** : le trafic intra-cloud (east-west traffic entre VMs dans le même cloud) n'est pas visible par les outils on-premises\n- **Responsabilité partagée** (shared responsibility) : modèle de responsabilité entre le fournisseur cloud et le client\n- **Conformité et audit** : les données stockées et traitées dans le cloud doivent respecter les réglementations (RGPD, PCI-DSS, etc.)\n- **Chiffrement inter-services** : les communications entre microservices dans le cloud doivent être sécurisées\n\n> **Important** : Le coût du matériel on-premises (on-premises hardware) n'est **pas** un défi cloud — c'est au contraire un **avantage** du cloud, car on n'a plus besoin d'acheter ni de maintenir du matériel physique.\n\n## Modèle de responsabilité partagée (shared responsibility)\n\nLe modèle shared responsibility définit clairement les responsabilités :\n\n| Responsabilité | Fournisseur cloud (AWS, Azure, GCP) | Client |\n|---|---|---|\n| Infrastructure physique | Oui | Non |\n| Hyperviseur et réseau physique | Oui | Non |\n| OS, applications, données | Non | Oui |\n| Configuration sécurité (VPC, groupes) | Non | Oui |\n\nLe fournisseur cloud gère la sécurité de l'infrastructure physique. Le client gère la sécurité dans l'infrastructure (OS, applications, données).\n\n\n![Couches de sécurité cloud avec Fortinet](diagram:0)\n\n## East-West traffic\n\nLe **east-west traffic** désigne le trafic entre VMs dans le même cloud (trafic horizontal). Ce trafic est souvent non inspecté par les firewalls on-premises traditionnels, qui n'inspectent que le trafic north-south (entre internet et les workloads).\n\n## Solutions Fortinet pour le cloud\n\n| Solution | Description |\n|---|---|\n| **FortiGate VM** | Instance virtuelle FortiGate déployée dans un cloud public (AWS, Azure, GCP) |\n| **FortiGate CNF** (Cloud-Native Firewall) | Firewall-as-a-Service managé par Fortinet |\n| **FortiCASB** | Cloud Access Security Broker pour visibilité SaaS |\n\n## Positionnement Fortinet dans le cloud\n\nFortinet se positionne comme une **couche additionnelle** au-dessus des outils natifs cloud (au-dessus des VPC security groups, AWS WAF, Azure NSG, etc.). FortiGate VM et FortiGate CNF apportent des fonctionnalités avancées non disponibles dans les outils natifs : IPS, AV, Application Control, Web Filter.",
+  "diagrams": [
+    {
+      "caption": "Couches de sécurité cloud avec Fortinet",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='20' y='10' width='500' height='32' rx='4' fill='#1e293b' stroke='#94a3b8' stroke-width='1.5'/><text x='270' y='31' text-anchor='middle' fill='#94a3b8' font-size='10' font-family='monospace'>Fournisseur cloud (AWS, Azure, GCP) — Infrastructure physique</text><rect x='40' y='50' width='460' height='30' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='270' y='70' text-anchor='middle' fill='#3b82f6' font-size='10' font-family='monospace'>Infrastructure virtuelle — VPC, Security Groups, NSG</text><rect x='60' y='88' width='420' height='30' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='2'/><text x='270' y='108' text-anchor='middle' fill='#22c55e' font-size='10' font-family='monospace' font-weight='bold'>FortiGate VM / FortiGate CNF — Couche Fortinet</text><rect x='80' y='126' width='380' height='42' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='270' y='142' text-anchor='middle' fill='#3b82f6' font-size='10' font-family='monospace'>Workloads (VMs, conteneurs, fonctions)</text><text x='270' y='158' text-anchor='middle' fill='#94a3b8' font-size='9' font-family='monospace'>East-West traffic inspecte par FortiGate CNF/VM</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Lequel des éléments suivants N'est PAS un défi de sécurité cloud ?",
+      "choices": [
+        "Visibilité réduite du trafic intra-cloud",
+        "Responsabilité partagée entre fournisseur et client",
+        "Le coût du matériel on-premises hardware",
+        "Conformité et audit des données cloud"
+      ],
+      "answer": 2,
+      "explain": "Le coût du matériel on-premises n'est pas un défi cloud — c'est un avantage du cloud, car on n'a plus besoin d'acheter ni de maintenir du matériel physique."
+    },
+    {
+      "q": "Dans le modèle shared responsibility, qui gère la sécurité de l'infrastructure physique ?",
+      "choices": [
+        "Le client",
+        "Le fournisseur cloud (AWS, Azure, GCP)",
+        "Fortinet",
+        "Les deux ensemble"
+      ],
+      "answer": 1,
+      "explain": "Dans le modèle de responsabilité partagée, le fournisseur cloud (AWS, Azure, GCP) gère la sécurité de l'infrastructure physique. Le client gère la sécurité dans l'infrastructure."
+    },
+    {
+      "q": "Qu'est-ce que le east-west traffic dans un cloud ?",
+      "choices": [
+        "Le trafic entre internet et les workloads cloud (north-south)",
+        "Le trafic entre VMs dans le même cloud (trafic horizontal)",
+        "Le trafic chiffré entre deux clouds différents",
+        "Le trafic de management vers les instances"
+      ],
+      "answer": 1,
+      "explain": "Le east-west traffic désigne le trafic entre VMs dans le même cloud (trafic horizontal). Ce trafic est souvent non inspecté par les firewalls on-premises traditionnels."
+    },
+    {
+      "q": "Quelle solution Fortinet est un Firewall-as-a-Service managé par Fortinet ?",
+      "choices": [
+        "FortiGate VM",
+        "FortiCASB",
+        "FortiGate CNF (Cloud-Native Firewall)",
+        "FortiAnalyzer Cloud"
+      ],
+      "answer": 2,
+      "explain": "FortiGate CNF (Cloud-Native Firewall) est la solution Firewall-as-a-Service de Fortinet, managée par Fortinet sans que le client ait à déployer des VMs."
+    },
+    {
+      "q": "Quel est le rôle de FortiCASB dans l'écosystème cloud Fortinet ?",
+      "choices": [
+        "Firewall pour les VPCs AWS",
+        "Cloud Access Security Broker pour la visibilité SaaS",
+        "Solution HA pour FortiGate VM",
+        "Outil de monitoring des performances"
+      ],
+      "answer": 1,
+      "explain": "FortiCASB est le Cloud Access Security Broker de Fortinet, qui apporte de la visibilité sur les applications SaaS utilisées dans l'organisation."
+    },
+    {
+      "q": "Dans le modèle shared responsibility, qui est responsable de la configuration des OS et des données ?",
+      "choices": [
+        "Le fournisseur cloud",
+        "Fortinet",
+        "Le client",
+        "Le FAI"
+      ],
+      "answer": 2,
+      "explain": "Dans le modèle de responsabilité partagée, le client est responsable de la sécurité dans l'infrastructure, incluant la configuration des OS, des applications et la protection des données."
+    },
+    {
+      "q": "Comment Fortinet se positionne-t-il par rapport aux outils natifs cloud comme les VPC security groups ?",
+      "choices": [
+        "Fortinet remplace complètement les outils natifs cloud",
+        "Fortinet apporte une couche additionnelle au-dessus des outils natifs cloud",
+        "Fortinet est intégré directement dans les outils natifs cloud",
+        "Fortinet et les outils natifs ne peuvent pas coexister"
+      ],
+      "answer": 1,
+      "explain": "Fortinet se positionne comme une couche additionnelle au-dessus des outils natifs cloud (VPC security groups, AWS WAF, Azure NSG), apportant des fonctionnalités avancées non disponibles dans ces outils."
+    },
+    {
+      "q": "Quel défi cloud implique que les communications entre microservices doivent être sécurisées ?",
+      "choices": [
+        "Responsabilité partagée",
+        "Chiffrement inter-services",
+        "Visibilité réduite",
+        "Conformité et audit"
+      ],
+      "answer": 1,
+      "explain": "Le défi du chiffrement inter-services concerne la nécessité de sécuriser les communications entre microservices dans le cloud."
+    },
+    {
+      "q": "Sur quels clouds publics FortiGate VM peut-il être déployé ?",
+      "choices": [
+        "Uniquement AWS",
+        "AWS et Azure uniquement",
+        "AWS, Azure et GCP uniquement",
+        "AWS, Azure, GCP et d'autres clouds publics"
+      ],
+      "answer": 3,
+      "explain": "FortiGate VM peut être déployé sur plusieurs clouds publics incluant AWS, Azure, GCP et d'autres comme OCI (Oracle Cloud Infrastructure)."
+    },
+    {
+      "q": "Pourquoi le trafic east-west est-il un défi de sécurité cloud ?",
+      "choices": [
+        "Parce qu'il est trop lent pour être inspecté",
+        "Parce qu'il est souvent non inspecté par les firewalls on-premises traditionnels",
+        "Parce qu'il est automatiquement chiffré par le cloud provider",
+        "Parce que les fournisseurs cloud l'interdisent"
+      ],
+      "answer": 1,
+      "explain": "Le trafic east-west (entre VMs dans le même cloud) est souvent non inspecté par les firewalls on-premises traditionnels, qui n'inspectent que le trafic north-south."
+    },
+    {
+      "q": "Quel avantage le cloud apporte-t-il par rapport aux déploiements on-premises en termes matériel ?",
+      "choices": [
+        "Plus de sécurité physique",
+        "Pas de matériel physique à acheter ni à maintenir",
+        "Des performances réseau supérieures",
+        "Des licences logicielles moins chères"
+      ],
+      "answer": 1,
+      "explain": "Le cloud élimine le besoin d'acheter et de maintenir du matériel physique on-premises. C'est un avantage, pas un défi."
+    },
+    {
+      "q": "Qu'est-ce que la visibilité réduite dans le contexte des défis cloud ?",
+      "choices": [
+        "Le tableau de bord cloud manque d'informations",
+        "Le trafic intra-cloud n'est pas visible par les outils on-premises",
+        "Les logs cloud ne sont pas accessibles",
+        "Les interfaces réseau cloud sont masquées"
+      ],
+      "answer": 1,
+      "explain": "La visibilité réduite signifie que le trafic intra-cloud (east-west traffic) n'est pas visible par les outils de sécurité on-premises traditionnels."
+    },
+    {
+      "q": "Quelle réglementation peut imposer des exigences de conformité pour les données stockées dans le cloud ?",
+      "choices": [
+        "SMTP",
+        "RGPD (conformité et audit des données cloud)",
+        "BGP",
+        "OSPF"
+      ],
+      "answer": 1,
+      "explain": "Le RGPD (Règlement Général sur la Protection des Données) et d'autres réglementations comme PCI-DSS imposent des exigences de conformité et d'audit pour les données stockées et traitées dans le cloud."
+    },
+    {
+      "q": "Dans le shared responsibility model, qui gère la configuration des VPC security groups ?",
+      "choices": [
+        "Le fournisseur cloud",
+        "Fortinet",
+        "Le client",
+        "Le datacenter tiers"
+      ],
+      "answer": 2,
+      "explain": "La configuration des VPC security groups (et autres contrôles de sécurité réseau dans le cloud) est sous la responsabilité du client dans le modèle de responsabilité partagée."
+    },
+    {
+      "q": "Quelle fonctionnalité Fortinet n'est généralement PAS disponible dans les outils natifs cloud ?",
+      "choices": [
+        "Les groupes de sécurité réseau",
+        "Les pare-feux d'applications web natifs",
+        "IPS, AV, Application Control et Web Filter avancés",
+        "Le chiffrement des données au repos"
+      ],
+      "answer": 2,
+      "explain": "Les fonctionnalités avancées comme IPS, AV, Application Control et Web Filter ne sont généralement pas disponibles dans les outils natifs cloud. C'est l'apport de FortiGate VM et CNF."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Lequel des éléments suivants N'est PAS un défi de sécurité cloud ?",
+      "choices": [
+        "Visibilité réduite du trafic intra-cloud",
+        "Responsabilité partagée entre fournisseur et client",
+        "Le coût du matériel on-premises hardware",
+        "Conformité et audit des données cloud"
+      ],
+      "answer": 2,
+      "explain": "Le coût du matériel on-premises n'est pas un défi cloud — c'est un avantage du cloud, car on n'a plus besoin d'acheter ni de maintenir du matériel physique."
+    },
+    {
+      "q": "Dans le modèle shared responsibility, qui gère la sécurité de l'infrastructure physique ?",
+      "choices": [
+        "Le client",
+        "Le fournisseur cloud (AWS, Azure, GCP)",
+        "Fortinet",
+        "Les deux ensemble"
+      ],
+      "answer": 1,
+      "explain": "Dans le modèle de responsabilité partagée, le fournisseur cloud (AWS, Azure, GCP) gère la sécurité de l'infrastructure physique. Le client gère la sécurité dans l'infrastructure."
+    },
+    {
+      "q": "Qu'est-ce que le east-west traffic dans un cloud ?",
+      "choices": [
+        "Le trafic entre internet et les workloads cloud (north-south)",
+        "Le trafic entre VMs dans le même cloud (trafic horizontal)",
+        "Le trafic chiffré entre deux clouds différents",
+        "Le trafic de management vers les instances"
+      ],
+      "answer": 1,
+      "explain": "Le east-west traffic désigne le trafic entre VMs dans le même cloud (trafic horizontal). Ce trafic est souvent non inspecté par les firewalls on-premises traditionnels."
+    },
+    {
+      "q": "Quelle solution Fortinet est un Firewall-as-a-Service managé par Fortinet ?",
+      "choices": [
+        "FortiGate VM",
+        "FortiCASB",
+        "FortiGate CNF (Cloud-Native Firewall)",
+        "FortiAnalyzer Cloud"
+      ],
+      "answer": 2,
+      "explain": "FortiGate CNF (Cloud-Native Firewall) est la solution Firewall-as-a-Service de Fortinet, managée par Fortinet sans que le client ait à déployer des VMs."
+    },
+    {
+      "q": "Comment Fortinet se positionne-t-il par rapport aux outils natifs cloud comme les VPC security groups ?",
+      "choices": [
+        "Fortinet remplace complètement les outils natifs cloud",
+        "Fortinet apporte une couche additionnelle au-dessus des outils natifs cloud",
+        "Fortinet est intégré directement dans les outils natifs cloud",
+        "Fortinet et les outils natifs ne peuvent pas coexister"
+      ],
+      "answer": 1,
+      "explain": "Fortinet se positionne comme une couche additionnelle au-dessus des outils natifs cloud (VPC security groups, AWS WAF, Azure NSG), apportant des fonctionnalités avancées non disponibles dans ces outils."
+    }
+  ]
+}

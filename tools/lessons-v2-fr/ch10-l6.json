@@ -1,0 +1,238 @@
+{
+  "id": "ch10-l6",
+  "module": "Intrusion Prevention and Application Control",
+  "title": "Application Control - configuration",
+  "durationMin": 8,
+  "content": "## Accès à la configuration\n\nLa configuration du profil Application Control se fait dans **Security Profiles > Application Control**. Un profil définit les règles d'identification et de contrôle applicatif.\n\nUne fois créé, le profil est attaché à une politique firewall pour être appliqué au trafic correspondant.\n\n## Filtres par catégorie\n\nLa base principale de configuration est le **filtre par catégorie**. Pour chaque catégorie d'applications (P2P, Social.Media, Video.Audio, etc.), on définit une action :\n\n| Action | Comportement |\n|---|---|\n| **Allow** | Autoriser l'application sans log |\n| **Monitor** | Autoriser et logger l'utilisation |\n| **Block** | Bloquer l'application |\n| **Quarantine** | Isoler l'hôte source |\n\n## Application overrides\n\nLes **application overrides** permettent d'ajouter des applications individuelles avec une action spécifique différente de la règle de catégorie. L'override est évalué avant la règle de catégorie.\n\n**Cas d'usage** :\n- Catégorie P2P bloquée mais autorisation d'un outil P2P interne\n- Catégorie Social.Media en Monitor mais blocage de TikTok spécifiquement\n\n## Applications inconnues (Unknown applications)\n\nL'option **Unknown applications** configure l'action pour les applications non reconnues dans la base FortiGuard :\n- **Allow** : autoriser le trafic non identifié\n- **Monitor** : autoriser et logger\n- **Block** : bloquer tout trafic non reconnu\n\n> **Bonne pratique** : mettre les Unknown applications en Monitor plutôt qu'en Block pour éviter de bloquer du trafic légitime non répertorié.\n\n## CASI — Cloud Applications\n\n![Profil Application Control : structure complète](diagram:0)\n\nL'option **CASI** (Cloud Application Security Inspection) permet de contrôler les applications **SaaS** (Software as a Service). Elle offre une visibilité et un contrôle granulaire sur :\n- **Office 365** (Microsoft)\n- **Dropbox**\n- **Salesforce**\n- **Box**\n- **Google Drive**\n\nCASI est disponible comme option dans le profil Application Control et permet des contrôles plus fins que la simple catégorie Storage.Backup ou Business.\n\n## Combinaison IPS et Application Control\n\nIPS et Application Control peuvent être **activés dans la même politique firewall** et sont complémentaires :\n\n| Fonctionnalité | Rôle |\n|---|---|\n| **Application Control** | Identifie l'application d'abord |\n| **IPS** | Inspecte le contenu de l'application identifiée |\n\nL'ordre d'évaluation est : Application Control identifie l'application d'abord, puis IPS inspecte le contenu de l'application identifiée.\n\n## Logs Application Control\n\nLes événements Application Control sont consultables dans **Log & Report > Security Events > Application Control**. Chaque log contient :\n- **Application détectée** : nom de l'application identifiée\n- **Catégorie** : catégorie FortiGuard de l'application\n- **Action** appliquée\n- **Src/Dst IP** : adresses source et destination\n\n## Diagnostic Application Control\n\nPour obtenir les statistiques Application Control en temps réel, utiliser la commande CLI :\n\n```\ndiagnose test application ipsmonitor 3\n```\n\nCette commande affiche les statistiques AppCtrl en temps réel depuis le processus ipsmonitor.",
+  "diagrams": [
+    {
+      "caption": "Structure d'un profil Application Control : filtres par catégorie, application overrides, CASI cloud apps et gestion des applications inconnues.",
+      "height": 200,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 200'><rect width='540' height='200' fill='#0d1117'/><rect x='10' y='10' width='520' height='30' rx='6' fill='#1e3a5f' stroke='#3b82f6' stroke-width='2'/><text x='270' y='30' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#93c5fd'>Profil Application Control</text><rect x='10' y='56' width='120' height='80' rx='5' fill='#0f2d1a' stroke='#22c55e' stroke-width='1.5'/><text x='70' y='76' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='700' fill='#86efac'>Catégories</text><text x='70' y='92' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>P2P → Block</text><text x='70' y='106' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>Social.Media → Mon.</text><text x='70' y='120' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>Video.Audio → Allow</text><text x='70' y='134' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>Allow/Monitor/Block</text><rect x='145' y='56' width='130' height='80' rx='5' fill='#1a1f0a' stroke='#f97316' stroke-width='1.5'/><text x='210' y='76' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='700' fill='#fdba74'>App Overrides</text><text x='210' y='92' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>BitTorrent → Block</text><text x='210' y='106' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>TikTok → Block</text><text x='210' y='120' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>OutilP2P-interne → Allow</text><text x='210' y='134' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>Priorité sur catégorie</text><rect x='290' y='56' width='120' height='80' rx='5' fill='#1a0f2d' stroke='#a855f7' stroke-width='1.5'/><text x='350' y='76' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='700' fill='#d8b4fe'>CASI Cloud Apps</text><text x='350' y='92' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>Office 365</text><text x='350' y='106' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>Dropbox / Box</text><text x='350' y='120' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>Salesforce</text><text x='350' y='134' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>Google Drive</text><rect x='425' y='56' width='105' height='80' rx='5' fill='#2d1a00' stroke='#eab308' stroke-width='1.5'/><text x='477' y='76' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='700' fill='#fde047'>Unknown Apps</text><text x='477' y='92' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>Non reconnues</text><text x='477' y='108' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>Allow / Monitor</text><text x='477' y='124' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#94a3b8'>/ Block</text><rect x='145' y='155' width='250' height='30' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1'/><text x='270' y='170' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#93c5fd'>Log &amp; Report &gt; Security Events &gt; Application Control</text><text x='270' y='183' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#64748b'>diagnose test application ipsmonitor 3</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Où configure-t-on un profil Application Control dans FortiGate ?",
+      "choices": [
+        "System > Feature Visibility > Application Control",
+        "Security Profiles > Application Control",
+        "Policy & Objects > Application Control",
+        "Network > Interfaces > Application Control"
+      ],
+      "answer": 1,
+      "explain": "La configuration du profil Application Control se fait dans Security Profiles > Application Control."
+    },
+    {
+      "q": "Quelle option du profil Application Control configure l'action pour les applications non reconnues dans la base FortiGuard ?",
+      "choices": [
+        "Application overrides",
+        "CASI",
+        "Unknown applications",
+        "Default category"
+      ],
+      "answer": 2,
+      "explain": "L'option Unknown applications configure l'action pour les applications non reconnues dans la base FortiGuard (Allow, Monitor ou Block)."
+    },
+    {
+      "q": "Quelle fonctionnalité du profil Application Control offre un contrôle granulaire sur les applications SaaS comme Office 365 et Dropbox ?",
+      "choices": [
+        "Application overrides",
+        "CASI (Cloud Application Security Inspection)",
+        "Unknown applications",
+        "Catégorie Storage.Backup"
+      ],
+      "answer": 1,
+      "explain": "CASI (Cloud Application Security Inspection) permet de contrôler les applications SaaS comme Office 365, Dropbox, Salesforce, Box et Google Drive avec un contrôle granulaire."
+    },
+    {
+      "q": "Dans quel ordre FortiGate évalue-t-il Application Control et IPS sur le même trafic ?",
+      "choices": [
+        "IPS d'abord, puis Application Control",
+        "Application Control identifie l'application d'abord, puis IPS inspecte le contenu de l'application identifiée",
+        "Les deux s'exécutent simultanément",
+        "L'ordre dépend de la configuration de la politique firewall"
+      ],
+      "answer": 1,
+      "explain": "Application Control identifie l'application d'abord, puis IPS inspecte le contenu de l'application identifiée — c'est l'ordre d'évaluation standard."
+    },
+    {
+      "q": "Où consulter les logs Application Control dans FortiGate ?",
+      "choices": [
+        "FortiView > Applications",
+        "Log & Report > Security Events > Application Control",
+        "Monitor > Application Monitor",
+        "Dashboard > Application Widgets"
+      ],
+      "answer": 1,
+      "explain": "Les logs Application Control sont consultables dans Log & Report > Security Events > Application Control."
+    },
+    {
+      "q": "Quelle commande CLI fournit les statistiques Application Control en temps réel ?",
+      "choices": [
+        "diagnose ips session stat",
+        "diagnose debug application ipsmonitor -1",
+        "diagnose test application ipsmonitor 3",
+        "diagnose autoupdate versions"
+      ],
+      "answer": 2,
+      "explain": "La commande `diagnose test application ipsmonitor 3` affiche les statistiques AppCtrl en temps réel depuis le processus ipsmonitor."
+    },
+    {
+      "q": "Un application override est-il évalué avant ou après la règle de catégorie ?",
+      "choices": [
+        "Après la règle de catégorie",
+        "Avant la règle de catégorie — l'override est prioritaire",
+        "En même temps que la règle de catégorie",
+        "Uniquement si la règle de catégorie est en Monitor"
+      ],
+      "answer": 1,
+      "explain": "L'application override est évalué avant la règle de catégorie — il est prioritaire et écrase l'action de catégorie pour l'application concernée."
+    },
+    {
+      "q": "Quelle bonne pratique est recommandée pour les Unknown applications ?",
+      "choices": [
+        "Les bloquer systématiquement en Block pour plus de sécurité",
+        "Les mettre en Monitor pour éviter de bloquer du trafic légitime non répertorié",
+        "Les autoriser en Allow pour garantir la disponibilité",
+        "Les rediriger vers un proxy pour inspection approfondie"
+      ],
+      "answer": 1,
+      "explain": "La bonne pratique est de mettre les Unknown applications en Monitor plutôt qu'en Block pour éviter de bloquer du trafic légitime non répertorié dans la base FortiGuard."
+    },
+    {
+      "q": "Quelles applications SaaS CASI permet-il de contrôler ?",
+      "choices": [
+        "Uniquement Microsoft Office 365",
+        "Office 365, Dropbox, Salesforce, Box, Google Drive",
+        "Google Drive, YouTube, Gmail, Google Maps",
+        "Zoom, Teams, Webex, Slack"
+      ],
+      "answer": 1,
+      "explain": "CASI (Cloud Application Security Inspection) permet de contrôler : Office 365, Dropbox, Salesforce, Box et Google Drive."
+    },
+    {
+      "q": "Comment un profil Application Control est-il appliqué au trafic ?",
+      "choices": [
+        "Automatiquement sur toutes les interfaces FortiGate",
+        "En l'attachant à une politique firewall",
+        "Via une route statique dédiée",
+        "Via un VDOM dédié à l'Application Control"
+      ],
+      "answer": 1,
+      "explain": "Un profil Application Control est attaché à une politique firewall pour être appliqué au trafic correspondant à cette politique."
+    },
+    {
+      "q": "IPS et Application Control peuvent-ils coexister dans la même politique firewall ?",
+      "choices": [
+        "Non, ils sont mutuellement exclusifs dans une même politique",
+        "Oui, ils sont complémentaires et peuvent être activés dans la même politique firewall",
+        "Oui, mais uniquement en mode NGFW Policy",
+        "Non, Application Control désactive automatiquement l'IPS"
+      ],
+      "answer": 1,
+      "explain": "IPS et Application Control peuvent être activés dans la même politique firewall — ils sont complémentaires. Application Control identifie l'application, IPS inspecte son contenu."
+    },
+    {
+      "q": "Quels champs contient un log Application Control FortiGate ?",
+      "choices": [
+        "Timestamp, URL, User-Agent, Response Code",
+        "Application détectée, catégorie, action, src/dst IP",
+        "VLAN, MAC source, protocole, durée",
+        "Username, groupe, politique, interface"
+      ],
+      "answer": 1,
+      "explain": "Un log Application Control contient : l'application détectée, la catégorie, l'action appliquée et les adresses src/dst IP."
+    },
+    {
+      "q": "Quel est le rôle des filtres par catégorie dans un profil Application Control ?",
+      "choices": [
+        "Définir l'action (Allow/Monitor/Block) pour toute une catégorie d'applications",
+        "Créer des catégories personnalisées d'applications",
+        "Filtrer le trafic par adresse IP de destination",
+        "Configurer la priorité de bande passante par application"
+      ],
+      "answer": 0,
+      "explain": "Les filtres par catégorie permettent de définir l'action (Allow, Monitor, Block) pour toute une catégorie d'applications dans le profil Application Control."
+    },
+    {
+      "q": "Quelle option du profil Application Control gère spécifiquement les applications non identifiées par la base FortiGuard ?",
+      "choices": [
+        "CASI",
+        "Application overrides",
+        "Unknown applications",
+        "Default policy"
+      ],
+      "answer": 2,
+      "explain": "L'option Unknown applications configure l'action pour les applications non reconnues dans la base FortiGuard Application Control."
+    },
+    {
+      "q": "CASI est l'acronyme de quelle fonctionnalité Application Control ?",
+      "choices": [
+        "Category Application Security Inspection",
+        "Cloud Application Security Inspection",
+        "Custom Application Signature Integration",
+        "Central Application Security Infrastructure"
+      ],
+      "answer": 1,
+      "explain": "CASI signifie Cloud Application Security Inspection — fonctionnalité du profil Application Control pour contrôler les applications SaaS (Office 365, Dropbox, Salesforce, Box, Google Drive)."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Où configure-t-on un profil Application Control dans FortiGate ?",
+      "choices": [
+        "System > Feature Visibility > Application Control",
+        "Security Profiles > Application Control",
+        "Policy & Objects > Application Control",
+        "Network > Interfaces > Application Control"
+      ],
+      "answer": 1,
+      "explain": "La configuration du profil Application Control se fait dans Security Profiles > Application Control."
+    },
+    {
+      "q": "Quelle fonctionnalité du profil Application Control offre un contrôle granulaire sur les applications SaaS comme Office 365 et Dropbox ?",
+      "choices": [
+        "Application overrides",
+        "CASI (Cloud Application Security Inspection)",
+        "Unknown applications",
+        "Catégorie Storage.Backup"
+      ],
+      "answer": 1,
+      "explain": "CASI (Cloud Application Security Inspection) permet de contrôler les applications SaaS comme Office 365, Dropbox, Salesforce, Box et Google Drive avec un contrôle granulaire."
+    },
+    {
+      "q": "Quelle commande CLI fournit les statistiques Application Control en temps réel ?",
+      "choices": [
+        "diagnose ips session stat",
+        "diagnose debug application ipsmonitor -1",
+        "diagnose test application ipsmonitor 3",
+        "diagnose autoupdate versions"
+      ],
+      "answer": 2,
+      "explain": "La commande `diagnose test application ipsmonitor 3` affiche les statistiques AppCtrl en temps réel depuis le processus ipsmonitor."
+    },
+    {
+      "q": "Quelle option du profil Application Control configure l'action pour les applications non reconnues dans la base FortiGuard ?",
+      "choices": [
+        "Application overrides",
+        "CASI",
+        "Unknown applications",
+        "Default category"
+      ],
+      "answer": 2,
+      "explain": "L'option Unknown applications configure l'action pour les applications non reconnues dans la base FortiGuard (Allow, Monitor ou Block)."
+    },
+    {
+      "q": "Dans quel ordre FortiGate évalue-t-il Application Control et IPS sur le même trafic ?",
+      "choices": [
+        "IPS d'abord, puis Application Control",
+        "Application Control identifie l'application d'abord, puis IPS inspecte le contenu de l'application identifiée",
+        "Les deux s'exécutent simultanément",
+        "L'ordre dépend de la configuration de la politique firewall"
+      ],
+      "answer": 1,
+      "explain": "Application Control identifie l'application d'abord, puis IPS inspecte le contenu de l'application identifiée — c'est l'ordre d'évaluation standard."
+    }
+  ]
+}

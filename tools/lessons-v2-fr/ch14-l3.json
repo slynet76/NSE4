@@ -1,0 +1,238 @@
+{
+  "id": "ch14-l3",
+  "module": "Diagnostics and Troubleshooting",
+  "title": "Debug flow et chemin du paquet",
+  "durationMin": 8,
+  "content": "## Qu'est-ce que le debug flow ?\n\nLe **debug flow** est un outil de diagnostic FortiGate qui trace le chemin complet d'un paquet dans le moteur FortiOS. Il indique la politique matchée, les opérations NAT appliquées, les décisions de routage et le résultat final (allow ou deny).\n\n## Séquence complète des commandes\n\nLe debug flow s'active en séquence :\n\n1. `diagnose debug flow filter addr <ip>` — définir le filtre par adresse IP source ou destination\n2. `diagnose debug flow show function-name enable` — afficher les noms de fonctions internes du moteur\n3. `diagnose debug flow show iprope enable` — afficher l'évaluation des politiques (iprope = IP properties engine)\n4. `diagnose debug enable` — activer le debug général\n5. `diagnose debug flow trace start <count>` — démarrer la trace pour N paquets\n6. `diagnose debug disable` — arrêter le debug à la fin\n7. `diagnose debug reset` — réinitialiser tous les filtres et paramètres debug\n\n\n![Chemin du paquet dans le debug flow FortiGate](diagram:0)\n\n## Lecture des sorties debug flow\n\nLes sorties debug flow contiennent des informations clés :\n\n| Champ | Signification |\n|---|---|\n| `id=<policy_id>` | Numéro de la politique matchée |\n| `id=0` | Correspond au deny implicite (implicit deny) |\n| `action=allow` | La politique autorise le trafic |\n| `action=deny` | La politique bloque le trafic |\n\n## Phases visibles dans le debug flow\n\nLe debug flow trace les phases successives du traitement :\n1. **new session** : création d'une nouvelle session\n2. **policy lookup** : recherche de la politique correspondante\n3. **route lookup** : recherche de la route de sortie\n4. **NAT** : application des règles NAT (source NAT, destination NAT)\n5. **forwarding** : transmission du paquet ou drop\n\n## Interpréter id=0\n\nSi le debug flow indique `id=0`, cela signifie qu'aucune politique explicite ne correspond au trafic et qu'il est bloqué par le **deny implicite** (implicit deny). C'est la politique par défaut de FortiGate qui bloque tout trafic non autorisé.\n\n## Différence sniffer vs debug flow\n\n| Outil | Nature | Usage |\n|---|---|---|\n| sniffer | Capture brute des paquets L2/L3 | Vérifier si les paquets arrivent sur l'interface |\n| debug flow | Suivi logique dans le moteur FortiOS | Comprendre pourquoi un paquet est bloqué ou accepté |\n\n> **Stratégie** : Commencez toujours par le sniffer pour confirmer l'arrivée des paquets, puis utilisez le debug flow pour analyser le traitement FortiOS. Si le sniffer ne voit rien, cherchez un problème physique ou de routage en amont.",
+  "diagrams": [
+    {
+      "caption": "Chemin du paquet dans le debug flow FortiGate",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 180'><rect width='540' height='180' fill='#0d1117'/><rect x='8' y='65' width='65' height='45' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='40' y='84' text-anchor='middle' fill='#3b82f6' font-size='9' font-family='monospace'>Receive</text><text x='40' y='98' text-anchor='middle' fill='#94a3b8' font-size='8' font-family='monospace'>ingress</text><polygon points='74,87 86,83 86,92' fill='#3b82f6'/><line x1='73' y1='87' x2='86' y2='87' stroke='#3b82f6' stroke-width='1.5'/><rect x='87' y='58' width='80' height='58' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='1.5'/><text x='127' y='76' text-anchor='middle' fill='#22c55e' font-size='8' font-family='monospace' font-weight='bold'>Policy</text><text x='127' y='89' text-anchor='middle' fill='#22c55e' font-size='8' font-family='monospace' font-weight='bold'>Lookup</text><text x='127' y='103' text-anchor='middle' fill='#e2e8f0' font-size='7' font-family='monospace'>id=policy_id</text><text x='127' y='113' text-anchor='middle' fill='#e2e8f0' font-size='7' font-family='monospace'>action=allow</text><polygon points='168,87 180,83 180,92' fill='#3b82f6'/><line x1='167' y1='87' x2='180' y2='87' stroke='#3b82f6' stroke-width='1.5'/><rect x='181' y='63' width='75' height='48' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='218' y='81' text-anchor='middle' fill='#3b82f6' font-size='8' font-family='monospace'>Route</text><text x='218' y='94' text-anchor='middle' fill='#3b82f6' font-size='8' font-family='monospace'>Lookup</text><text x='218' y='107' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='monospace'>next-hop</text><polygon points='257,87 269,83 269,92' fill='#3b82f6'/><line x1='256' y1='87' x2='269' y2='87' stroke='#3b82f6' stroke-width='1.5'/><rect x='270' y='63' width='65' height='48' rx='4' fill='#1e293b' stroke='#3b82f6' stroke-width='1.5'/><text x='302' y='84' text-anchor='middle' fill='#3b82f6' font-size='9' font-family='monospace'>NAT</text><text x='302' y='98' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='monospace'>src/dst NAT</text><polygon points='336,87 348,83 348,92' fill='#3b82f6'/><line x1='335' y1='87' x2='348' y2='87' stroke='#3b82f6' stroke-width='1.5'/><rect x='349' y='58' width='80' height='58' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='1.5'/><text x='389' y='76' text-anchor='middle' fill='#22c55e' font-size='8' font-family='monospace'>Forward</text><text x='389' y='89' text-anchor='middle' fill='#e2e8f0' font-size='7' font-family='monospace'>ou</text><text x='389' y='103' text-anchor='middle' fill='#ef4444' font-size='8' font-family='monospace'>Drop</text><text x='389' y='113' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='monospace'>id=0 = deny</text><polygon points='430,87 442,83 442,92' fill='#22c55e'/><line x1='429' y1='87' x2='442' y2='87' stroke='#22c55e' stroke-width='1.5'/><rect x='443' y='68' width='85' height='38' rx='4' fill='#1e293b' stroke='#22c55e' stroke-width='1.5'/><text x='485' y='84' text-anchor='middle' fill='#22c55e' font-size='8' font-family='monospace'>Egress</text><text x='485' y='97' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='monospace'>packet out</text><text x='270' y='148' text-anchor='middle' fill='#94a3b8' font-size='8' font-family='monospace'>diagnose debug flow trace start — id= action= iprope</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quelle commande active le debug général nécessaire au debug flow ?",
+      "choices": [
+        "diagnose debug flow enable",
+        "diagnose debug enable",
+        "diagnose debug flow trace enable",
+        "diagnose debug start"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose debug enable' active le debug général. Elle est indispensable avant de démarrer la trace avec 'diagnose debug flow trace start'."
+    },
+    {
+      "q": "Que signifie 'id=0' dans la sortie du debug flow ?",
+      "choices": [
+        "La première politique de la liste a matché",
+        "Le trafic est bloqué par le deny implicite (implicit deny)",
+        "La session est expirée",
+        "La politique est désactivée"
+      ],
+      "answer": 1,
+      "explain": "Un id=0 dans le debug flow indique qu'aucune politique explicite n'a matché et que le trafic est bloqué par le deny implicite (implicit deny) du FortiGate."
+    },
+    {
+      "q": "Quelle commande définit le filtre d'adresse IP pour le debug flow ?",
+      "choices": [
+        "diagnose debug flow filter addr <ip>",
+        "diagnose debug flow set addr <ip>",
+        "diagnose debug filter addr <ip>",
+        "diagnose flow filter addr <ip>"
+      ],
+      "answer": 0,
+      "explain": "La commande 'diagnose debug flow filter addr <ip>' définit le filtre par adresse IP pour le debug flow, permettant de cibler une IP source ou destination précise."
+    },
+    {
+      "q": "Quelle est la phase où le FortiGate recherche la politique correspondant au trafic ?",
+      "choices": [
+        "new session",
+        "route lookup",
+        "policy lookup",
+        "NAT"
+      ],
+      "answer": 2,
+      "explain": "La phase 'policy lookup' est celle où le FortiGate recherche la politique firewall correspondant au trafic. C'est à cette phase que l'id= et action= sont déterminés."
+    },
+    {
+      "q": "Quelle commande arrête définitivement le debug flow et réinitialise les filtres ?",
+      "choices": [
+        "diagnose debug disable",
+        "diagnose debug reset",
+        "diagnose debug flow stop",
+        "diagnose debug flow filter clear"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose debug reset' réinitialise tous les filtres et paramètres du debug. On utilise d'abord 'diagnose debug disable' pour arrêter le debug, puis 'diagnose debug reset' pour réinitialiser."
+    },
+    {
+      "q": "Que trace le debug flow dans FortiGate ?",
+      "choices": [
+        "Les paquets au niveau physique L2/L3",
+        "Le chemin complet d'un paquet dans le moteur FortiOS (politique, NAT, routage)",
+        "Les logs d'authentification",
+        "Les mises à jour FortiGuard"
+      ],
+      "answer": 1,
+      "explain": "Le debug flow trace le chemin complet d'un paquet dans le moteur FortiOS, indiquant la politique matchée, les opérations NAT, les décisions de routage et le résultat final."
+    },
+    {
+      "q": "Quelle commande active l'affichage de l'évaluation des politiques (iprope) dans le debug flow ?",
+      "choices": [
+        "diagnose debug flow show policy enable",
+        "diagnose debug flow show iprope enable",
+        "diagnose debug flow show rules enable",
+        "diagnose debug iprope enable"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose debug flow show iprope enable' active l'affichage de l'évaluation des politiques. iprope signifie IP properties engine."
+    },
+    {
+      "q": "Que signifie 'action=deny' dans le debug flow ?",
+      "choices": [
+        "Le paquet a été accepté et transmis",
+        "La politique bloque le trafic",
+        "Le NAT n'est pas configuré",
+        "La route n'existe pas"
+      ],
+      "answer": 1,
+      "explain": "Le champ 'action=deny' dans le debug flow indique que la politique correspondante bloque le trafic. Le champ 'action=allow' indique que le trafic est autorisé."
+    },
+    {
+      "q": "Dans quelle phase le debug flow applique-t-il les règles NAT ?",
+      "choices": [
+        "policy lookup",
+        "new session",
+        "route lookup",
+        "NAT, après la recherche de route"
+      ],
+      "answer": 3,
+      "explain": "Dans le debug flow, la phase NAT (application du source NAT et destination NAT) intervient après la phase de route lookup, avant le forwarding."
+    },
+    {
+      "q": "Quelle est la bonne séquence pour activer le debug flow ?",
+      "choices": [
+        "diagnose debug enable → diagnose debug flow filter addr → diagnose debug flow trace start",
+        "diagnose debug flow filter addr → diagnose debug flow show iprope enable → diagnose debug enable → diagnose debug flow trace start",
+        "diagnose debug flow trace start → diagnose debug flow filter addr → diagnose debug enable",
+        "diagnose debug flow show iprope enable → diagnose debug flow trace start → diagnose debug enable"
+      ],
+      "answer": 1,
+      "explain": "La bonne séquence est : définir le filtre (filter addr), activer l'affichage des fonctions et iprope, activer le debug général (debug enable), puis démarrer la trace (flow trace start)."
+    },
+    {
+      "q": "Quelle est la différence principale entre sniffer et debug flow ?",
+      "choices": [
+        "Le sniffer est plus rapide, le debug flow est plus lent",
+        "Le sniffer capture les paquets bruts L2/L3, le debug flow suit le chemin logique dans le moteur FortiOS",
+        "Le sniffer analyse les politiques, le debug flow capture les paquets",
+        "Il n'y a pas de différence entre sniffer et debug flow"
+      ],
+      "answer": 1,
+      "explain": "Le sniffer réalise une capture brute des paquets L2/L3. Le debug flow suit le chemin logique d'un paquet dans le moteur FortiOS (politiques, NAT, routage)."
+    },
+    {
+      "q": "Quelle commande affiche les noms de fonctions internes dans le debug flow ?",
+      "choices": [
+        "diagnose debug flow show functions enable",
+        "diagnose debug flow show function-name enable",
+        "diagnose debug flow trace functions enable",
+        "diagnose debug functions enable"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose debug flow show function-name enable' active l'affichage des noms de fonctions internes du moteur FortiOS dans le debug flow."
+    },
+    {
+      "q": "Si le debug flow indique 'id=5, action=allow', que cela signifie-t-il ?",
+      "choices": [
+        "La politique 5 bloque le trafic",
+        "La politique 5 autorise le trafic",
+        "Il y a 5 politiques qui correspondent",
+        "Le deny implicite est activé"
+      ],
+      "answer": 1,
+      "explain": "id=5 indique que la politique numéro 5 a matché, et action=allow indique qu'elle autorise le trafic. Si id=0, c'est le deny implicite."
+    },
+    {
+      "q": "Quelle stratégie de diagnostic combiner sniffer et debug flow ?",
+      "choices": [
+        "Utiliser uniquement le debug flow pour tous les problèmes",
+        "Commencer par le debug flow, puis confirmer avec le sniffer",
+        "Commencer par le sniffer pour confirmer l'arrivée des paquets, puis utiliser le debug flow pour analyser le traitement",
+        "Utiliser le sniffer uniquement pour les problèmes de performance"
+      ],
+      "answer": 2,
+      "explain": "La stratégie recommandée est de commencer par le sniffer pour confirmer l'arrivée physique des paquets, puis d'utiliser le debug flow pour analyser le traitement FortiOS si les paquets arrivent bien."
+    },
+    {
+      "q": "Quelle commande démarre la trace du debug flow pour 50 paquets ?",
+      "choices": [
+        "diagnose debug flow trace start 50",
+        "diagnose debug flow start trace 50",
+        "diagnose debug flow trace enable 50",
+        "diagnose debug flow start 50"
+      ],
+      "answer": 0,
+      "explain": "La commande 'diagnose debug flow trace start <count>' démarre la trace. Pour 50 paquets, on utilise 'diagnose debug flow trace start 50'."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Que signifie 'id=0' dans la sortie du debug flow ?",
+      "choices": [
+        "La première politique de la liste a matché",
+        "Le trafic est bloqué par le deny implicite (implicit deny)",
+        "La session est expirée",
+        "La politique est désactivée"
+      ],
+      "answer": 1,
+      "explain": "Un id=0 dans le debug flow indique qu'aucune politique explicite n'a matché et que le trafic est bloqué par le deny implicite (implicit deny) du FortiGate."
+    },
+    {
+      "q": "Quelle commande active le debug général nécessaire au debug flow ?",
+      "choices": [
+        "diagnose debug flow enable",
+        "diagnose debug enable",
+        "diagnose debug flow trace enable",
+        "diagnose debug start"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose debug enable' active le debug général. Elle est indispensable avant de démarrer la trace avec 'diagnose debug flow trace start'."
+    },
+    {
+      "q": "Quelle est la différence principale entre sniffer et debug flow ?",
+      "choices": [
+        "Le sniffer est plus rapide, le debug flow est plus lent",
+        "Le sniffer capture les paquets bruts L2/L3, le debug flow suit le chemin logique dans le moteur FortiOS",
+        "Le sniffer analyse les politiques, le debug flow capture les paquets",
+        "Il n'y a pas de différence entre sniffer et debug flow"
+      ],
+      "answer": 1,
+      "explain": "Le sniffer réalise une capture brute des paquets L2/L3. Le debug flow suit le chemin logique d'un paquet dans le moteur FortiOS (politiques, NAT, routage)."
+    },
+    {
+      "q": "Quelle commande active l'affichage de l'évaluation des politiques (iprope) dans le debug flow ?",
+      "choices": [
+        "diagnose debug flow show policy enable",
+        "diagnose debug flow show iprope enable",
+        "diagnose debug flow show rules enable",
+        "diagnose debug iprope enable"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose debug flow show iprope enable' active l'affichage de l'évaluation des politiques. iprope signifie IP properties engine."
+    },
+    {
+      "q": "Quelle commande arrête définitivement le debug flow et réinitialise les filtres ?",
+      "choices": [
+        "diagnose debug disable",
+        "diagnose debug reset",
+        "diagnose debug flow stop",
+        "diagnose debug flow filter clear"
+      ],
+      "answer": 1,
+      "explain": "La commande 'diagnose debug reset' réinitialise tous les filtres et paramètres du debug. On utilise d'abord 'diagnose debug disable' pour arrêter le debug, puis 'diagnose debug reset' pour réinitialiser."
+    }
+  ]
+}

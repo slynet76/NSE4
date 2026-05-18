@@ -1,0 +1,181 @@
+{
+  "id": "ch12-l2",
+  "module": "SD-WAN Configuration and Monitoring",
+  "title": "Membres et zones SD-WAN",
+  "durationMin": 7,
+  "content": "## Membres et zones SD-WAN\n\n![Structure des zones SD-WAN : zone par défaut et zones underlay/overlay](diagram:0)\n\n### Les 3 éléments de configuration SD-WAN\nUne configuration SD-WAN repose sur trois éléments essentiels :\n1. **Membres** (interfaces) — les liens physiques ou virtuels inclus dans SD-WAN\n2. **Zones** (groupes logiques) — regroupements de membres\n3. **Performance SLAs** (sondes) — mesure de santé et qualité des liens\n\n### Membres SD-WAN\nChaque **membre** est une interface FortiOS existante associée à :\n- Une **zone** (affectation logique)\n- Une **gateway** optionnelle (next-hop)\n\nSi aucune zone explicite n'est assignée, le membre rejoint la zone par défaut **virtual-wan-link**, qui est **non supprimable**.\n\n#### Interfaces supportées comme membres\n- Ports physiques\n- Interfaces VLAN\n- LAG (Link Aggregation Group)\n- Modems USB\n- FortiExtender\n\n#### Interface non supportée\n**L'interface loopback (non routée) n'est PAS supportée** comme membre SD-WAN. Une interface loopback est non routée et ne peut donc pas servir de membre.\n\n### Zones SD-WAN\nLes zones évitent la **duplication de policies**. Les policies SD-WAN référencent des **zones**, jamais des membres individuels.\n\n#### Convention de nommage recommandée\n- Zone **underlay** : regroupe les liens physiques ISP (cable, DSL, fibre, MPLS, 3G/4G/5G/LTE)\n- Zone **overlay** : regroupe les tunnels IPsec\n\n#### Avantage des zones distinctes\n- Zone **underlay** : appliquer NAT + inspection stricte (trafic non chiffré)\n- Zone **overlay** : NAT désactivé + inspection légère (trafic déjà chiffré via ESP)\n\n### Rappel Underlay vs Overlay\n- **Underlay** = lien physique ISP : cable, DSL, fibre, MPLS, 3G/4G/5G/LTE. Trafic non chiffré, routage selon les règles ISP.\n- **Overlay** = tunnel virtuel IPsec. Offre contrôle d'adressage et confidentialité via **ESP** (Encapsulating Security Payload).\n\n### Zone par défaut\nLa zone **virtual-wan-link** est la zone SD-WAN par défaut. Elle est **non supprimable** dans FortiOS. Tout membre sans zone explicite y est automatiquement affecté.\n\n### Récapitulatif NSE4\n- Zone par défaut = **virtual-wan-link** (non supprimable)\n- Policies référencent des **zones**, pas des membres individuels\n- **Loopback** non routée = NOT supportée comme membre\n- **FortiExtender** est supporté comme membre\n- Overlay fournit confidentialité via **ESP**\n- 3G/4G/5G/LTE = membres underlay valides\n\n> Avantage des zones : **éviter** la duplication de policies — **quand** on **ajoute** ou **modifie** des membres, les policies référençant la zone restent valides.",
+  "diagrams": [
+    {
+      "caption": "Structure des zones SD-WAN : zone par défaut et zones underlay/overlay",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 180'><rect width='600' height='180' fill='#f8f9fa'/><rect x='10' y='10' width='580' height='50' rx='6' fill='#fff3e0' stroke='#e65100' stroke-width='1.5' stroke-dasharray='6,3'/><text x='300' y='32' text-anchor='middle' font-size='12' font-weight='bold' fill='#e65100'>Zone par défaut : virtual-wan-link (non supprimable)</text><text x='300' y='50' text-anchor='middle' font-size='10' fill='#bf360c'>Membres sans zone explicite → affectés automatiquement ici</text><rect x='10' y='80' width='275' height='90' rx='6' fill='#e3f2fd' stroke='#1565c0' stroke-width='1.5'/><text x='147' y='100' text-anchor='middle' font-size='12' font-weight='bold' fill='#1565c0'>Zone : underlay</text><text x='147' y='116' text-anchor='middle' font-size='10' fill='#1565c0'>Liens physiques ISP</text><rect x='25' y='125' width='70' height='28' rx='4' fill='#1565c0'/><text x='60' y='143' text-anchor='middle' font-size='10' fill='white'>port1 (DSL)</text><rect x='105' y='125' width='70' height='28' rx='4' fill='#1565c0'/><text x='140' y='143' text-anchor='middle' font-size='10' fill='white'>port2 (4G)</text><rect x='185' y='125' width='85' height='28' rx='4' fill='#1565c0'/><text x='227' y='143' text-anchor='middle' font-size='10' fill='white'>port3 (MPLS)</text><rect x='315' y='80' width='275' height='90' rx='6' fill='#e8f5e9' stroke='#2e7d32' stroke-width='1.5'/><text x='452' y='100' text-anchor='middle' font-size='12' font-weight='bold' fill='#2e7d32'>Zone : overlay</text><text x='452' y='116' text-anchor='middle' font-size='10' fill='#2e7d32'>Tunnels virtuels IPsec</text><rect x='330' y='125' width='110' height='28' rx='4' fill='#2e7d32'/><text x='385' y='143' text-anchor='middle' font-size='10' fill='white'>IPsec-hub1</text><rect x='455' y='125' width='120' height='28' rx='4' fill='#2e7d32'/><text x='515' y='143' text-anchor='middle' font-size='10' fill='white'>IPsec-hub2</text><text x='147' y='175' text-anchor='middle' font-size='9' fill='#555'>NAT ON + inspection stricte</text><text x='452' y='175' text-anchor='middle' font-size='9' fill='#555'>NAT OFF + inspection légère (ESP)</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel est le nom de la zone SD-WAN par défaut dans FortiOS ?",
+      "choices": [
+        "default-wan-zone",
+        "virtual-wan-link",
+        "sdwan-default",
+        "wan-zone-1"
+      ],
+      "answer": 1,
+      "explain": "La zone par défaut SD-WAN dans FortiOS s'appelle virtual-wan-link. Elle est non supprimable et accueille automatiquement tout membre sans zone explicite."
+    },
+    {
+      "q": "Que référencent les policies SD-WAN ?",
+      "choices": [
+        "Les membres individuels (interfaces)",
+        "Les zones SD-WAN",
+        "Les adresses IP des gateways",
+        "Les noms des FAI"
+      ],
+      "answer": 1,
+      "explain": "Les policies SD-WAN référencent des zones, jamais des membres individuels. Cela évite la duplication de policies lorsqu'on ajoute ou retire des membres."
+    },
+    {
+      "q": "Laquelle de ces interfaces est supportée comme membre SD-WAN ?",
+      "choices": [
+        "Interface loopback non routée",
+        "Interface FortiExtender",
+        "Interface tunnel GRE non configurée",
+        "Interface de management dédié"
+      ],
+      "answer": 1,
+      "explain": "FortiExtender est supporté comme membre SD-WAN. Les interfaces supportées incluent : ports physiques, VLAN, LAG, modems USB et FortiExtender."
+    },
+    {
+      "q": "Quelle interface n'est PAS supportée comme membre SD-WAN ?",
+      "choices": [
+        "Interface VLAN",
+        "Interface LAG (Link Aggregation)",
+        "Interface loopback (non routée)",
+        "Modem USB"
+      ],
+      "answer": 2,
+      "explain": "L'interface loopback non routée n'est PAS supportée comme membre SD-WAN. Elle est non routée et ne peut donc pas être utilisée pour acheminer du trafic sortant."
+    },
+    {
+      "q": "Quelle est la différence entre un lien underlay et un overlay en termes de chiffrement ?",
+      "choices": [
+        "L'underlay est chiffré via ESP, l'overlay ne l'est pas",
+        "L'underlay est un lien physique ISP non chiffré, l'overlay est un tunnel IPsec chiffré",
+        "Les deux sont chiffrés par défaut dans FortiOS",
+        "Ni l'underlay ni l'overlay ne sont chiffrés"
+      ],
+      "answer": 1,
+      "explain": "L'underlay est un lien physique ISP non chiffré, dont le routage suit les règles de l'ISP. L'overlay est un tunnel virtuel IPsec offrant confidentialité via ESP."
+    },
+    {
+      "q": "Pourquoi créer des zones séparées pour underlay et overlay ?",
+      "choices": [
+        "Pour augmenter le nombre maximum de membres SD-WAN",
+        "Pour appliquer des politiques différentes : NAT + inspection stricte sur underlay, NAT off + inspection légère sur overlay",
+        "Parce que FortiOS oblige à avoir exactement deux zones",
+        "Pour éviter les conflits d'adressage IP entre interfaces"
+      ],
+      "answer": 1,
+      "explain": "Des zones distinctes permettent d'appliquer NAT + inspection stricte sur l'underlay (trafic non chiffré) et NAT désactivé + inspection légère sur l'overlay (trafic déjà chiffré via ESP)."
+    },
+    {
+      "q": "La zone virtual-wan-link peut-elle être supprimée ?",
+      "choices": [
+        "Oui, si elle ne contient aucun membre",
+        "Non, elle est non supprimable dans FortiOS",
+        "Oui, via la CLI uniquement",
+        "Oui, après désactivation de SD-WAN"
+      ],
+      "answer": 1,
+      "explain": "La zone virtual-wan-link est non supprimable dans FortiOS. C'est la zone par défaut SD-WAN qui persiste même si elle ne contient aucun membre."
+    },
+    {
+      "q": "Un membre SD-WAN doit-il obligatoirement avoir une gateway configurée ?",
+      "choices": [
+        "Oui, la gateway est obligatoire pour chaque membre",
+        "Non, la gateway est optionnelle",
+        "Oui, mais uniquement pour les membres overlay",
+        "Non, la gateway est héritée automatiquement de la route statique"
+      ],
+      "answer": 1,
+      "explain": "La gateway est optionnelle pour un membre SD-WAN. Chaque membre est une interface FortiOS existante avec une zone et une gateway optionnelle (next-hop)."
+    },
+    {
+      "q": "Quel est le rôle des Performance SLAs dans la configuration SD-WAN ?",
+      "choices": [
+        "Configurer les règles de sélection du chemin par application",
+        "Mesurer la santé et la qualité (packet loss, latence, jitter) des membres SD-WAN",
+        "Définir les zones et leur appartenance",
+        "Gérer les licences FortiCare des interfaces"
+      ],
+      "answer": 1,
+      "explain": "Les Performance SLAs sont des sondes qui mesurent l'état (alive/dead) et la qualité (packet loss, latence, jitter) des membres SD-WAN."
+    },
+    {
+      "q": "Comment affecter un membre à une zone SD-WAN spécifique ?",
+      "choices": [
+        "En modifiant la table de routage statique",
+        "En spécifiant la zone lors de la configuration du membre SD-WAN",
+        "En créant une policy firewall dédiée au membre",
+        "En activant OSPF sur l'interface concernée"
+      ],
+      "answer": 1,
+      "explain": "La zone est spécifiée lors de la configuration du membre SD-WAN. Sans zone explicite, le membre est automatiquement affecté à la zone par défaut virtual-wan-link."
+    },
+    {
+      "q": "Quel est l'avantage principal de l'utilisation de zones dans les policies SD-WAN ?",
+      "choices": [
+        "Augmenter la vitesse de commutation du trafic",
+        "Éviter la duplication de policies quand on ajoute ou modifie des membres",
+        "Permettre le chiffrement automatique de tous les flux",
+        "Réduire la consommation CPU du FortiGate"
+      ],
+      "answer": 1,
+      "explain": "Les zones évitent la duplication de policies. En référençant une zone plutôt que des membres individuels, une seule policy couvre tous les membres de la zone."
+    },
+    {
+      "q": "Quel protocole de sécurité l'overlay IPsec utilise-t-il pour assurer la confidentialité ?",
+      "choices": [
+        "AH (Authentication Header)",
+        "TLS 1.3",
+        "ESP (Encapsulating Security Payload)",
+        "DTLS (Datagram TLS)"
+      ],
+      "answer": 2,
+      "explain": "L'overlay IPsec utilise ESP (Encapsulating Security Payload) pour assurer la confidentialité et l'intégrité du trafic transporté dans les tunnels."
+    },
+    {
+      "q": "La connectivité 3G/4G/LTE peut-elle être utilisée comme membre underlay SD-WAN ?",
+      "choices": [
+        "Non, seuls les liens filaires sont supportés",
+        "Oui, les liens 3G/4G/5G/LTE sont des membres underlay valides",
+        "Uniquement en mode actif-passif avec un lien filaire principal",
+        "Seulement avec un FortiExtender externe"
+      ],
+      "answer": 1,
+      "explain": "Les liens 3G/4G/5G/LTE sont des membres underlay valides dans SD-WAN. L'underlay regroupe tous les types de liens physiques ISP : cable, DSL, fibre, MPLS, 3G/4G/5G/LTE."
+    },
+    {
+      "q": "FortiExtender peut-il être configuré comme membre SD-WAN ?",
+      "choices": [
+        "Non, FortiExtender n'est pas supporté comme membre",
+        "Oui, FortiExtender est une interface supportée comme membre SD-WAN",
+        "Uniquement en mode bridge",
+        "Seulement avec une licence SD-WAN Advanced"
+      ],
+      "answer": 1,
+      "explain": "FortiExtender est explicitement listé parmi les interfaces supportées comme membres SD-WAN, avec les ports physiques, VLAN, LAG et modems USB."
+    },
+    {
+      "q": "Que se passe-t-il si on ajoute un membre SD-WAN sans spécifier de zone ?",
+      "choices": [
+        "La configuration échoue avec une erreur",
+        "Le membre est affecté automatiquement à la zone virtual-wan-link",
+        "Le membre est placé dans une zone temporaire puis supprimé",
+        "FortiOS crée automatiquement une nouvelle zone avec le nom de l'interface"
+      ],
+      "answer": 1,
+      "explain": "Sans zone explicite, le membre est automatiquement affecté à la zone par défaut virtual-wan-link, qui est non supprimable dans FortiOS."
+    }
+  ]
+}

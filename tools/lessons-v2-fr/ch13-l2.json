@@ -1,0 +1,216 @@
+{
+  "id": "ch13-l2",
+  "module": "High Availability",
+  "title": "Election du primaire et override",
+  "durationMin": 6,
+  "content": "## Élection du primaire — ordre des critères\n\nChaque fois que le cluster se forme ou subit un failover, les membres se « votent » un primaire. L'algorithme s'arrête **au premier critère qui les différencie**.\n\n### HA override **désactivé** (comportement par défaut)\n\n![Ordre d'élection — override OFF](diagram:0)\n\n| Rang | Critère | Gagnant |\n|---|---|---|\n| 1 | Interfaces monitorées UP | Le plus grand nombre |\n| 2 | HA uptime (marge ≥ 5 minutes) | Le plus élevé |\n| 3 | Priorité HA | La plus haute |\n| 4 | Numéro de série (4e, dernier critère) | Le plus haut |\n\n> **Astuce** : L'uptime prime sur la priorité. Un membre redémarré a un HA uptime de 0 — il perd automatiquement même s'il a la priorité la plus haute.\n\n### HA override **activé**\n\nAvec override ON, **la priorité passe avant l'uptime** :\n\n1. Interfaces monitorées UP\n2. **Priorité HA** ← remonte\n3. HA uptime\n4. Numéro de série\n\n**Avantage** : on désigne explicitement quel équipement doit être primaire.\n\n**Inconvénient — preemption** : quand le primaire préféré revient en ligne après une panne, il reprend son rôle, provoquant **deux failovers** au lieu d'un (panne + retour).\n\n## La colonne `reset_cnt`\n\nDans `get system ha status`, la colonne `reset_cnt` indique combien de fois l'HA uptime d'un membre a été réinitialisé. Un membre avec `uptime = 0` est celui qui vient de (re)démarrer ou de perdre une interface monitorée.\n\n## Forcer un failover\n\n### Override désactivé\n\n```\ndiagnose sys ha reset-uptime\n```\n\nExécuter **sur le primaire** : remet son HA uptime à 0 → il perd le critère 2 → un secondaire prend le relais. Cette commande **ne touche pas** au `system uptime` (visible dans `get system status`).\n\n> ⚠️ L'HA uptime se remet aussi à zéro automatiquement si une interface monitorée tombe ou si le membre redémarre.\n\n### Override activé\n\nModifier les **priorités HA** : augmenter celle d'un secondaire ou baisser celle du primaire actuel.\n\n## Synchronisation des priorités et override\n\n> **Critique** : `HA override` et `HA priority` **ne sont PAS synchronisés** entre membres. Vous devez les régler **manuellement sur chaque équipement**.\n\nC'est intentionnel : si chaque membre avait la même priorité, l'élection n'aurait pas de résultat déterministe.",
+  "diagrams": [
+    {
+      "caption": "Ordre d'élection selon que HA override est activé ou non. Les cases grises indiquent l'ordre avec override OFF ; les flèches rouges montrent le changement avec override ON.",
+      "height": 340,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 560 340'><text x='150' y='20' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#e2e8f0'>Override OFF (défaut)</text><text x='410' y='20' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#e2e8f0'>Override ON</text><rect x='30' y='35' width='240' height='44' rx='8' fill='#1e3a5f' stroke='#3b82f6' stroke-width='2'/><text x='150' y='54' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#93c5fd'>1. Interfaces monitorées UP</text><text x='150' y='71' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>Le plus grand nombre gagne</text><line x1='150' y1='79' x2='150' y2='98' stroke='#475569' stroke-width='1.5'/><polygon points='146,98 154,98 150,106' fill='#475569'/><rect x='30' y='106' width='240' height='44' rx='8' fill='#1e3a5f' stroke='#3b82f6' stroke-width='2'/><text x='150' y='125' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#93c5fd'>2. HA uptime ≥ 5 min</text><text x='150' y='142' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>Le plus élevé gagne</text><line x1='150' y1='150' x2='150' y2='169' stroke='#475569' stroke-width='1.5'/><polygon points='146,169 154,169 150,177' fill='#475569'/><rect x='30' y='177' width='240' height='44' rx='8' fill='#1e3a5f' stroke='#3b82f6' stroke-width='2'/><text x='150' y='196' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#93c5fd'>3. Priorité HA</text><text x='150' y='213' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>La plus haute gagne</text><line x1='150' y1='221' x2='150' y2='240' stroke='#475569' stroke-width='1.5'/><polygon points='146,240 154,240 150,248' fill='#475569'/><rect x='30' y='248' width='240' height='44' rx='8' fill='#1a2e1a' stroke='#22c55e' stroke-width='2'/><text x='150' y='267' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#86efac'>4. Numéro de série</text><text x='150' y='284' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>Le plus haut — départage final</text><rect x='290' y='35' width='240' height='44' rx='8' fill='#1e3a5f' stroke='#3b82f6' stroke-width='2'/><text x='410' y='54' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#93c5fd'>1. Interfaces monitorées UP</text><text x='410' y='71' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>inchangé</text><line x1='410' y1='79' x2='410' y2='98' stroke='#475569' stroke-width='1.5'/><polygon points='406,98 414,98 410,106' fill='#475569'/><rect x='290' y='106' width='240' height='44' rx='8' fill='#3b1a0a' stroke='#f97316' stroke-width='2'/><text x='410' y='125' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#fdba74'>2. Priorité HA ← remonte</text><text x='410' y='142' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>Force le primaire désigné</text><line x1='410' y1='150' x2='410' y2='169' stroke='#475569' stroke-width='1.5'/><polygon points='406,169 414,169 410,177' fill='#475569'/><rect x='290' y='177' width='240' height='44' rx='8' fill='#1e3a5f' stroke='#3b82f6' stroke-width='2'/><text x='410' y='196' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#93c5fd'>3. HA uptime</text><text x='410' y='213' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>redescend</text><line x1='410' y1='221' x2='410' y2='240' stroke='#475569' stroke-width='1.5'/><polygon points='406,240 414,240 410,248' fill='#475569'/><rect x='290' y='248' width='240' height='44' rx='8' fill='#1a2e1a' stroke='#22c55e' stroke-width='2'/><text x='410' y='267' text-anchor='middle' font-family='sans-serif' font-size='12' font-weight='700' fill='#86efac'>4. Numéro de série</text><text x='410' y='284' text-anchor='middle' font-family='sans-serif' font-size='10' fill='#64748b'>départage final</text><path d='M 270 128 Q 280 128 280 128' stroke='#f97316' stroke-width='2' stroke-dasharray='4 3' fill='none'/><text x='268' y='124' font-family='sans-serif' font-size='18' fill='#f97316'>↔</text><text x='150' y='320' text-anchor='middle' font-family='sans-serif' font-size='11' fill='#94a3b8'>⚠ Override et Priority ne sont PAS synchronisés — à régler sur chaque membre</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Avec HA override désactivé, quel est le PREMIER critère d'élection ?",
+      "choices": [
+        "Le numéro de série",
+        "La priorité HA",
+        "Le HA uptime",
+        "Le nombre d'interfaces monitorées UP"
+      ],
+      "answer": 3,
+      "explain": "Ordre par défaut : (1) interfaces monitorées UP, (2) HA uptime, (3) priorité, (4) numéro de série."
+    },
+    {
+      "q": "Avec HA override désactivé, quel est le SECOND critère d'élection ?",
+      "choices": [
+        "Le numéro de série",
+        "La priorité HA",
+        "Le HA uptime",
+        "Le nombre d'interfaces monitorées UP"
+      ],
+      "answer": 2,
+      "explain": "Ordre par défaut : (1) interfaces monitorées UP, (2) HA uptime avec une marge d'au moins 5 minutes."
+    },
+    {
+      "q": "Quelle commande réinitialise l'HA uptime du primaire pour forcer un failover ?",
+      "choices": [
+        "execute reboot",
+        "diagnose sys ha reset-uptime",
+        "config system ha set uptime 0",
+        "execute ha failover"
+      ],
+      "answer": 1,
+      "explain": "diagnose sys ha reset-uptime remet le HA uptime à 0 sur le membre où on l'exécute, lui faisant perdre le critère 2."
+    },
+    {
+      "q": "Quel est l'effet principal d'activer HA override ?",
+      "choices": [
+        "Active le mode actif-actif",
+        "La priorité passe avant le HA uptime dans l'élection",
+        "Désactive la synchronisation",
+        "Empêche tout failover automatique"
+      ],
+      "answer": 1,
+      "explain": "Avec override ON, la priorité est évaluée avant le HA uptime — utile pour désigner un primaire préféré."
+    },
+    {
+      "q": "Quel est l'inconvénient principal de l'activation de HA override ?",
+      "choices": [
+        "Ralentit la synchronisation",
+        "Le primaire reprend son rôle quand il revient (preemption = 2 failovers)",
+        "Bloque la commande reset-uptime",
+        "Réduit les interfaces heartbeat disponibles"
+      ],
+      "answer": 1,
+      "explain": "Avec override ON, quand le primaire préféré revient après une panne, il reprend son rôle — provoquant un second failover."
+    },
+    {
+      "q": "HA override et HA priority sont-ils synchronisés entre membres du cluster ?",
+      "choices": [
+        "Oui, automatiquement",
+        "Non, à configurer manuellement sur chaque membre",
+        "Oui, via le lien heartbeat",
+        "Non, mais ils le sont au redémarrage"
+      ],
+      "answer": 1,
+      "explain": "HA override et HA priority ne sont pas synchronisés — c'est intentionnel pour que chaque membre puisse avoir une priorité différente."
+    },
+    {
+      "q": "Avec override désactivé, comment forcer un failover vers un secondaire spécifique ?",
+      "choices": [
+        "Éteindre physiquement le primaire",
+        "Exécuter diagnose sys ha reset-uptime sur le primaire",
+        "Modifier les priorités HA",
+        "Exécuter execute reboot sur le secondaire"
+      ],
+      "answer": 1,
+      "explain": "diagnose sys ha reset-uptime sur le primaire remet son HA uptime à 0 ; le secondaire avec le plus haut uptime prend le relais."
+    },
+    {
+      "q": "Avec override activé, comment forcer un failover ?",
+      "choices": [
+        "diagnose sys ha reset-uptime",
+        "Modifier les priorités HA (augmenter celle d'un secondaire)",
+        "Débrancher un câble heartbeat",
+        "execute ha failover"
+      ],
+      "answer": 1,
+      "explain": "Avec override ON, la priorité prime. Augmenter la priorité d'un secondaire (ou baisser celle du primaire) déclenche un failover."
+    },
+    {
+      "q": "Que signifie un HA uptime de 0 pour un membre dans get system ha status ?",
+      "choices": [
+        "Le membre est hors ligne",
+        "Le membre vient de redémarrer ou a perdu une interface monitorée",
+        "Le membre est en mode standby",
+        "Le membre a la priorité la plus basse"
+      ],
+      "answer": 1,
+      "explain": "HA uptime = 0 indique que l'uptime HA a été réinitialisé (reboot, perte d'interface monitorée, ou reset-uptime)."
+    },
+    {
+      "q": "À quelle marge de temps minimum doit-on s'attendre pour que le critère HA uptime départage deux membres ?",
+      "choices": [
+        "1 minute",
+        "5 minutes",
+        "10 minutes",
+        "30 secondes"
+      ],
+      "answer": 1,
+      "explain": "Le HA uptime ne départage que si l'écart est d'au moins 5 minutes entre les deux membres."
+    },
+    {
+      "q": "diagnsoe sys ha reset-uptime affecte-t-il le system uptime du FortiGate ?",
+      "choices": [
+        "Oui, les deux sont remis à zéro",
+        "Non, seul le HA uptime est remis à zéro",
+        "Oui, mais uniquement en mode actif-actif",
+        "Non, mais cela redémarre le processus HA"
+      ],
+      "answer": 1,
+      "explain": "reset-uptime remet uniquement le HA uptime à 0. Le system uptime (visible dans get system status) n'est pas affecté."
+    },
+    {
+      "q": "Dans l'ordre d'élection avec override OFF, quelle est la position du numéro de série ?",
+      "choices": [
+        "1er",
+        "2e",
+        "3e",
+        "4e (dernier)"
+      ],
+      "answer": 3,
+      "explain": "Le numéro de série est le dernier critère — départage final quand tous les autres sont identiques."
+    },
+    {
+      "q": "Que se passe-t-il si une interface monitorée tombe sur un membre ?",
+      "choices": [
+        "Rien, seul un device failover déclenche une élection",
+        "Son HA uptime est remis à zéro",
+        "Il est exclu définitivement du cluster",
+        "Le cluster passe en mode actif-passif"
+      ],
+      "answer": 1,
+      "explain": "Si une interface monitorée tombe sur un membre, son HA uptime est remis à 0, réduisant ses chances de gagner l'élection."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "Avec HA override désactivé, quel est le PREMIER critère d'élection ?",
+      "choices": [
+        "Le numéro de série",
+        "La priorité HA",
+        "Le HA uptime",
+        "Le nombre d'interfaces monitorées UP"
+      ],
+      "answer": 3,
+      "explain": "Ordre par défaut : (1) interfaces monitorées UP, (2) HA uptime, (3) priorité, (4) numéro de série."
+    },
+    {
+      "q": "Quelle commande réinitialise l'HA uptime du primaire pour forcer un failover ?",
+      "choices": [
+        "execute reboot",
+        "diagnose sys ha reset-uptime",
+        "config system ha set uptime 0",
+        "execute ha failover"
+      ],
+      "answer": 1,
+      "explain": "diagnose sys ha reset-uptime remet le HA uptime à 0 sur le membre où on l'exécute."
+    },
+    {
+      "q": "Quel est l'effet principal d'activer HA override ?",
+      "choices": [
+        "Active le mode actif-actif",
+        "La priorité passe avant le HA uptime dans l'élection",
+        "Désactive la synchronisation",
+        "Empêche tout failover automatique"
+      ],
+      "answer": 1,
+      "explain": "Avec override ON, la priorité est évaluée avant le HA uptime — utile pour désigner un primaire préféré."
+    },
+    {
+      "q": "HA override et HA priority sont-ils synchronisés entre membres du cluster ?",
+      "choices": [
+        "Oui, automatiquement",
+        "Non, à configurer manuellement sur chaque membre",
+        "Oui, via le lien heartbeat",
+        "Non, mais ils le sont au redémarrage"
+      ],
+      "answer": 1,
+      "explain": "HA override et HA priority ne sont pas synchronisés — à régler manuellement sur chaque membre."
+    },
+    {
+      "q": "Quel est l'inconvénient principal de HA override activé ?",
+      "choices": [
+        "Ralentit la synchronisation",
+        "Preemption : le primaire reprend son rôle au retour (2 failovers)",
+        "Bloque la commande reset-uptime",
+        "Réduit les interfaces heartbeat"
+      ],
+      "answer": 1,
+      "explain": "Avec override ON, le retour du primaire préféré déclenche un second failover (preemption)."
+    }
+  ]
+}

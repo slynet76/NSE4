@@ -1,0 +1,181 @@
+{
+  "id": "ch12-l5",
+  "module": "SD-WAN Configuration and Monitoring",
+  "title": "Routage et policy routes SD-WAN",
+  "durationMin": 7,
+  "content": "## Précédence du routage\n\nUne règle SD-WAN est techniquement équivalente à une **policy route dynamique**. L'ordre de précédence est :\n\n1. **Policy routes** (priorité la plus haute)\n2. **SD-WAN rules**\n3. **FIB** (routage classique — dernier recours)\n\nUne policy route mal configurée (critères trop larges) peut **court-circuiter** une règle SD-WAN et rediriger le trafic sans passer par la logique SD-WAN. **Best practice** : toujours restreindre les critères des policy routes pour éviter ce comportement.\n\n![Pyramide de précédence du routage](diagram:0)\n\n## Actions d'une policy route\n\n### Forward Traffic\n\nRoute le paquet vers une **interface + gateway** spécifiées. Condition obligatoire : il doit exister une **route FIB correspondante** pour la destination — sinon la policy route est **invalide et skippée**.\n\n### Stop Policy Routing\n\nStoppe immédiatement l'évaluation des policy routes. Le paquet est alors transmis selon la table **FIB** (routage classique), sans évaluer les règles SD-WAN.\n\n## Routes statiques pour SD-WAN\n\n### Route avec zone comme outgoing interface\n\nEn référençant une **zone SD-WAN** comme interface sortante, FortiOS installe automatiquement une route **ECMP** (Equal-Cost Multi-Path) par membre de la zone. La distance par défaut est **1**.\n\nUne distance de **1** garantit que cette route est **préférée** sur toutes les autres routes FIB (distance par défaut BGP = 20, OSPF = 110, statique sans zone = 10).\n\n### Route statique par membre\n\nIl est possible de créer des routes statiques ciblant un **membre SD-WAN spécifique**. La distance par défaut est **10** et la **gateway doit être spécifiée** explicitement.\n\nLa distance plus élevée (10 vs 1) signifie que les routes par zone sont préférées dans la FIB.\n\n## Best practice — couverture des destinations\n\nPour un fonctionnement optimal du SD-WAN, **toutes les destinations SD-WAN** doivent être atteignables via **tous les membres possibles**. Cela garantit que le processus de lookup trouve toujours un membre valide et que les règles ne sont pas skippées à tort.\n\n> **Résumé des distances** : zone SD-WAN → distance **1** (ECMP, préféré) | membre SD-WAN → distance **10** (gateway obligatoire). Le FIB est le dernier recours après policy routes et SD-WAN rules.\n\n> Route statique par membre : la gateway (**next-hop**) doit être spécifiée explicitement.",
+  "diagrams": [
+    {
+      "caption": "Pyramide de précédence du routage FortiGate : Policy Route > SD-WAN Rules > FIB.",
+      "height": 180,
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 180'><polygon points='300,10 480,130 120,130' fill='#1a1a2e' stroke='#6366f1' stroke-width='2'/><line x1='174' y1='70' x2='426' y2='70' stroke='#6366f1' stroke-width='1.5' stroke-dasharray='4 3'/><line x1='147' y1='100' x2='453' y2='100' stroke='#6366f1' stroke-width='1.5' stroke-dasharray='4 3'/><text x='300' y='48' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#ef4444'>Policy Routes</text><text x='300' y='62' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#fca5a5'>priorité 1 — la plus haute</text><text x='300' y='85' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#f59e0b'>SD-WAN Rules</text><text x='300' y='98' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#fcd34d'>priorité 2 — dynamiques</text><text x='300' y='115' text-anchor='middle' font-family='sans-serif' font-size='13' font-weight='700' fill='#22c55e'>FIB</text><text x='300' y='128' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#86efac'>priorité 3 — dernier recours</text><rect x='20' y='140' width='170' height='32' rx='5' fill='#1f2937' stroke='#6b7280' stroke-width='1'/><text x='105' y='153' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#9ca3af'>Zone SD-WAN → distance 1</text><text x='105' y='166' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#9ca3af'>ECMP par membre</text><rect x='210' y='140' width='180' height='32' rx='5' fill='#1f2937' stroke='#6b7280' stroke-width='1'/><text x='300' y='153' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#9ca3af'>Membre SD-WAN → distance 10</text><text x='300' y='166' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#9ca3af'>gateway obligatoire</text><rect x='410' y='140' width='170' height='32' rx='5' fill='#1f2937' stroke='#6b7280' stroke-width='1'/><text x='495' y='153' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#9ca3af'>Forward Traffic</text><text x='495' y='166' text-anchor='middle' font-family='sans-serif' font-size='9' fill='#9ca3af'>Stop Policy Routing</text></svg>"
+    }
+  ],
+  "questionPool": [
+    {
+      "q": "Quel est l'ordre de précédence correct du routage sur FortiGate ?",
+      "choices": [
+        "FIB → SD-WAN Rules → Policy Routes",
+        "SD-WAN Rules → Policy Routes → FIB",
+        "Policy Routes → SD-WAN Rules → FIB",
+        "FIB → Policy Routes → SD-WAN Rules"
+      ],
+      "answer": 2,
+      "explain": "L'ordre de précédence est : 1. Policy routes (priorité la plus haute), 2. SD-WAN rules, 3. FIB (routage classique, dernier recours)."
+    },
+    {
+      "q": "Qu'est-ce qu'une règle SD-WAN est techniquement équivalente à ?",
+      "choices": [
+        "Une route statique avec distance 1",
+        "Une policy route dynamique",
+        "Une règle NAT source",
+        "Un profil d'application FortiGuard"
+      ],
+      "answer": 1,
+      "explain": "Une règle SD-WAN est techniquement équivalente à une policy route dynamique. C'est pourquoi les policy routes ont une précédence supérieure et peuvent court-circuiter les règles SD-WAN."
+    },
+    {
+      "q": "Une policy route avec action Forward Traffic est invalide et skippée si :",
+      "choices": [
+        "L'interface de sortie n'est pas un membre SD-WAN",
+        "Il n'existe pas de route FIB correspondante pour la destination",
+        "Le protocole n'est pas TCP",
+        "Aucun SLA n'est associé à la policy route"
+      ],
+      "answer": 1,
+      "explain": "L'action Forward Traffic nécessite qu'une route FIB correspondante existe pour la destination. Sans cette route FIB, la policy route est invalide et skippée."
+    },
+    {
+      "q": "Que fait l'action Stop Policy Routing dans une policy route ?",
+      "choices": [
+        "Elle supprime toutes les policy routes de la table",
+        "Elle stoppe l'évaluation des policy routes et transmet le paquet selon la FIB",
+        "Elle redirige le trafic vers la règle implicite SD-WAN",
+        "Elle force l'utilisation du premier membre SD-WAN disponible"
+      ],
+      "answer": 1,
+      "explain": "Stop Policy Routing stoppe immédiatement l'évaluation des policy routes. Le paquet suit ensuite la table FIB (routage classique), sans passer par les règles SD-WAN."
+    },
+    {
+      "q": "Quelle distance par défaut FortiOS utilise-t-il pour une route statique avec une zone SD-WAN comme outgoing interface ?",
+      "choices": [
+        "10",
+        "20",
+        "1",
+        "100"
+      ],
+      "answer": 2,
+      "explain": "Quand une zone SD-WAN est référencée comme outgoing interface d'une route statique, FortiOS installe des routes ECMP par membre avec une distance par défaut de 1, garantissant la préférence sur les autres routes."
+    },
+    {
+      "q": "Quelle distance par défaut s'applique à une route statique configurée par membre SD-WAN spécifique ?",
+      "choices": [
+        "1",
+        "5",
+        "10",
+        "110"
+      ],
+      "answer": 2,
+      "explain": "Les routes statiques par membre SD-WAN ont une distance par défaut de 10. La gateway doit être spécifiée explicitement. La distance 10 est plus élevée que 1 (zone), donc les routes de zone sont préférées."
+    },
+    {
+      "q": "Pourquoi est-il recommandé de restreindre les critères d'une policy route en environnement SD-WAN ?",
+      "choices": [
+        "Pour améliorer les performances CPU de FortiGate",
+        "Pour éviter qu'une policy route trop large court-circuite une règle SD-WAN",
+        "Pour réduire la taille de la table FIB",
+        "Pour respecter les limites de licence FortiOS"
+      ],
+      "answer": 1,
+      "explain": "Une policy route mal configurée avec des critères trop larges peut court-circuiter une règle SD-WAN, car les policy routes ont une précédence supérieure. La best practice est de restreindre les critères."
+    },
+    {
+      "q": "Que se passe-t-il si une policy route Forward Traffic n'a pas de route FIB correspondante ?",
+      "choices": [
+        "FortiGate drope le paquet",
+        "La policy route est invalide et skippée",
+        "FortiGate crée automatiquement la route FIB manquante",
+        "Le paquet est renvoyé vers les SD-WAN rules"
+      ],
+      "answer": 1,
+      "explain": "Sans route FIB correspondante, la policy route Forward Traffic est invalide et skippée. L'évaluation continue avec la policy route suivante, puis les SD-WAN rules, puis la FIB."
+    },
+    {
+      "q": "Comparer les distances : une route de zone SD-WAN (distance 1) vs une route par membre (distance 10). Laquelle est préférée dans la FIB ?",
+      "choices": [
+        "La route par membre (distance 10) car elle est plus spécifique",
+        "La route de zone (distance 1) car la distance administrative la plus basse est préférée",
+        "Les deux sont équivalentes — ECMP s'applique",
+        "Cela dépend du protocole de routage utilisé"
+      ],
+      "answer": 1,
+      "explain": "Dans la FIB, la route avec la distance administrative la plus basse est préférée. Distance 1 (zone SD-WAN) < Distance 10 (membre SD-WAN), donc les routes de zone sont préférées."
+    },
+    {
+      "q": "Quel est le rôle du FIB dans la précédence de routage SD-WAN ?",
+      "choices": [
+        "Il a la priorité la plus haute",
+        "Il est utilisé uniquement pour le trafic IPv6",
+        "Il est le dernier recours après policy routes et SD-WAN rules",
+        "Il remplace les SD-WAN rules en cas de surcharge"
+      ],
+      "answer": 2,
+      "explain": "Le FIB (routage classique) est le dernier recours dans la précédence de routage FortiGate. Il s'applique uniquement si aucune policy route ni règle SD-WAN ne matche le trafic."
+    },
+    {
+      "q": "Que signifie ECMP dans le contexte des routes statiques avec zone SD-WAN ?",
+      "choices": [
+        "Enhanced Control Management Protocol",
+        "Equal-Cost Multi-Path : plusieurs routes de même coût vers la destination",
+        "Encrypted Communication Management Policy",
+        "Extended Configuration Management Plane"
+      ],
+      "answer": 1,
+      "explain": "ECMP (Equal-Cost Multi-Path) signifie que FortiOS installe plusieurs routes de même coût (distance 1) vers la destination, une par membre de la zone SD-WAN, permettant le load-balancing."
+    },
+    {
+      "q": "Pour une route statique par membre SD-WAN, quelle information est obligatoire ?",
+      "choices": [
+        "Le nom du SLA associé",
+        "Le coût du membre",
+        "La gateway (next-hop)",
+        "Le protocole de routage dynamique"
+      ],
+      "answer": 2,
+      "explain": "Pour une route statique par membre SD-WAN, la gateway (next-hop) doit être spécifiée explicitement. Sans gateway, la route ne peut pas être installée dans la FIB."
+    },
+    {
+      "q": "Une policy route peut-elle court-circuiter une règle SD-WAN ? Pourquoi ?",
+      "choices": [
+        "Non, les règles SD-WAN ont toujours la priorité",
+        "Oui, car les policy routes ont une précédence supérieure aux SD-WAN rules",
+        "Oui, mais uniquement pour le trafic UDP",
+        "Non, elles sont évaluées en parallèle"
+      ],
+      "answer": 1,
+      "explain": "Oui, une policy route peut court-circuiter une règle SD-WAN car les policy routes ont une précédence supérieure (priorité 1 vs priorité 2). C'est pourquoi il faut restreindre les critères des policy routes."
+    },
+    {
+      "q": "Lequel des éléments suivants est la priorité numéro 1 dans le routage FortiGate ?",
+      "choices": [
+        "Les routes BGP",
+        "Les routes statiques simples",
+        "Les policy routes",
+        "Les routes OSPF"
+      ],
+      "answer": 2,
+      "explain": "Les policy routes ont la priorité numéro 1 dans la précédence de routage FortiGate, devant les SD-WAN rules (priorité 2) et la FIB (priorité 3, dernier recours)."
+    },
+    {
+      "q": "Quelle est la best practice concernant la couverture des destinations SD-WAN ?",
+      "choices": [
+        "Chaque destination doit être assignée à un seul membre fixe",
+        "Toutes les destinations SD-WAN doivent être atteignables via tous les membres possibles",
+        "Les destinations doivent être regroupées par zone géographique",
+        "Utiliser uniquement des routes dynamiques BGP pour les destinations SD-WAN"
+      ],
+      "answer": 1,
+      "explain": "La best practice est que toutes les destinations SD-WAN soient atteignables via tous les membres possibles. Cela garantit que le FIB lookup trouve toujours un membre valide et que les règles ne sont pas skippées."
+    }
+  ]
+}
