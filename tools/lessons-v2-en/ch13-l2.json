@@ -13,8 +13,6 @@
   ],
   "questionPool": [
     {
-      "id": "ch13-l2-q1",
-      "question": "Which data does the primary FortiGate synchronize to secondary members?",
       "choices": [
         "Only firewall policies",
         "Configuration, FIB entries, DHCP leases, ARP table, FortiGuard definitions, and IPsec tunnel SAs",
@@ -22,11 +20,9 @@
         "Only routing tables"
       ],
       "answer": 1,
-      "explanation": "The primary FortiGate synchronizes configuration, FIB entries, DHCP leases, ARP table, FortiGuard definitions, and IPsec tunnel security associations (SAs) to secondary members."
+      "q": "Which data does the primary FortiGate synchronize to secondary members?"
     },
     {
-      "id": "ch13-l2-q2",
-      "question": "How do cluster members detect whether other FortiGate devices are alive?",
       "choices": [
         "Through SNMP polling",
         "Hello packets are broadcasted over the heartbeat interfaces to communicate cluster status",
@@ -34,11 +30,9 @@
         "Through SSH keepalives"
       ],
       "answer": 1,
-      "explanation": "The primary FortiGate monitors the cluster by broadcasting hello packets and listening for hello packets from other members. Members use the hello packets to identify whether other FortiGate devices are alive."
+      "q": "How do cluster members detect whether other FortiGate devices are alive?"
     },
     {
-      "id": "ch13-l2-q3",
-      "question": "What configuration settings are NOT synchronized in an HA cluster?",
       "choices": [
         "Firewall policies and NAT rules",
         "FortiGuard definitions and FIB entries",
@@ -46,11 +40,9 @@
         "IPsec tunnel SAs and DHCP leases"
       ],
       "answer": 2,
-      "explanation": "Settings not synchronized include HA override, HA device priority, virtual cluster priority, FortiGate host name, HA reserved management interface settings, licenses (except FortiToken), cache, and GUI dashboard widgets."
+      "q": "What configuration settings are NOT synchronized in an HA cluster?"
     },
     {
-      "id": "ch13-l2-q4",
-      "question": "What type of synchronization occurs when a new FortiGate first joins the cluster and checksums don't match?",
       "choices": [
         "Incremental synchronization of only the changed objects",
         "A complete synchronization where the primary uploads its full configuration",
@@ -58,11 +50,9 @@
         "Partial synchronization of only critical settings"
       ],
       "answer": 1,
-      "explanation": "When a new FortiGate joins the cluster, the primary compares checksums. If the checksums don't match, the primary FortiGate uploads its complete configuration to the secondary FortiGate."
+      "q": "What type of synchronization occurs when a new FortiGate first joins the cluster and checksums don't match?"
     },
     {
-      "id": "ch13-l2-q5",
-      "question": "What type of synchronization sends only changed objects rather than the full configuration?",
       "choices": [
         "Complete synchronization",
         "Incremental synchronization",
@@ -70,11 +60,9 @@
         "Checksum-based synchronization"
       ],
       "answer": 1,
-      "explanation": "After the initial synchronization, whenever a change is made to the configuration of an HA cluster device, incremental synchronization sends only the same configuration change to all other cluster devices over the HA heartbeat link."
+      "q": "What type of synchronization sends only changed objects rather than the full configuration?"
     },
     {
-      "id": "ch13-l2-q6",
-      "question": "How often does the cluster check that all devices are synchronized by default?",
       "choices": [
         "Every 15 seconds",
         "Every 30 seconds",
@@ -82,11 +70,9 @@
         "Every 5 minutes"
       ],
       "answer": 2,
-      "explanation": "By default, the cluster checks every 60 seconds to ensure that all devices are synchronized. If a secondary device is out of sync, its checksum is checked every 15 seconds."
+      "q": "How often does the cluster check that all devices are synchronized by default?"
     },
     {
-      "id": "ch13-l2-q7",
-      "question": "If an out-of-sync secondary device's checksum doesn't match for how many consecutive 15-second checks before a full resync is triggered?",
       "choices": [
         "Three",
         "Five",
@@ -94,11 +80,9 @@
         "Two"
       ],
       "answer": 1,
-      "explanation": "If the checksum of the out-of-sync secondary device doesn't match for five consecutive checks (every 15 seconds), FortiGate performs a complete resynchronization of that secondary device."
+      "q": "If an out-of-sync secondary device's checksum doesn't match for how many consecutive 15-second checks before a full resync is triggered?"
     },
     {
-      "id": "ch13-l2-q8",
-      "question": "In active-passive mode, what do secondary devices do while the primary is functioning normally?",
       "choices": [
         "Process a portion of the traffic",
         "Act as standby devices, receiving synchronization data but not processing traffic",
@@ -106,11 +90,9 @@
         "Perform health checks on external servers"
       ],
       "answer": 1,
-      "explanation": "In active-passive mode, the secondary devices act as a standby device, receiving synchronization data but not actually processing any traffic."
+      "q": "In active-passive mode, what do secondary devices do while the primary is functioning normally?"
     },
     {
-      "id": "ch13-l2-q9",
-      "question": "What is the benefit of enabling session synchronization in an HA cluster?",
       "choices": [
         "It speeds up the primary election process",
         "The new primary can resume communication for existing sessions after a failover, allowing sessions to continue with minimal or no interruption",
@@ -118,11 +100,9 @@
         "It prevents any failover from occurring"
       ],
       "answer": 1,
-      "explanation": "When you enable session synchronization, the new primary can resume communication for sessions after a failover event. The goal is for existing sessions to continue flowing through the new primary FortiGate with minimal or no interruption."
+      "q": "What is the benefit of enabling session synchronization in an HA cluster?"
     },
     {
-      "id": "ch13-l2-q10",
-      "question": "Which task is exclusive to active-active mode for the primary FortiGate?",
       "choices": [
         "Broadcasting hello packets",
         "Synchronizing configuration to secondary members",
@@ -130,11 +110,9 @@
         "Performing complete resynchronization"
       ],
       "answer": 2,
-      "explanation": "In active-active mode only, a primary FortiGate is also responsible for distributing sessions to secondary members. This capability does not exist in active-passive mode."
+      "q": "Which task is exclusive to active-active mode for the primary FortiGate?"
     },
     {
-      "id": "ch13-l2-q11",
-      "question": "Can you make configuration changes on a secondary device in a synchronized cluster?",
       "choices": [
         "No, only the primary accepts configuration changes",
         "Yes, configuration changes on any member are propagated to all other members, but it is recommended to change on the primary",
@@ -142,11 +120,9 @@
         "Only in active-active mode"
       ],
       "answer": 1,
-      "explanation": "Once a cluster is in sync, configuration changes made on a secondary device are propagated to other members. However, it is recommended to make changes on the primary device to prevent loss of changes if there are synchronization issues."
+      "q": "Can you make configuration changes on a secondary device in a synchronized cluster?"
     },
     {
-      "id": "ch13-l2-q12",
-      "question": "Are GUI dashboard widgets synchronized in an HA cluster?",
       "choices": [
         "Yes, they are always synchronized",
         "No, GUI dashboard widgets are not synchronized",
@@ -154,11 +130,9 @@
         "They are synchronized only in active-active mode"
       ],
       "answer": 1,
-      "explanation": "GUI dashboard widgets are among the settings that are NOT synchronized in HA. Each member maintains its own dashboard widget configuration."
+      "q": "Are GUI dashboard widgets synchronized in an HA cluster?"
     },
     {
-      "id": "ch13-l2-q13",
-      "question": "What happens to DHCP leases in a FortiGate HA cluster?",
       "choices": [
         "DHCP leases are not synchronized",
         "DHCP leases are synchronized from the primary to secondary members",
@@ -166,11 +140,9 @@
         "DHCP must be configured separately on each member"
       ],
       "answer": 1,
-      "explanation": "DHCP leases are part of the runtime data synchronized by the primary FortiGate to secondary members, along with FIB entries and other operational data."
+      "q": "What happens to DHCP leases in a FortiGate HA cluster?"
     },
     {
-      "id": "ch13-l2-q14",
-      "question": "Which licenses ARE synchronized in an HA cluster?",
       "choices": [
         "All licenses including FortiGuard and FortiClient",
         "No licenses are ever synchronized",
@@ -178,11 +150,9 @@
         "Only FortiGuard Web Filtering licenses"
       ],
       "answer": 2,
-      "explanation": "All licenses except FortiToken licenses (serial numbers) are NOT synchronized. FortiToken licenses (serial numbers) are the exception that is synchronized."
+      "q": "Which licenses ARE synchronized in an HA cluster?"
     },
     {
-      "id": "ch13-l2-q15",
-      "question": "What mechanism is used to transmit incremental configuration changes between cluster members?",
       "choices": [
         "The management interface",
         "The HA heartbeat link",
@@ -190,13 +160,11 @@
         "HTTPS REST API calls"
       ],
       "answer": 1,
-      "explanation": "After the initial synchronization, incremental synchronization sends configuration changes to all other cluster devices over the HA heartbeat link."
+      "q": "What mechanism is used to transmit incremental configuration changes between cluster members?"
     }
   ],
   "quiz": [
     {
-      "id": "ch13-l2-q2",
-      "question": "How do cluster members detect whether other FortiGate devices are alive?",
       "choices": [
         "Through SNMP polling",
         "Hello packets are broadcasted over the heartbeat interfaces to communicate cluster status",
@@ -204,11 +172,9 @@
         "Through SSH keepalives"
       ],
       "answer": 1,
-      "explanation": "The primary FortiGate monitors the cluster by broadcasting hello packets and listening for hello packets from other members. Members use the hello packets to identify whether other FortiGate devices are alive."
+      "q": "How do cluster members detect whether other FortiGate devices are alive?"
     },
     {
-      "id": "ch13-l2-q4",
-      "question": "What type of synchronization occurs when a new FortiGate first joins the cluster and checksums don't match?",
       "choices": [
         "Incremental synchronization of only the changed objects",
         "Hello packets are broadcasted over the heartbeat interfaces to communicate cluster status",
@@ -216,11 +182,9 @@
         "Partial synchronization of only critical settings"
       ],
       "answer": 1,
-      "explanation": "When a new FortiGate joins the cluster, the primary compares checksums. If the checksums don't match, the primary FortiGate uploads its complete configuration to the secondary FortiGate."
+      "q": "What type of synchronization occurs when a new FortiGate first joins the cluster and checksums don't match?"
     },
     {
-      "id": "ch13-l2-q3",
-      "question": "What configuration settings are NOT synchronized in an HA cluster?",
       "choices": [
         "Firewall policies and NAT rules",
         "FortiGuard definitions and FIB entries",
@@ -228,11 +192,9 @@
         "IPsec tunnel SAs and DHCP leases"
       ],
       "answer": 2,
-      "explanation": "Settings not synchronized include HA override, HA device priority, virtual cluster priority, FortiGate host name, HA reserved management interface settings, licenses (except FortiToken), cache, and GUI dashboard widgets."
+      "q": "What configuration settings are NOT synchronized in an HA cluster?"
     },
     {
-      "id": "ch13-l2-q9",
-      "question": "What is the benefit of enabling session synchronization in an HA cluster?",
       "choices": [
         "It speeds up the primary election process",
         "Hello packets are broadcasted over the heartbeat interfaces to communicate cluster status",
@@ -240,11 +202,9 @@
         "It prevents any failover from occurring"
       ],
       "answer": 1,
-      "explanation": "When you enable session synchronization, the new primary can resume communication for sessions after a failover event. The goal is for existing sessions to continue flowing through the new primary FortiGate with minimal or no interruption."
+      "q": "What is the benefit of enabling session synchronization in an HA cluster?"
     },
     {
-      "id": "ch13-l2-q6",
-      "question": "How often does the cluster check that all devices are synchronized by default?",
       "choices": [
         "Every 15 seconds",
         "Every 30 seconds",
@@ -252,7 +212,7 @@
         "Every 5 minutes"
       ],
       "answer": 2,
-      "explanation": "By default, the cluster checks every 60 seconds to ensure that all devices are synchronized. If a secondary device is out of sync, its checksum is checked every 15 seconds."
+      "q": "How often does the cluster check that all devices are synchronized by default?"
     }
   ]
 }

@@ -13,9 +13,7 @@
   ],
   "questionPool": [
     {
-      "id": "ch15-l1-q1",
       "type": "mcq",
-      "question": "According to the 2023 Cloud Security Report, what percentage of cybersecurity professionals consider public cloud misconfiguration the top threat?",
       "choices": [
         "More than 30%",
         "More than 51%",
@@ -23,12 +21,10 @@
         "More than 85%"
       ],
       "answer": 1,
-      "explanation": "According to the 2023 Cloud Security Report conducted by Cybersecurity Insiders and sponsored by Fortinet, more than 51% of surveyed cybersecurity professionals deem misconfigurations of the public cloud the number one threat."
+      "q": "According to the 2023 Cloud Security Report, what percentage of cybersecurity professionals consider public cloud misconfiguration the top threat?"
     },
     {
-      "id": "ch15-l1-q2",
       "type": "mcq",
-      "question": "Which three major cloud providers does Fortinet natively integrate with for multicloud security?",
       "choices": [
         "AWS, Oracle Cloud, and IBM Cloud",
         "AWS, Azure, and Google Cloud",
@@ -36,12 +32,10 @@
         "AWS, Azure, and Rackspace"
       ],
       "answer": 1,
-      "explanation": "Fortinet solutions provide broad protection both on-premises and in public clouds such as AWS, Azure, and Google Cloud."
+      "q": "Which three major cloud providers does Fortinet natively integrate with for multicloud security?"
     },
     {
-      "id": "ch15-l1-q3",
       "type": "mcq",
-      "question": "For which type of cloud service model can Fortinet provide secure connectivity (such as IPsec VPN or WAF)?",
       "choices": [
         "Software-as-a-Service (SaaS)",
         "Infrastructure-as-a-Service (IaaS)",
@@ -49,12 +43,10 @@
         "Only on-premises deployments"
       ],
       "answer": 1,
-      "explanation": "Fortinet can provide secure connectivity for IaaS but cannot provide the same solution for SaaS applications. For SaaS, Fortinet can provide only visibility and control — you cannot create an IPsec tunnel or WAF to a SaaS application like Dropbox."
+      "q": "For which type of cloud service model can Fortinet provide secure connectivity (such as IPsec VPN or WAF)?"
     },
     {
-      "id": "ch15-l1-q4",
       "type": "mcq",
-      "question": "What are the three top challenges of the public cloud identified in the lesson?",
       "choices": [
         "Cost management, latency, and vendor lock-in",
         "Security responsibility, cloud architecture selection, and regulatory compliance",
@@ -62,12 +54,10 @@
         "Misconfiguration, API security, and network segmentation"
       ],
       "answer": 1,
-      "explanation": "The top challenges of the public cloud are security responsibility, the type of cloud architecture that should be implemented, and achieving regulatory compliance."
+      "q": "What are the three top challenges of the public cloud identified in the lesson?"
     },
     {
-      "id": "ch15-l1-q5",
       "type": "mcq",
-      "question": "How does Fortinet describe its cloud security solution in relation to cloud vendors' native security?",
       "choices": [
         "A full replacement for cloud vendor security tools",
         "An added layer that provides greater control, visibility, and optimized protection beyond native options",
@@ -75,12 +65,10 @@
         "A compliance-only solution that monitors but does not enforce policies"
       ],
       "answer": 1,
-      "explanation": "The Fortinet cloud security solution is not a replacement for existing cloud vendor security but an added layer that provides greater control, visibility, and optimized protection beyond native options."
+      "q": "How does Fortinet describe its cloud security solution in relation to cloud vendors' native security?"
     },
     {
-      "id": "ch15-l1-q6",
       "type": "mcq",
-      "question": "What does Fortinet's single-pane-of-glass management solution enable?",
       "choices": [
         "Consistent management of protection services natively integrated into the cloud infrastructure",
         "Direct access to cloud provider billing and cost management",
@@ -88,12 +76,10 @@
         "Centralized storage of all cloud workload logs"
       ],
       "answer": 0,
-      "explanation": "To help optimize limited security resources, Fortinet offers a single-pane-of-glass solution that enables consistent management of the broad set of protection services natively integrated into the cloud infrastructure."
+      "q": "What does Fortinet's single-pane-of-glass management solution enable?"
     },
     {
-      "id": "ch15-l1-q7",
       "type": "mcq",
-      "question": "What are the three Fortinet solution categories for securing the cloud?",
       "choices": [
         "Firewall, VPN, and antivirus",
         "Secure connectivity, application security, and visibility and control",
@@ -101,12 +87,10 @@
         "Network security, endpoint security, and cloud security"
       ],
       "answer": 1,
-      "explanation": "There are three Fortinet solutions for securing the cloud: the secure connectivity solution (IaaS), application security, and visibility and control."
+      "q": "What are the three Fortinet solution categories for securing the cloud?"
     },
     {
-      "id": "ch15-l1-q8",
       "type": "mcq",
-      "question": "How does Fortinet automation framework benefit customers in cloud environments?",
       "choices": [
         "It automatically provisions physical hardware at cloud data centers",
         "It embeds security services into DevOps-driven application lifecycles",
@@ -114,12 +98,10 @@
         "It consolidates all security logs into a single on-premises SIEM"
       ],
       "answer": 1,
-      "explanation": "By extending the automation framework across multiple cloud environments, customers can embed security services into DevOps-driven application lifecycles while supporting more agile application and business operations."
+      "q": "How does Fortinet automation framework benefit customers in cloud environments?"
     },
     {
-      "id": "ch15-l1-q9",
       "type": "mcq",
-      "question": "What benefit does native cloud integration provide to Fortinet security products?",
       "choices": [
         "Allows security products to consume cloud services natively, delivering faster, more seamless protection and response",
         "Requires no licensing for cloud-deployed security instances",
@@ -127,12 +109,10 @@
         "Provides free threat intelligence feeds from each cloud provider"
       ],
       "answer": 0,
-      "explanation": "Native integration allows security products to consume cloud services natively, delivering faster, more seamless protection and response while extending the web service-based APIs of products running in the cloud."
+      "q": "What benefit does native cloud integration provide to Fortinet security products?"
     },
     {
-      "id": "ch15-l1-q10",
       "type": "mcq",
-      "question": "What is Fortinet's position in the multicloud security market?",
       "choices": [
         "A niche provider focused only on AWS security",
         "The leader in multicloud security",
@@ -140,12 +120,10 @@
         "A compliance-only vendor for regulated industries"
       ],
       "answer": 1,
-      "explanation": "As the leader in multicloud security, Fortinet gives you the confidence to deploy any application in any cloud."
+      "q": "What is Fortinet's position in the multicloud security market?"
     },
     {
-      "id": "ch15-l1-q11",
       "type": "mcq",
-      "question": "Which threat type involves compromised systems sending organizational data to unauthorized external systems?",
       "choices": [
         "Malware",
         "Insecure APIs",
@@ -153,12 +131,10 @@
         "Misconfiguration"
       ],
       "answer": 2,
-      "explanation": "Exfiltration of sensitive data is commonly reported as a threat in public cloud environments, where compromised systems send data to unauthorized external destinations."
+      "q": "Which threat type involves compromised systems sending organizational data to unauthorized external systems?"
     },
     {
-      "id": "ch15-l1-q12",
       "type": "mcq",
-      "question": "What does 'broad protection' mean in the context of Fortinet cloud security?",
       "choices": [
         "Offering the broadest set of security products both in and out of the cloud, enabling consistently secure infrastructures regardless of deployment mode",
         "Applying the same firewall policy to all workloads regardless of sensitivity",
@@ -166,12 +142,10 @@
         "Providing security only for east-west traffic within a VPC"
       ],
       "answer": 0,
-      "explanation": "By offering the broadest set of security products both in and out of the cloud, Fortinet enables customers to consistently build highly secure infrastructures, regardless of deployment mode, workflow complexity, or degree of scale."
+      "q": "What does 'broad protection' mean in the context of Fortinet cloud security?"
     },
     {
-      "id": "ch15-l1-q13",
       "type": "mcq",
-      "question": "What unified visibility and policy management benefit does Fortinet's native cloud integration provide?",
       "choices": [
         "It allows FortiGate to act as the cloud provider's control plane",
         "It supports risk management and compliance requirements across multicloud and on-premises deployments",
@@ -179,12 +153,10 @@
         "It provides automated billing reconciliation across cloud providers"
       ],
       "answer": 1,
-      "explanation": "Unified visibility, control, and policy management supports risk management and compliance requirements, enabled by native integration with each of the major cloud providers."
+      "q": "What unified visibility and policy management benefit does Fortinet's native cloud integration provide?"
     },
     {
-      "id": "ch15-l1-q14",
       "type": "mcq",
-      "question": "For a SaaS application, which Fortinet cloud solution category is applicable?",
       "choices": [
         "Secure connectivity",
         "Application security (WAF)",
@@ -192,12 +164,10 @@
         "All three categories equally"
       ],
       "answer": 2,
-      "explanation": "For SaaS, Fortinet can provide only visibility and control. You cannot create an IPsec tunnel or web application firewall (WAF) to a SaaS application like Dropbox."
+      "q": "For a SaaS application, which Fortinet cloud solution category is applicable?"
     },
     {
-      "id": "ch15-l1-q15",
       "type": "mcq",
-      "question": "What does Fortinet's automation framework support to streamline security management?",
       "choices": [
         "Automatic hardware ordering and delivery",
         "Standard web-based APIs and predefined automation recipes",
@@ -205,14 +175,12 @@
         "Automatic SSL certificate rotation across all workloads"
       ],
       "answer": 1,
-      "explanation": "Fortinet automates management through standard web-based APIs and supports the use of predefined automation recipes, extending this framework across multiple cloud environments."
+      "q": "What does Fortinet's automation framework support to streamline security management?"
     }
   ],
   "quiz": [
     {
-      "id": "ch15-l1-q1",
       "type": "mcq",
-      "question": "According to the 2023 Cloud Security Report, what percentage of cybersecurity professionals consider public cloud misconfiguration the top threat?",
       "choices": [
         "More than 30%",
         "More than 51%",
@@ -220,12 +188,10 @@
         "More than 85%"
       ],
       "answer": 1,
-      "explanation": "According to the 2023 Cloud Security Report conducted by Cybersecurity Insiders and sponsored by Fortinet, more than 51% of surveyed cybersecurity professionals deem misconfigurations of the public cloud the number one threat."
+      "q": "According to the 2023 Cloud Security Report, what percentage of cybersecurity professionals consider public cloud misconfiguration the top threat?"
     },
     {
-      "id": "ch15-l1-q3",
       "type": "mcq",
-      "question": "For which type of cloud service model can Fortinet provide secure connectivity (such as IPsec VPN or WAF)?",
       "choices": [
         "Software-as-a-Service (SaaS)",
         "Infrastructure-as-a-Service (IaaS)",
@@ -233,12 +199,10 @@
         "Only on-premises deployments"
       ],
       "answer": 1,
-      "explanation": "Fortinet can provide secure connectivity for IaaS but cannot provide the same solution for SaaS applications. For SaaS, Fortinet can provide only visibility and control."
+      "q": "For which type of cloud service model can Fortinet provide secure connectivity (such as IPsec VPN or WAF)?"
     },
     {
-      "id": "ch15-l1-q5",
       "type": "mcq",
-      "question": "How does Fortinet describe its cloud security solution in relation to cloud vendors' native security?",
       "choices": [
         "A full replacement for cloud vendor security tools",
         "An added layer that provides greater control, visibility, and optimized protection beyond native options",
@@ -246,12 +210,10 @@
         "A compliance-only solution that monitors but does not enforce policies"
       ],
       "answer": 1,
-      "explanation": "The Fortinet cloud security solution is not a replacement for existing cloud vendor security but an added layer that provides greater control, visibility, and optimized protection beyond native options."
+      "q": "How does Fortinet describe its cloud security solution in relation to cloud vendors' native security?"
     },
     {
-      "id": "ch15-l1-q7",
       "type": "mcq",
-      "question": "What are the three Fortinet solution categories for securing the cloud?",
       "choices": [
         "Firewall, VPN, and antivirus",
         "Secure connectivity, application security, and visibility and control",
@@ -259,12 +221,10 @@
         "Network security, endpoint security, and cloud security"
       ],
       "answer": 1,
-      "explanation": "There are three Fortinet solutions for securing the cloud: the secure connectivity solution (IaaS), application security, and visibility and control."
+      "q": "What are the three Fortinet solution categories for securing the cloud?"
     },
     {
-      "id": "ch15-l1-q14",
       "type": "mcq",
-      "question": "For a SaaS application, which Fortinet cloud solution category is applicable?",
       "choices": [
         "Secure connectivity",
         "Application security (WAF)",
@@ -272,7 +232,7 @@
         "All three categories equally"
       ],
       "answer": 2,
-      "explanation": "For SaaS, Fortinet can provide only visibility and control. You cannot create an IPsec tunnel or web application firewall (WAF) to a SaaS application like Dropbox."
+      "q": "For a SaaS application, which Fortinet cloud solution category is applicable?"
     }
   ]
 }

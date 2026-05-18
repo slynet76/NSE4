@@ -13,8 +13,6 @@
   ],
   "questionPool": [
     {
-      "id": "ch13-l3-q1",
-      "question": "What triggers a device failover in a FortiGate HA cluster?",
       "choices": [
         "A link status change on a monitored interface",
         "The secondary devices stop receiving hello packets from the primary",
@@ -22,11 +20,9 @@
         "An SSD error is detected on the primary"
       ],
       "answer": 1,
-      "explanation": "A device failover occurs when the secondary devices stop receiving hello packets from the primary FortiGate, indicating the primary is no longer reachable."
+      "q": "What triggers a device failover in a FortiGate HA cluster?"
     },
     {
-      "id": "ch13-l3-q2",
-      "question": "What triggers a link failover?",
       "choices": [
         "The primary FortiGate stops sending hello packets",
         "The link status of a monitored interface on the primary FortiGate goes down",
@@ -34,11 +30,9 @@
         "A remote server stops responding to probes"
       ],
       "answer": 1,
-      "explanation": "A link failover occurs when the link status of a monitored interface on the primary FortiGate goes down. If a monitored interface is unplugged or its link status goes down, a new primary FortiGate is elected."
+      "q": "What triggers a link failover?"
     },
     {
-      "id": "ch13-l3-q3",
-      "question": "What feature is used for remote link failover monitoring?",
       "choices": [
         "SNMP polling",
         "The link health monitor feature, which monitors interfaces against beacon servers",
@@ -46,11 +40,9 @@
         "BFD (Bidirectional Forwarding Detection)"
       ],
       "answer": 1,
-      "explanation": "When you configure remote link failover, FortiGate uses the link health monitor feature to monitor the health of one or more interfaces against one or more servers that act as beacons."
+      "q": "What feature is used for remote link failover monitoring?"
     },
     {
-      "id": "ch13-l3-q4",
-      "question": "What triggers memory-based failover?",
       "choices": [
         "Memory errors detected on the primary",
         "Memory utilization on the primary reaches the configured threshold for the configured monitoring period",
@@ -58,11 +50,9 @@
         "Memory synchronization between cluster members fails"
       ],
       "answer": 1,
-      "explanation": "If you enable memory-based failover, an HA failover is triggered when the memory utilization on the primary FortiGate reaches the configured threshold for the configured monitoring period."
+      "q": "What triggers memory-based failover?"
     },
     {
-      "id": "ch13-l3-q5",
-      "question": "What triggers SSD failover?",
       "choices": [
         "SSD utilization exceeds 90%",
         "FortiOS detects Ext-fs errors on an SSD on the primary FortiGate",
@@ -70,11 +60,9 @@
         "The SSD synchronization with the secondary fails"
       ],
       "answer": 1,
-      "explanation": "You can also enable SSD failover, which triggers a failover if FortiOS detects Ext-fs errors on an SSD on the primary FortiGate."
+      "q": "What triggers SSD failover?"
     },
     {
-      "id": "ch13-l3-q6",
-      "question": "What is generated when a failover occurs?",
       "choices": [
         "Only an SNMP trap",
         "Only an alert email",
@@ -82,11 +70,9 @@
         "A syslog entry only"
       ],
       "answer": 2,
-      "explanation": "When a failover occurs, an event log is generated. Optionally, you can configure the device to also generate SNMP traps and alert emails."
+      "q": "What is generated when a failover occurs?"
     },
     {
-      "id": "ch13-l3-q7",
-      "question": "What does enabling session pickup allow in the event of an HA failover?",
       "choices": [
         "Active sessions are dropped and immediately re-established faster",
         "Active sessions are seamlessly picked up by the new primary, continuing uninterrupted",
@@ -94,11 +80,9 @@
         "Session pickup forces all sessions to the backup ISP"
       ],
       "answer": 1,
-      "explanation": "Enabling session pickup allows active sessions to be seamlessly picked up by the new primary in the event of an HA failover. Users' sessions continue uninterrupted, and they will not even know that a failover occurred."
+      "q": "What does enabling session pickup allow in the event of an HA failover?"
     },
     {
-      "id": "ch13-l3-q8",
-      "question": "Which type of sessions CANNOT be handed off to the new primary during a failover?",
       "choices": [
         "TCP sessions with SNAT",
         "HTTP sessions through a firewall policy",
@@ -106,11 +90,9 @@
         "UDP sessions"
       ],
       "answer": 2,
-      "explanation": "Sessions that terminate at the FortiGate itself — such as SSL VPN sessions and proxy sessions — cannot be handed off to another FortiGate and must be restarted on the new primary."
+      "q": "Which type of sessions CANNOT be handed off to the new primary during a failover?"
     },
     {
-      "id": "ch13-l3-q9",
-      "question": "What are virtual MAC addresses based on in a FortiGate HA cluster?",
       "choices": [
         "The IP address of each interface",
         "The HA group ID, virtual cluster ID (if enabled), and interface index number",
@@ -118,11 +100,9 @@
         "The physical MAC address of the primary"
       ],
       "answer": 1,
-      "explanation": "When a primary joins an HA cluster, each interface is assigned a virtual MAC address. The HA group ID, virtual cluster ID (if enabled), and interface index number are used in the creation of virtual MAC addresses."
+      "q": "What are virtual MAC addresses based on in a FortiGate HA cluster?"
     },
     {
-      "id": "ch13-l3-q10",
-      "question": "What should you do if two HA clusters are in the same broadcast domain to avoid MAC address conflicts?",
       "choices": [
         "Use different firmware versions",
         "Assign different HA group IDs to each cluster",
@@ -130,11 +110,9 @@
         "Configure different priority values on each cluster"
       ],
       "answer": 1,
-      "explanation": "If you have two or more HA clusters in the same broadcast domain using the same HA group ID, you might get MAC address conflicts. It is strongly recommended that you assign different HA group IDs to each cluster."
+      "q": "What should you do if two HA clusters are in the same broadcast domain to avoid MAC address conflicts?"
     },
     {
-      "id": "ch13-l3-q11",
-      "question": "How does the network learn that a virtual MAC address is now reachable through a different switch port after failover?",
       "choices": [
         "The new primary sends an SNMP notification",
         "The new primary broadcasts gratuitous ARP packets",
@@ -142,11 +120,9 @@
         "The cluster administrator must manually update ARP tables"
       ],
       "answer": 1,
-      "explanation": "Upon failover, the new primary broadcasts gratuitous ARP packets, notifying the network that each virtual MAC address is now reachable through a different switch port."
+      "q": "How does the network learn that a virtual MAC address is now reachable through a different switch port after failover?"
     },
     {
-      "id": "ch13-l3-q12",
-      "question": "What happens to the MAC address of the reserved HA management interface during failover?",
       "choices": [
         "It adopts the same virtual MAC address as the primary",
         "It keeps its original MAC address and is not changed to a virtual MAC address",
@@ -154,11 +130,9 @@
         "It uses the MAC address of the new primary"
       ],
       "answer": 1,
-      "explanation": "The MAC address of a reserved HA management interface is not changed to a virtual MAC address. Instead, the reserved management interface keeps its original MAC address."
+      "q": "What happens to the MAC address of the reserved HA management interface during failover?"
     },
     {
-      "id": "ch13-l3-q13",
-      "question": "What does the new primary do with virtual MAC addresses upon failover?",
       "choices": [
         "It generates new virtual MAC addresses for all interfaces",
         "It adopts the same virtual MAC addresses for the equivalent interfaces as the previous primary",
@@ -166,11 +140,9 @@
         "It uses DHCP to obtain new MAC assignments"
       ],
       "answer": 1,
-      "explanation": "Upon failover, a secondary adopts the same virtual MAC addresses for the equivalent interfaces. The new primary then broadcasts gratuitous ARP packets to update the network."
+      "q": "What does the new primary do with virtual MAC addresses upon failover?"
     },
     {
-      "id": "ch13-l3-q14",
-      "question": "What determines whether a remote link failover is triggered?",
       "choices": [
         "A single interface failure always triggers failover",
         "The accumulated penalty of all failed interfaces reaches the configured threshold",
@@ -178,11 +150,9 @@
         "Only if all monitored links are down"
       ],
       "answer": 1,
-      "explanation": "The primary FortiGate fails over if the accumulated penalty of all failed interfaces reaches the configured threshold when using remote link failover."
+      "q": "What determines whether a remote link failover is triggered?"
     },
     {
-      "id": "ch13-l3-q15",
-      "question": "Which of the following is NOT a common HA failover trigger?",
       "choices": [
         "Hardware or software failure on the primary",
         "An issue on one of the interfaces on the primary",
@@ -190,13 +160,11 @@
         "A configuration backup completion"
       ],
       "answer": 3,
-      "explanation": "Common HA failover triggers include hardware or software failure on the primary, an issue on one of the interfaces on the primary, and an administrator-triggered failover. A configuration backup completion is not a failover trigger."
+      "q": "Which of the following is NOT a common HA failover trigger?"
     }
   ],
   "quiz": [
     {
-      "id": "ch13-l3-q1",
-      "question": "What triggers a device failover in a FortiGate HA cluster?",
       "choices": [
         "A link status change on a monitored interface",
         "The secondary devices stop receiving hello packets from the primary",
@@ -204,11 +172,9 @@
         "An SSD error is detected on the primary"
       ],
       "answer": 1,
-      "explanation": "A device failover occurs when the secondary devices stop receiving hello packets from the primary FortiGate, indicating the primary is no longer reachable."
+      "q": "What triggers a device failover in a FortiGate HA cluster?"
     },
     {
-      "id": "ch13-l3-q7",
-      "question": "What does enabling session pickup allow in the event of an HA failover?",
       "choices": [
         "Active sessions are dropped and immediately re-established faster",
         "Active sessions are seamlessly picked up by the new primary, continuing uninterrupted",
@@ -216,11 +182,9 @@
         "Session pickup forces all sessions to the backup ISP"
       ],
       "answer": 1,
-      "explanation": "Enabling session pickup allows active sessions to be seamlessly picked up by the new primary in the event of an HA failover. Users' sessions continue uninterrupted, and they will not even know that a failover occurred."
+      "q": "What does enabling session pickup allow in the event of an HA failover?"
     },
     {
-      "id": "ch13-l3-q9",
-      "question": "What are virtual MAC addresses based on in a FortiGate HA cluster?",
       "choices": [
         "The IP address of each interface",
         "The HA group ID, virtual cluster ID (if enabled), and interface index number",
@@ -228,11 +192,9 @@
         "The physical MAC address of the primary"
       ],
       "answer": 1,
-      "explanation": "When a primary joins an HA cluster, each interface is assigned a virtual MAC address. The HA group ID, virtual cluster ID (if enabled), and interface index number are used in the creation of virtual MAC addresses."
+      "q": "What are virtual MAC addresses based on in a FortiGate HA cluster?"
     },
     {
-      "id": "ch13-l3-q11",
-      "question": "How does the network learn that a virtual MAC address is now reachable through a different switch port after failover?",
       "choices": [
         "The new primary sends an SNMP notification",
         "The new primary broadcasts gratuitous ARP packets",
@@ -240,11 +202,9 @@
         "The cluster administrator must manually update ARP tables"
       ],
       "answer": 1,
-      "explanation": "Upon failover, the new primary broadcasts gratuitous ARP packets, notifying the network that each virtual MAC address is now reachable through a different switch port."
+      "q": "How does the network learn that a virtual MAC address is now reachable through a different switch port after failover?"
     },
     {
-      "id": "ch13-l3-q8",
-      "question": "Which type of sessions CANNOT be handed off to the new primary during a failover?",
       "choices": [
         "TCP sessions with SNAT",
         "HTTP sessions through a firewall policy",
@@ -252,7 +212,7 @@
         "UDP sessions"
       ],
       "answer": 2,
-      "explanation": "Sessions that terminate at the FortiGate itself — such as SSL VPN sessions and proxy sessions — cannot be handed off to another FortiGate and must be restarted on the new primary."
+      "q": "Which type of sessions CANNOT be handed off to the new primary during a failover?"
     }
   ]
 }

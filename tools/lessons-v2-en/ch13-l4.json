@@ -13,8 +13,6 @@
   ],
   "questionPool": [
     {
-      "id": "ch13-l4-q1",
-      "question": "Which CLI command is typically used as the first step when troubleshooting HA?",
       "choices": [
         "diagnose sys ha checksum cluster",
         "get system ha status",
@@ -22,11 +20,9 @@
         "diagnose debug application hatalk"
       ],
       "answer": 1,
-      "explanation": "The get system ha status command displays comprehensive HA status information in a user-friendly output and is usually executed as the first step when troubleshooting HA."
+      "q": "Which CLI command is typically used as the first step when troubleshooting HA?"
     },
     {
-      "id": "ch13-l4-q2",
-      "question": "What information does the get system ha status command provide?",
       "choices": [
         "Only the primary election history",
         "Cluster status, HA mode, sync status, system usage statistics, and interface status for each member",
@@ -34,11 +30,9 @@
         "Only the sessions handled by each member"
       ],
       "answer": 1,
-      "explanation": "The get system ha status command displays cluster status, member model, HA mode, cluster uptime, primary election events, configuration sync status, system usage statistics, and interface status information."
+      "q": "What information does the get system ha status command provide?"
     },
     {
-      "id": "ch13-l4-q3",
-      "question": "What does the diagnose sys ha checksum cluster command do?",
       "choices": [
         "Recalculates all checksums for the cluster",
         "Polls and displays the checksum of each member using the heartbeat interface",
@@ -46,11 +40,9 @@
         "Clears the checksum cache on all members"
       ],
       "answer": 1,
-      "explanation": "The diagnose sys ha checksum cluster command views the cluster checksum by polling from each member using the heartbeat interface. The output includes the checksum of each member in the cluster."
+      "q": "What does the diagnose sys ha checksum cluster command do?"
     },
     {
-      "id": "ch13-l4-q4",
-      "question": "When should you use diagnose sys ha checksum show instead of diagnose sys ha checksum cluster?",
       "choices": [
         "When you want to see all members' checksums at once",
         "When there are heartbeat communication issues and the cluster command may not show all members",
@@ -58,11 +50,9 @@
         "When connecting to the cluster remotely"
       ],
       "answer": 1,
-      "explanation": "An alternative is to connect to each member individually and run the diagnose sys ha checksum show command, which shows the checksum of that member — useful if heartbeat communication issues prevent the cluster command from showing all members."
+      "q": "When should you use diagnose sys ha checksum show instead of diagnose sys ha checksum cluster?"
     },
     {
-      "id": "ch13-l4-q5",
-      "question": "How can you confirm that all cluster members' configurations are in sync using checksums?",
       "choices": [
         "If the checksums are all different, configs are in sync",
         "If all members show the exact same hash values for each configuration scope, the configuration is in sync",
@@ -70,11 +60,9 @@
         "If the primary checksum matches at least one secondary checksum"
       ],
       "answer": 1,
-      "explanation": "After obtaining each member's checksums, you can identify the configuration sync status by comparing them. If all members show the exact same hash values for each configuration scope, then the configuration of all members is in sync."
+      "q": "How can you confirm that all cluster members' configurations are in sync using checksums?"
     },
     {
-      "id": "ch13-l4-q6",
-      "question": "What configuration scopes does FortiGate compute hash values for when checking HA checksums?",
       "choices": [
         "primary, secondary, and all",
         "global, root, and all",
@@ -82,11 +70,9 @@
         "config, runtime, and all"
       ],
       "answer": 1,
-      "explanation": "To calculate checksums, FortiGate computes a hash value for each of the following configuration scopes: global (global settings, FortiGuard settings), root (settings for the root VDOM), and all (global plus all VDOMs)."
+      "q": "What configuration scopes does FortiGate compute hash values for when checking HA checksums?"
     },
     {
-      "id": "ch13-l4-q7",
-      "question": "What CLI command do you use to access a secondary cluster member's CLI from the primary?",
       "choices": [
         "ssh secondary <member-id>",
         "execute ha manage <member-id> <admin-username>",
@@ -94,11 +80,9 @@
         "connect ha member <member-id>"
       ],
       "answer": 1,
-      "explanation": "You can access the secondary device's CLI by running the execute ha manage command on the primary FortiGate CLI. This requires you to indicate the secondary device's member ID and an administrator account username."
+      "q": "What CLI command do you use to access a secondary cluster member's CLI from the primary?"
     },
     {
-      "id": "ch13-l4-q8",
-      "question": "Why are secondary cluster members not directly reachable over the network?",
       "choices": [
         "They are powered down during normal operation",
         "All cluster members share the same IP addresses as the primary, so connecting to a virtual IP always reaches the primary",
@@ -106,11 +90,9 @@
         "They do not run management services"
       ],
       "answer": 1,
-      "explanation": "When FortiGate devices form an HA cluster, the primary synchronizes its configuration including interface settings. Each member has the same IP addresses configured, but only the primary responds on the network — so secondary devices are not reachable for SSH/HTTPS or SNMP."
+      "q": "Why are secondary cluster members not directly reachable over the network?"
     },
     {
-      "id": "ch13-l4-q9",
-      "question": "What is the reserved HA management interface used for?",
       "choices": [
         "Carrying user traffic with dedicated bandwidth",
         "An out-of-band management interface with a unique address per member for direct administrative access",
@@ -118,11 +100,9 @@
         "The primary's interface for broadcasting hello packets"
       ],
       "answer": 1,
-      "explanation": "The reserved HA management interface is the out-of-band option. You configure up to four dedicated management interfaces, and assign them a unique address on each member to connect to them directly regardless of role."
+      "q": "What is the reserved HA management interface used for?"
     },
     {
-      "id": "ch13-l4-q10",
-      "question": "What is an advantage of using the reserved HA management interface over in-band management?",
       "choices": [
         "It supports more SNMP OIDs",
         "Its routing is in a separate routing table, ensuring segmentation between data and management traffic",
@@ -130,11 +110,9 @@
         "It provides faster SSH connections"
       ],
       "answer": 1,
-      "explanation": "The routing information for a reserved HA management interface is placed in a separate routing table, which means the interface routes don't appear in the FortiGate routing table. This allows for segmentation between data and management traffic."
+      "q": "What is an advantage of using the reserved HA management interface over in-band management?"
     },
     {
-      "id": "ch13-l4-q11",
-      "question": "Is the management interface configuration (reserved HA or in-band) synchronized to other cluster members?",
       "choices": [
         "Yes, it is synchronized automatically",
         "No, the configuration applied on a member is not synchronized to other members",
@@ -142,11 +120,9 @@
         "Only if manually triggered with a checksum recalculate"
       ],
       "answer": 1,
-      "explanation": "For both reserved HA management and in-band HA management options, the configuration you apply on a member is not synchronized to other members in the cluster."
+      "q": "Is the management interface configuration (reserved HA or in-band) synchronized to other cluster members?"
     },
     {
-      "id": "ch13-l4-q12",
-      "question": "What happens to a device when it is removed from the cluster via the GUI HA page?",
       "choices": [
         "The device is powered off",
         "The device operation mode is set to standalone",
@@ -154,11 +130,9 @@
         "The device retains all synchronized configuration"
       ],
       "answer": 1,
-      "explanation": "On the HA page, you can remove a device from a cluster. When you remove a device from HA, the device operation mode is set to standalone."
+      "q": "What happens to a device when it is removed from the cluster via the GUI HA page?"
     },
     {
-      "id": "ch13-l4-q13",
-      "question": "What does the HA Status widget on the Dashboard provide?",
       "choices": [
         "A full session table for the cluster",
         "A summary of the HA status on the device",
@@ -166,11 +140,9 @@
         "The full HA event log"
       ],
       "answer": 1,
-      "explanation": "You can add the HA Status widget on the Dashboard page. The widget provides a summary of the HA status on the device."
+      "q": "What does the HA Status widget on the Dashboard provide?"
     },
     {
-      "id": "ch13-l4-q14",
-      "question": "What should you do when configurations appear in sync but checksums differ between members?",
       "choices": [
         "Reload the cluster",
         "Run diagnose sys ha checksum recalculate to recalculate the HA checksums",
@@ -178,11 +150,9 @@
         "Change the group ID to force a new sync"
       ],
       "answer": 1,
-      "explanation": "In some cases, the configuration of members is in sync even though the checksums are different. For these cases, try running the diagnose sys ha checksum recalculate command to recalculate the HA checksums."
+      "q": "What should you do when configurations appear in sync but checksums differ between members?"
     },
     {
-      "id": "ch13-l4-q15",
-      "question": "Up to how many dedicated management interfaces can be configured using the reserved HA management interface feature?",
       "choices": [
         "One",
         "Two",
@@ -190,13 +160,11 @@
         "Eight"
       ],
       "answer": 2,
-      "explanation": "The reserved HA management interface is the out-of-band option. You configure up to four dedicated management interfaces, and you assign them a unique address on each member."
+      "q": "Up to how many dedicated management interfaces can be configured using the reserved HA management interface feature?"
     }
   ],
   "quiz": [
     {
-      "id": "ch13-l4-q1",
-      "question": "Which CLI command is typically used as the first step when troubleshooting HA?",
       "choices": [
         "diagnose sys ha checksum cluster",
         "get system ha status",
@@ -204,11 +172,9 @@
         "diagnose debug application hatalk"
       ],
       "answer": 1,
-      "explanation": "The get system ha status command displays comprehensive HA status information in a user-friendly output and is usually executed as the first step when troubleshooting HA."
+      "q": "Which CLI command is typically used as the first step when troubleshooting HA?"
     },
     {
-      "id": "ch13-l4-q5",
-      "question": "How can you confirm that all cluster members' configurations are in sync using checksums?",
       "choices": [
         "If the checksums are all different, configs are in sync",
         "If all members show the exact same hash values for each configuration scope, the configuration is in sync",
@@ -216,11 +182,9 @@
         "If the primary checksum matches at least one secondary checksum"
       ],
       "answer": 1,
-      "explanation": "After obtaining each member's checksums, you can identify the configuration sync status by comparing them. If all members show the exact same hash values for each configuration scope, then the configuration of all members is in sync."
+      "q": "How can you confirm that all cluster members' configurations are in sync using checksums?"
     },
     {
-      "id": "ch13-l4-q7",
-      "question": "What CLI command do you use to access a secondary cluster member's CLI from the primary?",
       "choices": [
         "ssh secondary <member-id>",
         "execute ha manage <member-id> <admin-username>",
@@ -228,11 +192,9 @@
         "connect ha member <member-id>"
       ],
       "answer": 1,
-      "explanation": "You can access the secondary device's CLI by running the execute ha manage command on the primary FortiGate CLI. This requires you to indicate the secondary device's member ID and an administrator account username."
+      "q": "What CLI command do you use to access a secondary cluster member's CLI from the primary?"
     },
     {
-      "id": "ch13-l4-q10",
-      "question": "What is an advantage of using the reserved HA management interface over in-band management?",
       "choices": [
         "It supports more SNMP OIDs",
         "Its routing is in a separate routing table, ensuring segmentation between data and management traffic",
@@ -240,11 +202,9 @@
         "It provides faster SSH connections"
       ],
       "answer": 1,
-      "explanation": "The routing information for a reserved HA management interface is placed in a separate routing table, which means the interface routes don't appear in the FortiGate routing table. This allows for segmentation between data and management traffic."
+      "q": "What is an advantage of using the reserved HA management interface over in-band management?"
     },
     {
-      "id": "ch13-l4-q8",
-      "question": "Why are secondary cluster members not directly reachable over the network?",
       "choices": [
         "They are powered down during normal operation",
         "All cluster members share the same IP addresses as the primary, so connecting to a virtual IP always reaches the primary",
@@ -252,7 +212,7 @@
         "They do not run management services"
       ],
       "answer": 1,
-      "explanation": "When FortiGate devices form an HA cluster, the primary synchronizes its configuration including interface settings. Each member has the same IP addresses configured, but only the primary responds on the network — so secondary devices are not reachable for SSH/HTTPS or SNMP."
+      "q": "Why are secondary cluster members not directly reachable over the network?"
     }
   ]
 }

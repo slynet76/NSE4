@@ -13,9 +13,7 @@
   ],
   "questionPool": [
     {
-      "id": "ch14-l3-q1",
       "type": "mcq",
-      "question": "Which CLI command lists the processes consuming the most CPU or memory on FortiGate?",
       "choices": [
         "diagnose sys top",
         "diagnose hardware sysinfo conserve",
@@ -23,12 +21,10 @@
         "diagnose debug application ipsengine"
       ],
       "answer": 0,
-      "explanation": "The command `diagnose sys top` lists processes that use the most CPU or memory, similar to the Linux top command."
+      "q": "Which CLI command lists the processes consuming the most CPU or memory on FortiGate?"
     },
     {
-      "id": "ch14-l3-q2",
       "type": "mcq",
-      "question": "In `diagnose sys top` output, which key combination sorts the list by highest RAM usage?",
       "choices": [
         "Shift+P",
         "Shift+M",
@@ -36,12 +32,10 @@
         "Ctrl+M"
       ],
       "answer": 1,
-      "explanation": "Press Shift+M to sort by highest RAM usage. Shift+P sorts by highest CPU usage."
+      "q": "In `diagnose sys top` output, which key combination sorts the list by highest RAM usage?"
     },
     {
-      "id": "ch14-l3-q3",
       "type": "mcq",
-      "question": "What is the purpose of the red threshold in FortiGate memory conserve mode?",
       "choices": [
         "It is the value below which FortiGate exits conserve mode",
         "It triggers conserve mode when memory usage exceeds this percentage",
@@ -49,12 +43,10 @@
         "It restarts the antivirus scanning engine"
       ],
       "answer": 1,
-      "explanation": "If memory usage goes above the percentage of total RAM defined as the red threshold, FortiGate enters conserve mode."
+      "q": "What is the purpose of the red threshold in FortiGate memory conserve mode?"
     },
     {
-      "id": "ch14-l3-q4",
       "type": "mcq",
-      "question": "Which threshold, when exceeded, causes FortiGate to drop all new sessions regardless of configuration?",
       "choices": [
         "Red threshold",
         "Green threshold",
@@ -62,12 +54,10 @@
         "Yellow threshold"
       ],
       "answer": 2,
-      "explanation": "If memory usage exceeds the extreme threshold, all new sessions are always dropped, regardless of the FortiGate configuration."
+      "q": "Which threshold, when exceeded, causes FortiGate to drop all new sessions regardless of configuration?"
     },
     {
-      "id": "ch14-l3-q5",
       "type": "mcq",
-      "question": "What does FortiGate do with configuration changes while in memory conserve mode?",
       "choices": [
         "Applies them immediately to free up memory",
         "Queues them for later application",
@@ -75,12 +65,10 @@
         "Logs them but does not apply them until reboot"
       ],
       "answer": 2,
-      "explanation": "While in conserve mode, FortiGate does not accept configuration changes, because they might increase memory usage."
+      "q": "What does FortiGate do with configuration changes while in memory conserve mode?"
     },
     {
-      "id": "ch14-l3-q6",
       "type": "mcq",
-      "question": "Which `av-failopen` setting allows traffic to bypass antivirus inspection even after FortiGate exits conserve mode?",
       "choices": [
         "off",
         "pass",
@@ -88,12 +76,10 @@
         "bypass"
       ],
       "answer": 2,
-      "explanation": "The `one-shot` setting bypasses the antivirus proxy even after FortiGate leaves conserve mode. Administrators must change this setting or restart the unit to resume antivirus scanning."
+      "q": "Which `av-failopen` setting allows traffic to bypass antivirus inspection even after FortiGate exits conserve mode?"
     },
     {
-      "id": "ch14-l3-q7",
       "type": "mcq",
-      "question": "What is the default `av-failopen` setting on FortiGate?",
       "choices": [
         "off",
         "pass",
@@ -101,12 +87,10 @@
         "drop"
       ],
       "answer": 1,
-      "explanation": "The default av-failopen setting is `pass`, which allows all new sessions to pass without inspection until FortiGate switches back to non-conserve mode."
+      "q": "What is the default `av-failopen` setting on FortiGate?"
     },
     {
-      "id": "ch14-l3-q8",
       "type": "mcq",
-      "question": "Which FortiGate process is responsible for FortiGuard and FortiManager connections?",
       "choices": [
         "ipsengine",
         "forticron",
@@ -114,12 +98,10 @@
         "miglogd"
       ],
       "answer": 2,
-      "explanation": "The `fgfmd` process handles FortiGuard and FortiManager connections."
+      "q": "Which FortiGate process is responsible for FortiGuard and FortiManager connections?"
     },
     {
-      "id": "ch14-l3-q9",
       "type": "mcq",
-      "question": "Which process is responsible for scheduling tasks on FortiGate?",
       "choices": [
         "newcli",
         "forticron",
@@ -127,12 +109,10 @@
         "cmdb"
       ],
       "answer": 1,
-      "explanation": "`forticron` is the FortiGate scheduling process, similar to cron in Linux systems."
+      "q": "Which process is responsible for scheduling tasks on FortiGate?"
     },
     {
-      "id": "ch14-l3-q10",
       "type": "mcq",
-      "question": "What command is used to identify if a FortiGate device is currently in memory conserve mode?",
       "choices": [
         "diagnose sys top",
         "get system performance top",
@@ -140,12 +120,10 @@
         "diagnose debug crashlog read"
       ],
       "answer": 2,
-      "explanation": "The `diagnose hardware sysinfo conserve` command is used to identify if a FortiGate device is currently in memory conserve mode."
+      "q": "What command is used to identify if a FortiGate device is currently in memory conserve mode?"
     },
     {
-      "id": "ch14-l3-q11",
       "type": "mcq",
-      "question": "When the IPS fail-open setting is enabled and conserve mode is triggered, what happens to new sessions?",
       "choices": [
         "Packets are dropped for new, incoming sessions",
         "Packets are transmitted but not inspected by IPS",
@@ -153,12 +131,10 @@
         "Sessions are forwarded to FortiSandbox for inspection"
       ],
       "answer": 1,
-      "explanation": "When fail-open is enabled, packets can still be transmitted while in conserve mode but are not inspected by IPS."
+      "q": "When the IPS fail-open setting is enabled and conserve mode is triggered, what happens to new sessions?"
     },
     {
-      "id": "ch14-l3-q12",
       "type": "mcq",
-      "question": "The IPS fail-open setting applies not only to conserve mode, but also whenever IPS fails. What are the most common causes of IPS failure?",
       "choices": [
         "Firmware update and license expiry",
         "High CPU issue or a high memory (conserve mode) issue",
@@ -166,12 +142,10 @@
         "SSL inspection error and certificate mismatch"
       ],
       "answer": 1,
-      "explanation": "The IPS fail-open setting kicks in whenever IPS fails. Most failures are due to a high CPU issue or a high memory (conserve mode) issue."
+      "q": "The IPS fail-open setting applies not only to conserve mode, but also whenever IPS fails. What are the most common causes of IPS failure?"
     },
     {
-      "id": "ch14-l3-q13",
       "type": "mcq",
-      "question": "Which FortiGate acceleration technology does NOT support the IPS fail-open setting?",
       "choices": [
         "FastPath",
         "ASIC offloading",
@@ -179,12 +153,10 @@
         "SPU"
       ],
       "answer": 2,
-      "explanation": "NTurbo does not support the fail-open setting. If fail-open is triggered, new sessions that would typically be accelerated with NTurbo are dropped, even if the fail-open setting is enabled."
+      "q": "Which FortiGate acceleration technology does NOT support the IPS fail-open setting?"
     },
     {
-      "id": "ch14-l3-q14",
       "type": "mcq",
-      "question": "The `av-failopen` setting applies to proxy-based inspected traffic while in conserve mode. What additional traffic type does this setting also affect?",
       "choices": [
         "IPS signature-based traffic",
         "Flow-based antivirus inspection",
@@ -192,12 +164,10 @@
         "Application control traffic"
       ],
       "answer": 1,
-      "explanation": "The av-failopen setting applies to any proxy-based inspected traffic while in conserve mode, and also applies to flow-based antivirus inspection."
+      "q": "The `av-failopen` setting applies to proxy-based inspected traffic while in conserve mode. What additional traffic type does this setting also affect?"
     },
     {
-      "id": "ch14-l3-q15",
       "type": "mcq",
-      "question": "When the green threshold is relevant in FortiGate memory conserve mode, what event does it trigger?",
       "choices": [
         "FortiGate enters conserve mode",
         "All new sessions are dropped",
@@ -205,14 +175,12 @@
         "FortiGate restarts the IPS engine"
       ],
       "answer": 2,
-      "explanation": "If memory usage goes below the green threshold, FortiGate exits conserve mode."
+      "q": "When the green threshold is relevant in FortiGate memory conserve mode, what event does it trigger?"
     }
   ],
   "quiz": [
     {
-      "id": "ch14-l3-q1",
       "type": "mcq",
-      "question": "Which CLI command lists the processes consuming the most CPU or memory on FortiGate?",
       "choices": [
         "diagnose sys top",
         "diagnose hardware sysinfo conserve",
@@ -220,12 +188,10 @@
         "diagnose debug application ipsengine"
       ],
       "answer": 0,
-      "explanation": "The command `diagnose sys top` lists processes that use the most CPU or memory, similar to the Linux top command."
+      "q": "Which CLI command lists the processes consuming the most CPU or memory on FortiGate?"
     },
     {
-      "id": "ch14-l3-q3",
       "type": "mcq",
-      "question": "What is the purpose of the red threshold in FortiGate memory conserve mode?",
       "choices": [
         "It is the value below which FortiGate exits conserve mode",
         "It triggers conserve mode when memory usage exceeds this percentage",
@@ -233,12 +199,10 @@
         "It restarts the antivirus scanning engine"
       ],
       "answer": 1,
-      "explanation": "If memory usage goes above the percentage of total RAM defined as the red threshold, FortiGate enters conserve mode."
+      "q": "What is the purpose of the red threshold in FortiGate memory conserve mode?"
     },
     {
-      "id": "ch14-l3-q6",
       "type": "mcq",
-      "question": "Which `av-failopen` setting allows traffic to bypass antivirus inspection even after FortiGate exits conserve mode?",
       "choices": [
         "off",
         "pass",
@@ -246,12 +210,10 @@
         "bypass"
       ],
       "answer": 2,
-      "explanation": "The `one-shot` setting bypasses the antivirus proxy even after FortiGate leaves conserve mode. Administrators must change this setting or restart the unit to resume antivirus scanning."
+      "q": "Which `av-failopen` setting allows traffic to bypass antivirus inspection even after FortiGate exits conserve mode?"
     },
     {
-      "id": "ch14-l3-q10",
       "type": "mcq",
-      "question": "What command is used to identify if a FortiGate device is currently in memory conserve mode?",
       "choices": [
         "diagnose sys top",
         "get system performance top",
@@ -259,12 +221,10 @@
         "diagnose debug crashlog read"
       ],
       "answer": 2,
-      "explanation": "The `diagnose hardware sysinfo conserve` command is used to identify if a FortiGate device is currently in memory conserve mode."
+      "q": "What command is used to identify if a FortiGate device is currently in memory conserve mode?"
     },
     {
-      "id": "ch14-l3-q13",
       "type": "mcq",
-      "question": "Which FortiGate acceleration technology does NOT support the IPS fail-open setting?",
       "choices": [
         "FastPath",
         "ASIC offloading",
@@ -272,7 +232,7 @@
         "SPU"
       ],
       "answer": 2,
-      "explanation": "NTurbo does not support the fail-open setting. If fail-open is triggered, new sessions that would typically be accelerated with NTurbo are dropped, even if the fail-open setting is enabled."
+      "q": "Which FortiGate acceleration technology does NOT support the IPS fail-open setting?"
     }
   ]
 }

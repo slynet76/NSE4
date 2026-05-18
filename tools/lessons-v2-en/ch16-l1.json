@@ -13,9 +13,7 @@
   ],
   "questionPool": [
     {
-      "id": "ch16-l1-q1",
       "type": "mcq",
-      "question": "What is the zero-trust principle that SASE is built upon?",
       "choices": [
         "Trust but verify",
         "Never trust, always verify",
@@ -23,12 +21,10 @@
         "Verify once, trust always"
       ],
       "answer": 1,
-      "explanation": "SASE is built on a zero-trust security posture, emphasizing the principle of 'never trust, always verify.' Zero-trust ensures that every user, device, and application is continuously authenticated and authorized."
+      "q": "What is the zero-trust principle that SASE is built upon?"
     },
     {
-      "id": "ch16-l1-q2",
       "type": "mcq",
-      "question": "What are the two main components that make up the SASE architecture?",
       "choices": [
         "IPS and antivirus",
         "SD-WAN and Security Service Edge (SSE)",
@@ -36,12 +32,10 @@
         "FortiGate and FortiAnalyzer"
       ],
       "answer": 1,
-      "explanation": "SASE is composed of two parts: on-premises security and networking with SD-WAN, and cloud-delivered security service edge (SSE) for remote worker security and visibility."
+      "q": "What are the two main components that make up the SASE architecture?"
     },
     {
-      "id": "ch16-l1-q3",
       "type": "mcq",
-      "question": "What does SSE stand for in the context of SASE?",
       "choices": [
         "Secure Software Edge",
         "Security Service Edge",
@@ -49,12 +43,10 @@
         "Software-defined Security Engine"
       ],
       "answer": 1,
-      "explanation": "SSE stands for Security Service Edge, which is the cloud-delivered security component of SASE that includes SWG, FWaaS, ZTNA, and CASB."
+      "q": "What does SSE stand for in the context of SASE?"
     },
     {
-      "id": "ch16-l1-q4",
       "type": "mcq",
-      "question": "Which unified operating system is at the foundation of both FortiSASE and Fortinet's secure SD-WAN?",
       "choices": [
         "FortiLinux",
         "FortiOS",
@@ -62,12 +54,10 @@
         "FortiSEC"
       ],
       "answer": 1,
-      "explanation": "Both FortiSASE for SSE and secure SD-WAN are built on the unified, robust foundation of FortiOS, ensuring seamless integration."
+      "q": "Which unified operating system is at the foundation of both FortiSASE and Fortinet's secure SD-WAN?"
     },
     {
-      "id": "ch16-l1-q5",
       "type": "mcq",
-      "question": "What are the three FortiSASE primary use cases?",
       "choices": [
         "VPN, IPS, and antivirus",
         "SIA (Secure Internet Access), SPA (Secure Private Access), and SSA (Secure SaaS Access)",
@@ -75,12 +65,10 @@
         "Endpoint detection, cloud monitoring, and SIEM integration"
       ],
       "answer": 1,
-      "explanation": "FortiSASE supports three use cases: SIA enables secure web browsing, SPA enables explicit application access, and SSA addresses shadow IT visibility and DLP."
+      "q": "What are the three FortiSASE primary use cases?"
     },
     {
-      "id": "ch16-l1-q6",
       "type": "mcq",
-      "question": "Why does routing all user traffic through a VPN create security risks?",
       "choices": [
         "VPNs encrypt traffic making it unreadable by security tools",
         "VPNs grant broad network access, allowing malware to infiltrate and spread across systems",
@@ -88,12 +76,10 @@
         "VPNs bypass DNS filtering and web proxy controls"
       ],
       "answer": 1,
-      "explanation": "VPNs pose security risks by granting broad network access, allowing malware to infiltrate and spread across systems, in addition to degrading performance."
+      "q": "Why does routing all user traffic through a VPN create security risks?"
     },
     {
-      "id": "ch16-l1-q7",
       "type": "mcq",
-      "question": "How does FortiSASE reduce latency for remote users?",
       "choices": [
         "By compressing all traffic before encryption",
         "By connecting off-net endpoints to the closest point of presence (POP)",
@@ -101,12 +87,10 @@
         "By caching frequently accessed web content on endpoint devices"
       ],
       "answer": 1,
-      "explanation": "FortiSASE reduces latency by having off-net endpoints connect to the closest point of presence (POP) offered by the cloud-delivered security service."
+      "q": "How does FortiSASE reduce latency for remote users?"
     },
     {
-      "id": "ch16-l1-q8",
       "type": "mcq",
-      "question": "What security gap exists for BYOD devices in traditional network security architectures?",
       "choices": [
         "BYOD devices cannot connect to corporate Wi-Fi networks",
         "Remote internet access from BYOD devices isn't protected by the same corporate policies as office access, allowing malware to enter and spread",
@@ -114,12 +98,10 @@
         "BYOD devices require separate licensing for each security service"
       ],
       "answer": 1,
-      "explanation": "Remote internet access from endpoints like BYOD devices isn't protected by the same corporate policies as office access. This gap allows malware to enter through endpoint devices and potentially spread to the corporate network."
+      "q": "What security gap exists for BYOD devices in traditional network security architectures?"
     },
     {
-      "id": "ch16-l1-q9",
       "type": "mcq",
-      "question": "What FortiSASE feature helps administrators troubleshoot remote user connectivity slowness?",
       "choices": [
         "Remote browser isolation (RBI)",
         "Digital experience monitoring (DEM)",
@@ -127,12 +109,10 @@
         "FortiCASB out-of-band scanning"
       ],
       "answer": 1,
-      "explanation": "Digital experience monitoring (DEM) can assist administrators with troubleshooting remote user connectivity slowness with enhanced health check visibility of SaaS applications, endpoint devices, network paths, and LAN health."
+      "q": "What FortiSASE feature helps administrators troubleshoot remote user connectivity slowness?"
     },
     {
-      "id": "ch16-l1-q10",
       "type": "mcq",
-      "question": "What is the purpose of Remote Browser Isolation (RBI) in FortiSASE?",
       "choices": [
         "Blocks all browser-based access to cloud applications",
         "Isolates browser sessions for specific websites or categories within a secure remote container environment",
@@ -140,12 +120,10 @@
         "Replaces the user's browser with a Fortinet-approved application"
       ],
       "answer": 1,
-      "explanation": "Remote browser isolation (RBI) isolates browser sessions for specific websites or categories within a secure environment, safely rendering content in a remote container."
+      "q": "What is the purpose of Remote Browser Isolation (RBI) in FortiSASE?"
     },
     {
-      "id": "ch16-l1-q11",
       "type": "mcq",
-      "question": "Which authentication protocol does FortiSASE support for SSO integration with SWG and VPN deployments?",
       "choices": [
         "Kerberos",
         "NTLM",
@@ -153,12 +131,10 @@
         "OAuth 2.0 only"
       ],
       "answer": 2,
-      "explanation": "SSO integration through SAML is supported for SWG and VPN deployments in FortiSASE."
+      "q": "Which authentication protocol does FortiSASE support for SSO integration with SWG and VPN deployments?"
     },
     {
-      "id": "ch16-l1-q12",
       "type": "mcq",
-      "question": "What blind spot does traditional infrastructure create when users access SaaS applications remotely?",
       "choices": [
         "Corporate infrastructures and data centers lack visibility into remotely accessed SaaS traffic",
         "SaaS applications cannot be monitored using any existing tools",
@@ -166,12 +142,10 @@
         "Data center security logs are unavailable for remote sessions"
       ],
       "answer": 0,
-      "explanation": "When securing data in SaaS applications, corporate infrastructures and data centers lack visibility into remotely accessed SaaS traffic, creating a blind spot in the security framework."
+      "q": "What blind spot does traditional infrastructure create when users access SaaS applications remotely?"
     },
     {
-      "id": "ch16-l1-q13",
       "type": "mcq",
-      "question": "Which SASE component ensures secure access to SaaS applications and protects sensitive data?",
       "choices": [
         "Secure web gateway (SWG)",
         "Zero trust network access (ZTNA)",
@@ -179,12 +153,10 @@
         "SD-WAN"
       ],
       "answer": 2,
-      "explanation": "Cloud access security broker (CASB) ensures secure access to SaaS applications and protects sensitive data as part of the SSE component of SASE."
+      "q": "Which SASE component ensures secure access to SaaS applications and protects sensitive data?"
     },
     {
-      "id": "ch16-l1-q14",
       "type": "mcq",
-      "question": "What does ZTNA provide in FortiSASE?",
       "choices": [
         "Broad network access similar to traditional VPN",
         "Secure, explicit, identity-based access, shifting implicit access to explicit control",
@@ -192,12 +164,10 @@
         "Automatic IP address assignment for remote users"
       ],
       "answer": 1,
-      "explanation": "ZTNA delivers secure, explicit, identity-based access. Applying ZTNA everywhere shifts implicit access to explicit control with granular controls applied for each application."
+      "q": "What does ZTNA provide in FortiSASE?"
     },
     {
-      "id": "ch16-l1-q15",
       "type": "mcq",
-      "question": "Which FortiSASE use case addresses shadow IT visibility challenges and safeguards data loss prevention?",
       "choices": [
         "SIA (Secure Internet Access)",
         "SPA (Secure Private Access)",
@@ -205,14 +175,12 @@
         "RBI (Remote Browser Isolation)"
       ],
       "answer": 2,
-      "explanation": "SSA (Secure SaaS Access) addresses shadow IT visibility challenges and safeguards data loss prevention."
+      "q": "Which FortiSASE use case addresses shadow IT visibility challenges and safeguards data loss prevention?"
     }
   ],
   "quiz": [
     {
-      "id": "ch16-l1-q1",
       "type": "mcq",
-      "question": "What is the zero-trust principle that SASE is built upon?",
       "choices": [
         "Trust but verify",
         "Isolates browser sessions for specific websites or categories within a secure remote container environment",
@@ -220,12 +188,10 @@
         "Verify once, trust always"
       ],
       "answer": 1,
-      "explanation": "SASE is built on a zero-trust security posture, emphasizing the principle of 'never trust, always verify.' Zero-trust ensures that every user, device, and application is continuously authenticated and authorized."
+      "q": "What is the zero-trust principle that SASE is built upon?"
     },
     {
-      "id": "ch16-l1-q2",
       "type": "mcq",
-      "question": "What are the two main components that make up the SASE architecture?",
       "choices": [
         "IPS and antivirus",
         "Isolates browser sessions for specific websites or categories within a secure remote container environment",
@@ -233,12 +199,10 @@
         "FortiGate and FortiAnalyzer"
       ],
       "answer": 1,
-      "explanation": "SASE is composed of two parts: on-premises security and networking with SD-WAN, and cloud-delivered security service edge (SSE) for remote worker security and visibility."
+      "q": "What are the two main components that make up the SASE architecture?"
     },
     {
-      "id": "ch16-l1-q5",
       "type": "mcq",
-      "question": "What are the three FortiSASE primary use cases?",
       "choices": [
         "VPN, IPS, and antivirus",
         "Isolates browser sessions for specific websites or categories within a secure remote container environment",
@@ -246,12 +210,10 @@
         "Endpoint detection, cloud monitoring, and SIEM integration"
       ],
       "answer": 1,
-      "explanation": "FortiSASE supports three use cases: SIA enables secure web browsing, SPA enables explicit application access, and SSA addresses shadow IT visibility and DLP."
+      "q": "What are the three FortiSASE primary use cases?"
     },
     {
-      "id": "ch16-l1-q7",
       "type": "mcq",
-      "question": "How does FortiSASE reduce latency for remote users?",
       "choices": [
         "By compressing all traffic before encryption",
         "Isolates browser sessions for specific websites or categories within a secure remote container environment",
@@ -259,12 +221,10 @@
         "By caching frequently accessed web content on endpoint devices"
       ],
       "answer": 1,
-      "explanation": "FortiSASE reduces latency by having off-net endpoints connect to the closest point of presence (POP) offered by the cloud-delivered security service."
+      "q": "How does FortiSASE reduce latency for remote users?"
     },
     {
-      "id": "ch16-l1-q9",
       "type": "mcq",
-      "question": "What FortiSASE feature helps administrators troubleshoot remote user connectivity slowness?",
       "choices": [
         "Remote browser isolation (RBI)",
         "Isolates browser sessions for specific websites or categories within a secure remote container environment",
@@ -272,7 +232,7 @@
         "FortiCASB out-of-band scanning"
       ],
       "answer": 1,
-      "explanation": "Digital experience monitoring (DEM) can assist administrators with troubleshooting remote user connectivity slowness with enhanced health check visibility of SaaS applications, endpoint devices, network paths, and LAN health."
+      "q": "What FortiSASE feature helps administrators troubleshoot remote user connectivity slowness?"
     }
   ]
 }

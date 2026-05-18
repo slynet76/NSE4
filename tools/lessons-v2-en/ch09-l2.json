@@ -13,8 +13,6 @@
   ],
   "questionPool": [
     {
-      "id": "ch09-l2-q1",
-      "question": "What is the name of the read-only preconfigured SSL certificate inspection profile on FortiGate?",
       "choices": [
         "ssl-default",
         "certificate-inspection",
@@ -22,11 +20,9 @@
         "ssl-certificate-profile"
       ],
       "answer": 1,
-      "explanation": "FortiGate has a read-only preconfigured profile for SSL certificate inspection named certificate-inspection."
+      "q": "What is the name of the read-only preconfigured SSL certificate inspection profile on FortiGate?"
     },
     {
-      "id": "ch09-l2-q2",
-      "question": "What does the 'Strict' SNI check setting do when there is a mismatch between the SNI and CN/SAN fields?",
       "choices": [
         "FortiGate uses the CN field domain instead",
         "FortiGate always rates URLs based on the FQDN",
@@ -34,11 +30,9 @@
         "FortiGate forwards the traffic without inspection"
       ],
       "answer": 2,
-      "explanation": "With Strict, FortiGate closes the client connection if there is a mismatch between SNI and CN/SAN fields."
+      "q": "What does the 'Strict' SNI check setting do when there is a mismatch between the SNI and CN/SAN fields?"
     },
     {
-      "id": "ch09-l2-q3",
-      "question": "What happens to web filtering after the FortiGuard contract expires and the two-day grace period ends?",
       "choices": [
         "FortiGate allows all web traffic by default",
         "FortiGate reports a rating error for every rating request and blocks those pages by default",
@@ -46,11 +40,9 @@
         "FortiGate reverts to flow-based inspection only"
       ],
       "answer": 1,
-      "explanation": "After the grace period, FortiGate reports a rating error for every rating request made and, by default, blocks those web pages."
+      "q": "What happens to web filtering after the FortiGuard contract expires and the two-day grace period ends?"
     },
     {
-      "id": "ch09-l2-q4",
-      "question": "Which FortiGuard category action allows access to a website but does NOT create a web filter security log?",
       "choices": [
         "Monitor",
         "Allow",
@@ -58,11 +50,9 @@
         "Authenticate"
       ],
       "answer": 1,
-      "explanation": "The Allow action permits access to the sites in the category but does not create a web filter security log."
+      "q": "Which FortiGuard category action allows access to a website but does NOT create a web filter security log?"
     },
     {
-      "id": "ch09-l2-q5",
-      "question": "Which FortiGuard category action creates a security log for analysis purposes while still allowing access?",
       "choices": [
         "Allow",
         "Warning",
@@ -70,11 +60,9 @@
         "Authenticate"
       ],
       "answer": 2,
-      "explanation": "The Monitor action allows access to the sites in the category and creates a security log for analysis purposes."
+      "q": "Which FortiGuard category action creates a security log for analysis purposes while still allowing access?"
     },
     {
-      "id": "ch09-l2-q6",
-      "question": "The Warning action in FortiGuard category filtering gives the user which option?",
       "choices": [
         "To enter credentials to bypass the block",
         "To proceed to the requested website or return to the previous website",
@@ -82,11 +70,9 @@
         "To download the blocked content directly"
       ],
       "answer": 1,
-      "explanation": "The Warning action informs users that the requested website is not allowed, but gives them the option to proceed to the requested website or return to the previous website."
+      "q": "The Warning action in FortiGuard category filtering gives the user which option?"
     },
     {
-      "id": "ch09-l2-q7",
-      "question": "Which category actions can have quotas applied to them?",
       "choices": [
         "Allow, Block, and Monitor",
         "Monitor, Warning, and Authenticate",
@@ -94,11 +80,9 @@
         "Allow, Monitor, and Warning"
       ],
       "answer": 1,
-      "explanation": "You can apply quotas to Monitor, Warning, and Authenticate actions."
+      "q": "Which category actions can have quotas applied to them?"
     },
     {
-      "id": "ch09-l2-q8",
-      "question": "What does the Exempt action in static URL filtering do?",
       "choices": [
         "Denies the attempt and sends a replacement message",
         "Allows traffic while creating log entries",
@@ -106,11 +90,9 @@
         "Permits access and passes traffic to remaining operations"
       ],
       "answer": 2,
-      "explanation": "Exempt allows the traffic from trusted sources to bypass all security inspections."
+      "q": "What does the Exempt action in static URL filtering do?"
     },
     {
-      "id": "ch09-l2-q9",
-      "question": "What is the first step in the web filtering inspection order when multiple features are enabled?",
       "choices": [
         "FortiGuard category filtering",
         "Advanced filters such as safe search",
@@ -118,11 +100,9 @@
         "Antivirus scanning"
       ],
       "answer": 2,
-      "explanation": "When multiple web filtering features are enabled, the inspection order begins with the local static URL filter."
+      "q": "What is the first step in the web filtering inspection order when multiple features are enabled?"
     },
     {
-      "id": "ch09-l2-q10",
-      "question": "What remote authentication protocols does FortiGate support for the Authenticate web filtering action?",
       "choices": [
         "SAML and OAuth only",
         "LDAP and RADIUS, among others",
@@ -130,11 +110,9 @@
         "TACACS+ only"
       ],
       "answer": 1,
-      "explanation": "FortiGate supports local and remote authentication using LDAP, RADIUS, and others for the Authenticate web filtering action."
+      "q": "What remote authentication protocols does FortiGate support for the Authenticate web filtering action?"
     },
     {
-      "id": "ch09-l2-q11",
-      "question": "How can FortiManager assist with FortiGuard category filtering?",
       "choices": [
         "By acting as a backup firewall policy manager",
         "By acting as a local FortiGuard server after downloading the databases",
@@ -142,11 +120,9 @@
         "By caching web filter logs"
       ],
       "answer": 1,
-      "explanation": "You can configure FortiManager to act as a local FortiGuard server by downloading the databases to FortiManager and configuring FortiGate to validate categories against FortiManager instead of FortiGuard."
+      "q": "How can FortiManager assist with FortiGuard category filtering?"
     },
     {
-      "id": "ch09-l2-q12",
-      "question": "What three URL pattern types does static URL filtering support?",
       "choices": [
         "Simple, Regular Expressions, and Wildcard",
         "Exact, Prefix, and Suffix",
@@ -154,11 +130,9 @@
         "Literal, PCRE, and Glob"
       ],
       "answer": 0,
-      "explanation": "URL filtering supports three pattern types: Simple, Regular Expressions, and Wildcard."
+      "q": "What three URL pattern types does static URL filtering support?"
     },
     {
-      "id": "ch09-l2-q13",
-      "question": "What rating option sends both the URL domain name and the TCP/IP packet's IP address to FortiGuard?",
       "choices": [
         "Allow websites when a rating error occurs",
         "Rate URLs by domain and IP address",
@@ -166,11 +140,9 @@
         "Proxy-based URL rating"
       ],
       "answer": 1,
-      "explanation": "Rate URLs by domain and IP address enables FortiGate to always send the URL domain name and the IP address of the TCP/IP packet (except private IP addresses) to FortiGuard for rating."
+      "q": "What rating option sends both the URL domain name and the TCP/IP packet's IP address to FortiGuard?"
     },
     {
-      "id": "ch09-l2-q14",
-      "question": "What does the Allow action in static URL filtering do that differs from Exempt?",
       "choices": [
         "It bypasses all security inspections like Exempt",
         "It blocks traffic and logs it",
@@ -178,11 +150,9 @@
         "It requires user authentication before proceeding"
       ],
       "answer": 2,
-      "explanation": "The Allow action in static URL filtering permits access. The traffic is passed to the remaining operations, including FortiGuard web filter, web content filter, web script filters, and antivirus scanning."
+      "q": "What does the Allow action in static URL filtering do that differs from Exempt?"
     },
     {
-      "id": "ch09-l2-q15",
-      "question": "On FortiGate models with 2 GB of RAM or less, what changed in FortiOS regarding web filter profiles?",
       "choices": [
         "Flow-based inspection is no longer supported",
         "FortiGuard category filtering is disabled",
@@ -190,13 +160,11 @@
         "SSL certificate inspection is restricted to one profile"
       ],
       "answer": 2,
-      "explanation": "To enhance performance and optimize memory usage, FortiOS no longer supports proxy-related features on FortiGate models with 2 GB of RAM or less."
+      "q": "On FortiGate models with 2 GB of RAM or less, what changed in FortiOS regarding web filter profiles?"
     }
   ],
   "quiz": [
     {
-      "id": "ch09-l2-q1",
-      "question": "What is the name of the read-only preconfigured SSL certificate inspection profile on FortiGate?",
       "choices": [
         "ssl-default",
         "certificate-inspection",
@@ -204,11 +172,9 @@
         "ssl-certificate-profile"
       ],
       "answer": 1,
-      "explanation": "FortiGate has a read-only preconfigured profile for SSL certificate inspection named certificate-inspection."
+      "q": "What is the name of the read-only preconfigured SSL certificate inspection profile on FortiGate?"
     },
     {
-      "id": "ch09-l2-q4",
-      "question": "Which FortiGuard category action allows access to a website but does NOT create a web filter security log?",
       "choices": [
         "Monitor",
         "Allow",
@@ -216,11 +182,9 @@
         "Authenticate"
       ],
       "answer": 1,
-      "explanation": "The Allow action permits access to the sites in the category but does not create a web filter security log."
+      "q": "Which FortiGuard category action allows access to a website but does NOT create a web filter security log?"
     },
     {
-      "id": "ch09-l2-q9",
-      "question": "What is the first step in the web filtering inspection order when multiple features are enabled?",
       "choices": [
         "FortiGuard category filtering",
         "Advanced filters such as safe search",
@@ -228,11 +192,9 @@
         "Antivirus scanning"
       ],
       "answer": 2,
-      "explanation": "When multiple web filtering features are enabled, the inspection order begins with the local static URL filter."
+      "q": "What is the first step in the web filtering inspection order when multiple features are enabled?"
     },
     {
-      "id": "ch09-l2-q8",
-      "question": "What does the Exempt action in static URL filtering do?",
       "choices": [
         "Denies the attempt and sends a replacement message",
         "Allows traffic while creating log entries",
@@ -240,11 +202,9 @@
         "Permits access and passes traffic to remaining operations"
       ],
       "answer": 2,
-      "explanation": "Exempt allows the traffic from trusted sources to bypass all security inspections."
+      "q": "What does the Exempt action in static URL filtering do?"
     },
     {
-      "id": "ch09-l2-q7",
-      "question": "Which category actions can have quotas applied to them?",
       "choices": [
         "Allow, Block, and Monitor",
         "Monitor, Warning, and Authenticate",
@@ -252,7 +212,7 @@
         "Allow, Monitor, and Warning"
       ],
       "answer": 1,
-      "explanation": "You can apply quotas to Monitor, Warning, and Authenticate actions."
+      "q": "Which category actions can have quotas applied to them?"
     }
   ]
 }

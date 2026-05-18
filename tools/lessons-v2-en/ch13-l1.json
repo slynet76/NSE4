@@ -13,8 +13,6 @@
   ],
   "questionPool": [
     {
-      "id": "ch13-l1-q1",
-      "question": "Which protocol does FortiGate use for HA clustering?",
       "choices": [
         "VRRP",
         "HSRP",
@@ -22,11 +20,9 @@
         "LACP"
       ],
       "answer": 2,
-      "explanation": "FortiGate HA uses FGCP (FortiGate Clustering Protocol) to discover members, elect the primary FortiGate, synchronize data among members, and monitor the health of members."
+      "q": "Which protocol does FortiGate use for HA clustering?"
     },
     {
-      "id": "ch13-l1-q2",
-      "question": "In active-passive mode, which device actively processes traffic?",
       "choices": [
         "All cluster members share the load equally",
         "Only the secondary devices",
@@ -34,11 +30,9 @@
         "A designated load-balancing device"
       ],
       "answer": 2,
-      "explanation": "In active-passive mode, the primary FortiGate is the only FortiGate that actively processes traffic. Secondary devices remain in passive mode, monitoring the status of the primary device."
+      "q": "In active-passive mode, which device actively processes traffic?"
     },
     {
-      "id": "ch13-l1-q3",
-      "question": "What is an HA failover?",
       "choices": [
         "A scheduled maintenance window for the primary",
         "The event when a secondary device takes over the primary role after a problem is detected",
@@ -46,11 +40,9 @@
         "A firmware upgrade on the secondary device"
       ],
       "answer": 1,
-      "explanation": "If a problem is detected on the primary FortiGate, one of the secondary devices takes over the primary role. This event is called an HA failover."
+      "q": "What is an HA failover?"
     },
     {
-      "id": "ch13-l1-q4",
-      "question": "In active-active mode, what can the primary FortiGate do with traffic?",
       "choices": [
         "Process all traffic itself without sharing",
         "Distribute supported sessions to the secondary devices",
@@ -58,11 +50,9 @@
         "Act as a transparent bridge only"
       ],
       "answer": 1,
-      "explanation": "In active-active mode, all cluster members can process traffic. The primary FortiGate can distribute supported sessions to the secondary devices based on HA settings and traffic type."
+      "q": "In active-active mode, what can the primary FortiGate do with traffic?"
     },
     {
-      "id": "ch13-l1-q5",
-      "question": "What happens to licensing if one member has a higher licensing level than others in the cluster?",
       "choices": [
         "The cluster uses the highest licensing level",
         "The cluster resolves to use the lowest licensing level among all members",
@@ -70,11 +60,9 @@
         "The primary member's license applies to all"
       ],
       "answer": 1,
-      "explanation": "If the licensing level among members isn't the same, the cluster resolves to use the lowest licensing level among all members."
+      "q": "What happens to licensing if one member has a higher licensing level than others in the cluster?"
     },
     {
-      "id": "ch13-l1-q6",
-      "question": "What is the minimum number of heartbeat interfaces recommended for an HA cluster?",
       "choices": [
         "One",
         "Two",
@@ -82,11 +70,9 @@
         "Four"
       ],
       "answer": 1,
-      "explanation": "It's a best practice to configure at least two heartbeat interfaces for redundancy purposes. This way, if one heartbeat link fails, the cluster uses the next one."
+      "q": "What is the minimum number of heartbeat interfaces recommended for an HA cluster?"
     },
     {
-      "id": "ch13-l1-q7",
-      "question": "What is the first criterion evaluated during the primary FortiGate election when HA override is disabled?",
       "choices": [
         "Priority setting",
         "Serial number",
@@ -94,11 +80,9 @@
         "Number of monitored interfaces that are up"
       ],
       "answer": 3,
-      "explanation": "The first criterion is the number of monitored interfaces with a status of up. The member with the most available monitored interfaces becomes the primary."
+      "q": "What is the first criterion evaluated during the primary FortiGate election when HA override is disabled?"
     },
     {
-      "id": "ch13-l1-q8",
-      "question": "When HA override is disabled, which criterion takes precedence over priority?",
       "choices": [
         "Serial number",
         "HA uptime",
@@ -106,11 +90,9 @@
         "Number of active sessions"
       ],
       "answer": 1,
-      "explanation": "When HA override is disabled, the HA uptime has precedence over the priority setting. The member with the highest HA uptime (by at least five minutes) becomes the primary."
+      "q": "When HA override is disabled, which criterion takes precedence over priority?"
     },
     {
-      "id": "ch13-l1-q9",
-      "question": "What CLI command resets the HA uptime of a FortiGate to trigger a manual failover?",
       "choices": [
         "diagnose sys ha force-failover",
         "diagnose sys ha reset-uptime",
@@ -118,11 +100,9 @@
         "diagnose sys ha clear-uptime"
       ],
       "answer": 1,
-      "explanation": "To manually fail over to a secondary device when override is disabled, run the diagnose sys ha reset-uptime command on the primary FortiGate, which resets its HA uptime to 0."
+      "q": "What CLI command resets the HA uptime of a FortiGate to trigger a manual failover?"
     },
     {
-      "id": "ch13-l1-q10",
-      "question": "What is the advantage of enabling HA override?",
       "choices": [
         "It eliminates failover events entirely",
         "You can specify which device is the preferred primary every time by configuring it with the highest HA priority value",
@@ -130,11 +110,9 @@
         "It allows VDOMs to have independent HA priorities"
       ],
       "answer": 1,
-      "explanation": "When override is enabled, priority is considered before HA uptime. This allows you to specify which device is the preferred primary every time by configuring it with the highest HA priority value."
+      "q": "What is the advantage of enabling HA override?"
     },
     {
-      "id": "ch13-l1-q11",
-      "question": "What is the disadvantage of enabling HA override?",
       "choices": [
         "Priority cannot be configured",
         "A failover event is triggered when the original primary becomes available again and reclaims its primary role",
@@ -142,11 +120,9 @@
         "Session synchronization is disabled"
       ],
       "answer": 1,
-      "explanation": "The disadvantage of override enabled is that a failover event is triggered not only when the primary fails, but also when the primary becomes available again and takes its primary role back from the secondary FortiGate."
+      "q": "What is the disadvantage of enabling HA override?"
     },
     {
-      "id": "ch13-l1-q12",
-      "question": "Are the HA override setting and device priority values synchronized to cluster members?",
       "choices": [
         "Yes, they are synchronized automatically",
         "No, they are not synchronized — you must manually configure them on each member",
@@ -154,11 +130,9 @@
         "Only override is synchronized; priority is not"
       ],
       "answer": 1,
-      "explanation": "The override setting and device priority values are not synchronized to cluster members. You must manually enable override and adjust the priority on each member."
+      "q": "Are the HA override setting and device priority values synchronized to cluster members?"
     },
     {
-      "id": "ch13-l1-q13",
-      "question": "What is the minimum HA uptime difference required for the uptime criterion to select a primary?",
       "choices": [
         "1 minute",
         "5 minutes",
@@ -166,11 +140,9 @@
         "30 minutes"
       ],
       "answer": 1,
-      "explanation": "The cluster compares the HA uptime of each member. The member with the highest HA uptime, by at least five minutes, becomes the primary."
+      "q": "What is the minimum HA uptime difference required for the uptime criterion to select a primary?"
     },
     {
-      "id": "ch13-l1-q14",
-      "question": "Which of the following settings must be identical for all members to successfully form an HA cluster?",
       "choices": [
         "Host name and management IP address",
         "HA priority and override settings",
@@ -178,11 +150,9 @@
         "Administrator passwords"
       ],
       "answer": 2,
-      "explanation": "To successfully form an HA cluster, all members must have the same model, firmware version, licensing, hard drive configuration, and operating mode."
+      "q": "Which of the following settings must be identical for all members to successfully form an HA cluster?"
     },
     {
-      "id": "ch13-l1-q15",
-      "question": "In active-active HA, what happens if a secondary device fails?",
       "choices": [
         "The cluster degrades to active-passive mode",
         "The primary also fails over",
@@ -190,13 +160,11 @@
         "All sessions are dropped and must be re-established"
       ],
       "answer": 2,
-      "explanation": "In active-active mode, if one of the secondary devices fails, the primary reassigns sessions to a different secondary FortiGate."
+      "q": "In active-active HA, what happens if a secondary device fails?"
     }
   ],
   "quiz": [
     {
-      "id": "ch13-l1-q1",
-      "question": "Which protocol does FortiGate use for HA clustering?",
       "choices": [
         "VRRP",
         "HSRP",
@@ -204,11 +172,9 @@
         "LACP"
       ],
       "answer": 2,
-      "explanation": "FortiGate HA uses FGCP (FortiGate Clustering Protocol) to discover members, elect the primary FortiGate, synchronize data among members, and monitor the health of members."
+      "q": "Which protocol does FortiGate use for HA clustering?"
     },
     {
-      "id": "ch13-l1-q7",
-      "question": "What is the first criterion evaluated during the primary FortiGate election when HA override is disabled?",
       "choices": [
         "Priority setting",
         "Serial number",
@@ -216,11 +182,9 @@
         "Number of monitored interfaces that are up"
       ],
       "answer": 3,
-      "explanation": "The first criterion is the number of monitored interfaces with a status of up. The member with the most available monitored interfaces becomes the primary."
+      "q": "What is the first criterion evaluated during the primary FortiGate election when HA override is disabled?"
     },
     {
-      "id": "ch13-l1-q8",
-      "question": "When HA override is disabled, which criterion takes precedence over priority?",
       "choices": [
         "Serial number",
         "HA uptime",
@@ -228,11 +192,9 @@
         "Number of active sessions"
       ],
       "answer": 1,
-      "explanation": "When HA override is disabled, the HA uptime has precedence over the priority setting. The member with the highest HA uptime (by at least five minutes) becomes the primary."
+      "q": "When HA override is disabled, which criterion takes precedence over priority?"
     },
     {
-      "id": "ch13-l1-q10",
-      "question": "What is the advantage of enabling HA override?",
       "choices": [
         "It eliminates failover events entirely",
         "You can specify which device is the preferred primary every time by configuring it with the highest HA priority value",
@@ -240,11 +202,9 @@
         "It allows VDOMs to have independent HA priorities"
       ],
       "answer": 1,
-      "explanation": "When override is enabled, priority is considered before HA uptime. This allows you to specify which device is the preferred primary every time by configuring it with the highest HA priority value."
+      "q": "What is the advantage of enabling HA override?"
     },
     {
-      "id": "ch13-l1-q5",
-      "question": "What happens to licensing if one member has a higher licensing level than others in the cluster?",
       "choices": [
         "The cluster uses the highest licensing level",
         "The cluster resolves to use the lowest licensing level among all members",
@@ -252,7 +212,7 @@
         "The primary member's license applies to all"
       ],
       "answer": 1,
-      "explanation": "If the licensing level among members isn't the same, the cluster resolves to use the lowest licensing level among all members."
+      "q": "What happens to licensing if one member has a higher licensing level than others in the cluster?"
     }
   ]
 }

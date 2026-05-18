@@ -13,8 +13,6 @@
   ],
   "questionPool": [
     {
-      "id": "ch11-l4-q1",
-      "question": "What GUI tool is used to monitor IPsec VPN phase 1 and phase 2 status on the dashboard?",
       "choices": [
         "The SD-WAN widget",
         "The IPsec widget",
@@ -22,11 +20,9 @@
         "The routing monitor"
       ],
       "answer": 1,
-      "explanation": "On the GUI dashboard, you can use the IPsec widget to monitor the status of your IPsec VPNs. The widget shows the phase 1 and phase 2 status of an IPsec VPN."
+      "q": "What GUI tool is used to monitor IPsec VPN phase 1 and phase 2 status on the dashboard?"
     },
     {
-      "id": "ch11-l4-q2",
-      "question": "When is a VPN considered 'up' in the IPsec widget?",
       "choices": [
         "When phase 1 is up, regardless of phase 2",
         "When at least one of its phase 2 selectors is up",
@@ -34,11 +30,9 @@
         "When the tunnel has transmitted at least 1 MB of data"
       ],
       "answer": 1,
-      "explanation": "The VPN is up when at least one of its phase 2 selectors is up. If all phase 2 selectors are down, the VPN status is also down."
+      "q": "When is a VPN considered 'up' in the IPsec widget?"
     },
     {
-      "id": "ch11-l4-q3",
-      "question": "What happens when you bring up a phase 2 selector using the IPsec widget?",
       "choices": [
         "Only that phase 2 comes up; phase 1 stays down",
         "The phase 2 selector comes up and its phase 1 also comes up",
@@ -46,11 +40,9 @@
         "Phase 1 comes up but phase 2 must be triggered separately"
       ],
       "answer": 1,
-      "explanation": "Because bringing up a phase 2 selector requires bringing up its phase 1 first, bringing up a phase 2 selector results in its phase 1 also coming up."
+      "q": "What happens when you bring up a phase 2 selector using the IPsec widget?"
     },
     {
-      "id": "ch11-l4-q4",
-      "question": "What happens when you 'bring down the entire tunnel' using the IPsec widget?",
       "choices": [
         "Only phase 1 is brought down",
         "Only phase 2 selectors are brought down",
@@ -58,11 +50,9 @@
         "The tunnel is paused but routes remain active"
       ],
       "answer": 2,
-      "explanation": "When you bring down the entire tunnel, you bring down all phase 2 selectors as well as the phase 1."
+      "q": "What happens when you 'bring down the entire tunnel' using the IPsec widget?"
     },
     {
-      "id": "ch11-l4-q5",
-      "question": "Where can you find IPsec VPN event logs in the FortiGate GUI?",
       "choices": [
         "Monitor > IPsec Monitor",
         "Log & Report > System Events > VPN Events",
@@ -70,11 +60,9 @@
         "Dashboard > IPsec Widget > Events"
       ],
       "answer": 1,
-      "explanation": "To view IPsec VPN event logs, click Log & Report > System Events > VPN Events. FortiGate logs IPsec VPN events by default."
+      "q": "Where can you find IPsec VPN event logs in the FortiGate GUI?"
     },
     {
-      "id": "ch11-l4-q6",
-      "question": "Which CLI command displays current IPsec SA information for all active tunnels?",
       "choices": [
         "get vpn ipsec tunnel details",
         "diagnose vpn tunnel list",
@@ -82,11 +70,9 @@
         "get vpn ipsec tunnel summary"
       ],
       "answer": 1,
-      "explanation": "The command diagnose vpn tunnel list displays the current IPsec SA information for all active tunnels."
+      "q": "Which CLI command displays current IPsec SA information for all active tunnels?"
     },
     {
-      "id": "ch11-l4-q7",
-      "question": "Which CLI command provides traffic counters, negotiated quick mode selectors, and encryption parameters?",
       "choices": [
         "diagnose vpn tunnel list",
         "diagnose vpn ike gateway list",
@@ -94,11 +80,9 @@
         "diagnose debug flow"
       ],
       "answer": 2,
-      "explanation": "The command get vpn ipsec tunnel details provides information for the active IPsec tunnels, including traffic counters, negotiated quick mode selectors, and negotiated encryption, authentication, and keys."
+      "q": "Which CLI command provides traffic counters, negotiated quick mode selectors, and encryption parameters?"
     },
     {
-      "id": "ch11-l4-q8",
-      "question": "Why must you be careful when using the 'diagnose vpn ike gateway clear' command without a phase 1 name?",
       "choices": [
         "It resets only the local phase 1",
         "It has a global effect and clears all phase 1s across all VDOMs",
@@ -106,11 +90,9 @@
         "It only works on dialup tunnels"
       ],
       "answer": 1,
-      "explanation": "The command diagnose vpn ike gateway clear closes a phase 1. Running it without specifying the phase 1 name results in all phase 1s of all VDOMs being cleared — it has a global effect."
+      "q": "Why must you be careful when using the 'diagnose vpn ike gateway clear' command without a phase 1 name?"
     },
     {
-      "id": "ch11-l4-q9",
-      "question": "Which diagnostic tool should you use when a VPN tunnel doesn't come up?",
       "choices": [
         "The debug flow command",
         "The IKE real-time debug",
@@ -118,11 +100,9 @@
         "The routing monitor"
       ],
       "answer": 1,
-      "explanation": "If the tunnel doesn't come up, use the IKE real-time debug. In such cases, an error message usually appears indicating the root cause of the negotiation failure."
+      "q": "Which diagnostic tool should you use when a VPN tunnel doesn't come up?"
     },
     {
-      "id": "ch11-l4-q10",
-      "question": "What is the likely cause when a VPN tunnel is unstable and DPD packets are being lost?",
       "choices": [
         "Mismatched phase 2 selectors",
         "A problem on the ISP side",
@@ -130,11 +110,9 @@
         "Phase 1 encryption mismatch"
       ],
       "answer": 1,
-      "explanation": "When the tunnel is unstable, you usually see that DPD packets are being lost, which indicates that the problem might be on the ISP side."
+      "q": "What is the likely cause when a VPN tunnel is unstable and DPD packets are being lost?"
     },
     {
-      "id": "ch11-l4-q11",
-      "question": "What should you use when a tunnel is up but traffic isn't passing through it?",
       "choices": [
         "IKE real-time debug",
         "The IPsec widget",
@@ -142,11 +120,9 @@
         "The VPN Events log only"
       ],
       "answer": 2,
-      "explanation": "If the tunnel is up but traffic isn't passing through it, use the debug flow. One of the peers might be dropping packets or routing traffic incorrectly, or packets don't match the quick mode selectors."
+      "q": "What should you use when a tunnel is up but traffic isn't passing through it?"
     },
     {
-      "id": "ch11-l4-q12",
-      "question": "For a dialup VPN peer, what distance value is assigned to the automatically added static route after phase 2 comes up?",
       "choices": [
         "1",
         "10",
@@ -154,11 +130,9 @@
         "20"
       ],
       "answer": 2,
-      "explanation": "When you set the remote gateway to Dialup User, by default, a static route for the destination network is added after phase 2 comes up. The distance set for the static route is 15."
+      "q": "For a dialup VPN peer, what distance value is assigned to the automatically added static route after phase 2 comes up?"
     },
     {
-      "id": "ch11-l4-q13",
-      "question": "For a Static IP Address remote gateway, when does the static route become active in the routing table?",
       "choices": [
         "After phase 2 comes up",
         "After phase 1 comes up",
@@ -166,11 +140,9 @@
         "After the first data packet is sent"
       ],
       "answer": 1,
-      "explanation": "If you set the remote gateway to Static IP Address or Dynamic DNS, the static routes for these tunnels become active in the routing table after phase 1 comes up."
+      "q": "For a Static IP Address remote gateway, when does the static route become active in the routing table?"
     },
     {
-      "id": "ch11-l4-q14",
-      "question": "Which events does the VPN Events log track?",
       "choices": [
         "Only tunnel up events",
         "Phase 1 and phase 2 negotiation progress, tunnel up/down events, and DPD failures",
@@ -178,11 +150,9 @@
         "Only phase 2 negotiation events"
       ],
       "answer": 1,
-      "explanation": "The logs track the progress of phase 1 and phase 2 negotiations, and report on tunnel up and down events and DPD failures, among other events."
+      "q": "Which events does the VPN Events log track?"
     },
     {
-      "id": "ch11-l4-q15",
-      "question": "Which CLI command can be used to get SA information about a specific named tunnel?",
       "choices": [
         "diagnose vpn tunnel list name <tunnel name>",
         "get vpn ipsec tunnel details <tunnel name>",
@@ -190,13 +160,11 @@
         "show vpn ipsec tunnel <tunnel name>"
       ],
       "answer": 0,
-      "explanation": "The command diagnose vpn tunnel list name <tunnel name> provides SA information about a specific tunnel."
+      "q": "Which CLI command can be used to get SA information about a specific named tunnel?"
     }
   ],
   "quiz": [
     {
-      "id": "ch11-l4-q1",
-      "question": "What GUI tool is used to monitor IPsec VPN phase 1 and phase 2 status on the dashboard?",
       "choices": [
         "The SD-WAN widget",
         "The IPsec widget",
@@ -204,11 +172,9 @@
         "The routing monitor"
       ],
       "answer": 1,
-      "explanation": "On the GUI dashboard, you can use the IPsec widget to monitor the status of your IPsec VPNs. The widget shows the phase 1 and phase 2 status of an IPsec VPN."
+      "q": "What GUI tool is used to monitor IPsec VPN phase 1 and phase 2 status on the dashboard?"
     },
     {
-      "id": "ch11-l4-q5",
-      "question": "Where can you find IPsec VPN event logs in the FortiGate GUI?",
       "choices": [
         "Monitor > IPsec Monitor",
         "Log & Report > System Events > VPN Events",
@@ -216,11 +182,9 @@
         "Dashboard > IPsec Widget > Events"
       ],
       "answer": 1,
-      "explanation": "To view IPsec VPN event logs, click Log & Report > System Events > VPN Events. FortiGate logs IPsec VPN events by default."
+      "q": "Where can you find IPsec VPN event logs in the FortiGate GUI?"
     },
     {
-      "id": "ch11-l4-q8",
-      "question": "Why must you be careful when using the 'diagnose vpn ike gateway clear' command without a phase 1 name?",
       "choices": [
         "It resets only the local phase 1",
         "It has a global effect and clears all phase 1s across all VDOMs",
@@ -228,11 +192,9 @@
         "It only works on dialup tunnels"
       ],
       "answer": 1,
-      "explanation": "The command diagnose vpn ike gateway clear closes a phase 1. Running it without specifying the phase 1 name results in all phase 1s of all VDOMs being cleared — it has a global effect."
+      "q": "Why must you be careful when using the 'diagnose vpn ike gateway clear' command without a phase 1 name?"
     },
     {
-      "id": "ch11-l4-q9",
-      "question": "Which diagnostic tool should you use when a VPN tunnel doesn't come up?",
       "choices": [
         "The debug flow command",
         "The IKE real-time debug",
@@ -240,11 +202,9 @@
         "The routing monitor"
       ],
       "answer": 1,
-      "explanation": "If the tunnel doesn't come up, use the IKE real-time debug. In such cases, an error message usually appears indicating the root cause of the negotiation failure."
+      "q": "Which diagnostic tool should you use when a VPN tunnel doesn't come up?"
     },
     {
-      "id": "ch11-l4-q11",
-      "question": "What should you use when a tunnel is up but traffic isn't passing through it?",
       "choices": [
         "IKE real-time debug",
         "The IPsec widget",
@@ -252,7 +212,7 @@
         "The VPN Events log only"
       ],
       "answer": 2,
-      "explanation": "If the tunnel is up but traffic isn't passing through it, use the debug flow. One of the peers might be dropping packets or routing traffic incorrectly, or packets don't match the quick mode selectors."
+      "q": "What should you use when a tunnel is up but traffic isn't passing through it?"
     }
   ]
 }

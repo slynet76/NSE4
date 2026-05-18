@@ -13,8 +13,6 @@
   ],
   "questionPool": [
     {
-      "id": "ch12-l3-q1",
-      "question": "What is the first place to check SD-WAN behavior on a FortiGate device?",
       "choices": [
         "The SD-WAN Rules page",
         "The Network dashboard",
@@ -22,11 +20,9 @@
         "The Performance SLA page"
       ],
       "answer": 1,
-      "explanation": "By default, the Network dashboard includes three widgets useful for SD-WAN monitoring. It should be the first place you look when you want to check the SD-WAN behavior on a FortiGate device."
+      "q": "What is the first place to check SD-WAN behavior on a FortiGate device?"
     },
     {
-      "id": "ch12-l3-q2",
-      "question": "Which column in Forward Traffic logs indicates the SD-WAN rule that was matched for a session?",
       "choices": [
         "SD-WAN Member",
         "SD-WAN Quality",
@@ -34,11 +30,9 @@
         "Destination Interface"
       ],
       "answer": 2,
-      "explanation": "The SD-WAN Rule Name column specifies the matched SD-WAN rule for a session. It is disabled by default and must be enabled on the Forward Traffic logs page."
+      "q": "Which column in Forward Traffic logs indicates the SD-WAN rule that was matched for a session?"
     },
     {
-      "id": "ch12-l3-q3",
-      "question": "What appears in the SD-WAN Rule Name column when traffic is steered by the Implicit SD-WAN rule?",
       "choices": [
         "'Implicit'",
         "'Default'",
@@ -46,11 +40,9 @@
         "'0'"
       ],
       "answer": 2,
-      "explanation": "Note that the Implicit SD-WAN rule name does not appear in the SD-WAN Rule Name column. When the traffic is steered according to this rule, the field remains empty."
+      "q": "What appears in the SD-WAN Rule Name column when traffic is steered by the Implicit SD-WAN rule?"
     },
     {
-      "id": "ch12-l3-q4",
-      "question": "What does the green up arrow icon indicate in the Performance SLA monitoring page?",
       "choices": [
         "All SLA targets are being met",
         "The member has the best latency",
@@ -58,11 +50,9 @@
         "The member is carrying the most traffic"
       ],
       "answer": 2,
-      "explanation": "The green up arrows indicate only that the server is responding to the health check, regardless of the packet loss, latency, and jitter values. It is not an indication that any of the SLAs are being met."
+      "q": "What does the green up arrow icon indicate in the Performance SLA monitoring page?"
     },
     {
-      "id": "ch12-l3-q5",
-      "question": "How is an SLA target threshold displayed on a Performance SLA graph?",
       "choices": [
         "As a colored area on the graph",
         "As a horizontal dotted line",
@@ -70,11 +60,9 @@
         "As a text label on the Y-axis"
       ],
       "answer": 1,
-      "explanation": "If you configured an SLA target, it appears on the graph as a horizontal dotted line. For a missed SLA target, FortiGate highlights the impacted metric in red."
+      "q": "How is an SLA target threshold displayed on a Performance SLA graph?"
     },
     {
-      "id": "ch12-l3-q6",
-      "question": "How long is the time range of data shown on Performance SLA graphs?",
       "choices": [
         "Last 5 minutes",
         "Last 1 hour",
@@ -82,11 +70,9 @@
         "Last 24 hours"
       ],
       "answer": 2,
-      "explanation": "Note that the information shown on the Performance SLA graphs is limited to the last minute."
+      "q": "How long is the time range of data shown on Performance SLA graphs?"
     },
     {
-      "id": "ch12-l3-q7",
-      "question": "In the SD-WAN Zones page, what does a red icon next to a zone indicate?",
       "choices": [
         "The zone has exceeded bandwidth limits",
         "The zone has no member",
@@ -94,11 +80,9 @@
         "The zone is disabled"
       ],
       "answer": 1,
-      "explanation": "Zones with no member appear with a red icon on the SD-WAN Zones page (Network > SD-WAN)."
+      "q": "In the SD-WAN Zones page, what does a red icon next to a zone indicate?"
     },
     {
-      "id": "ch12-l3-q8",
-      "question": "Which CLI command fields indicate the SD-WAN rule and member used for a session in the session table?",
       "choices": [
         "sdwan_rule and sdwan_port",
         "vwl_service and vwl_mbr",
@@ -106,11 +90,9 @@
         "sd_rule_id and sd_member_id"
       ],
       "answer": 2,
-      "explanation": "From the diagnose sys session list output, sdwan_mbr_seq and sdwan_service_id indicate the SD-WAN member ID and the SD-WAN rule ID in use, respectively."
+      "q": "Which CLI command fields indicate the SD-WAN rule and member used for a session in the session table?"
     },
     {
-      "id": "ch12-l3-q9",
-      "question": "Which CLI command shows the policy route list including SD-WAN rule and member information?",
       "choices": [
         "diagnose sys session list",
         "get router info routing-table all",
@@ -118,11 +100,9 @@
         "diagnose sd-wan rule list"
       ],
       "answer": 2,
-      "explanation": "The diagnose firewall proute list command output includes vwl_service and vwl_mbr fields which indicate the SD-WAN rule and member. It also shows rule hit count and last hit time."
+      "q": "Which CLI command shows the policy route list including SD-WAN rule and member information?"
     },
     {
-      "id": "ch12-l3-q10",
-      "question": "What are the three metrics used for traffic distribution graphs on the SD-WAN Zones page?",
       "choices": [
         "CPU, memory, and sessions",
         "Bandwidth, volume, and sessions",
@@ -130,11 +110,9 @@
         "Uptime, throughput, and errors"
       ],
       "answer": 1,
-      "explanation": "The SD-WAN Zones page contains graphs that display traffic distribution based on bandwidth, volume, or sessions. Note that bandwidth refers to the data rate, while volume refers to the amount of data."
+      "q": "What are the three metrics used for traffic distribution graphs on the SD-WAN Zones page?"
     },
     {
-      "id": "ch12-l3-q11",
-      "question": "Which log category provides information about SD-WAN member state changes, such as a port changing from alive to dead?",
       "choices": [
         "VPN Events",
         "Forward Traffic logs",
@@ -142,11 +120,9 @@
         "System Events summary"
       ],
       "answer": 2,
-      "explanation": "The SD-WAN Events subsection on the Events page displays logs that report the state changes of the SD-WAN members, such as a warning that a port changed from alive to dead."
+      "q": "Which log category provides information about SD-WAN member state changes, such as a port changing from alive to dead?"
     },
     {
-      "id": "ch12-l3-q12",
-      "question": "Which column must be enabled to see why a session was steered to a specific SD-WAN member?",
       "choices": [
         "SD-WAN Rule Name",
         "Destination Interface",
@@ -154,11 +130,9 @@
         "Member Preference"
       ],
       "answer": 2,
-      "explanation": "The SD-WAN Quality column identifies the member to which the session was steered and the reason. It is disabled by default and must be enabled on the Forward Traffic logs page."
+      "q": "Which column must be enabled to see why a session was steered to a specific SD-WAN member?"
     },
     {
-      "id": "ch12-l3-q13",
-      "question": "What does the SD-WAN widget in the Network dashboard provide?",
       "choices": [
         "Detailed packet capture for SD-WAN members",
         "An overview of the status of each monitored SD-WAN link",
@@ -166,11 +140,9 @@
         "A historical view of SD-WAN events"
       ],
       "answer": 1,
-      "explanation": "The SD-WAN widget provides an overview of the status of each monitored SD-WAN link. You can click the widget to expand and get additional details per topic."
+      "q": "What does the SD-WAN widget in the Network dashboard provide?"
     },
     {
-      "id": "ch12-l3-q14",
-      "question": "In the System Events log summary, what is the default time window for the SD-WAN Events summary widget?",
       "choices": [
         "Past 1 minute",
         "Past 5 minutes",
@@ -178,11 +150,9 @@
         "Past 24 hours"
       ],
       "answer": 1,
-      "explanation": "By default, the System Events summary page considers logs received over the past 5 minutes. You can adjust to get a summary over the past 1 hour or past 24 hours."
+      "q": "In the System Events log summary, what is the default time window for the SD-WAN Events summary widget?"
     },
     {
-      "id": "ch12-l3-q15",
-      "question": "What does the 'vwl_mbr' field in the diagnose firewall proute list output indicate?",
       "choices": [
         "The SD-WAN zone name",
         "The SD-WAN member used to steer the traffic",
@@ -190,13 +160,11 @@
         "The route metric"
       ],
       "answer": 1,
-      "explanation": "The vwl_mbr field in the diagnose firewall proute list output indicates the SD-WAN member used to steer the traffic. The vwl_service field indicates the SD-WAN rule that allowed the route creation."
+      "q": "What does the 'vwl_mbr' field in the diagnose firewall proute list output indicate?"
     }
   ],
   "quiz": [
     {
-      "id": "ch12-l3-q1",
-      "question": "What is the first place to check SD-WAN behavior on a FortiGate device?",
       "choices": [
         "The SD-WAN Rules page",
         "The Network dashboard",
@@ -204,11 +172,9 @@
         "The Performance SLA page"
       ],
       "answer": 1,
-      "explanation": "By default, the Network dashboard includes three widgets useful for SD-WAN monitoring. It should be the first place you look when you want to check the SD-WAN behavior on a FortiGate device."
+      "q": "What is the first place to check SD-WAN behavior on a FortiGate device?"
     },
     {
-      "id": "ch12-l3-q4",
-      "question": "What does the green up arrow icon indicate in the Performance SLA monitoring page?",
       "choices": [
         "All SLA targets are being met",
         "The member has the best latency",
@@ -216,11 +182,9 @@
         "The member is carrying the most traffic"
       ],
       "answer": 2,
-      "explanation": "The green up arrows indicate only that the server is responding to the health check, regardless of the packet loss, latency, and jitter values. It is not an indication that any of the SLAs are being met."
+      "q": "What does the green up arrow icon indicate in the Performance SLA monitoring page?"
     },
     {
-      "id": "ch12-l3-q9",
-      "question": "Which CLI command shows the policy route list including SD-WAN rule and member information?",
       "choices": [
         "diagnose sys session list",
         "get router info routing-table all",
@@ -228,11 +192,9 @@
         "diagnose sd-wan rule list"
       ],
       "answer": 2,
-      "explanation": "The diagnose firewall proute list command output includes vwl_service and vwl_mbr fields which indicate the SD-WAN rule and member. It also shows rule hit count and last hit time."
+      "q": "Which CLI command shows the policy route list including SD-WAN rule and member information?"
     },
     {
-      "id": "ch12-l3-q11",
-      "question": "Which log category provides information about SD-WAN member state changes, such as a port changing from alive to dead?",
       "choices": [
         "VPN Events",
         "Forward Traffic logs",
@@ -240,11 +202,9 @@
         "System Events summary"
       ],
       "answer": 2,
-      "explanation": "The SD-WAN Events subsection on the Events page displays logs that report the state changes of the SD-WAN members, such as a warning that a port changed from alive to dead."
+      "q": "Which log category provides information about SD-WAN member state changes, such as a port changing from alive to dead?"
     },
     {
-      "id": "ch12-l3-q3",
-      "question": "What appears in the SD-WAN Rule Name column when traffic is steered by the Implicit SD-WAN rule?",
       "choices": [
         "'Implicit'",
         "'Default'",
@@ -252,7 +212,7 @@
         "'0'"
       ],
       "answer": 2,
-      "explanation": "Note that the Implicit SD-WAN rule name does not appear in the SD-WAN Rule Name column. When the traffic is steered according to this rule, the field remains empty."
+      "q": "What appears in the SD-WAN Rule Name column when traffic is steered by the Implicit SD-WAN rule?"
     }
   ]
 }

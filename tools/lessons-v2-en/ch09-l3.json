@@ -13,8 +13,6 @@
   ],
   "questionPool": [
     {
-      "id": "ch09-l3-q1",
-      "question": "Which CLI command is used to verify the connection to FortiGuard servers for web filtering?",
       "choices": [
         "diagnose sys top",
         "diagnose debug rating",
@@ -22,11 +20,9 @@
         "diagnose webfilter status"
       ],
       "answer": 1,
-      "explanation": "You can verify the connection to FortiGuard servers by running the diagnose debug rating CLI command."
+      "q": "Which CLI command is used to verify the connection to FortiGuard servers for web filtering?"
     },
     {
-      "id": "ch09-l3-q2",
-      "question": "What does the 'F' flag in the diagnose debug rating output indicate?",
       "choices": [
         "FQDN resolved successfully",
         "Failed",
@@ -34,11 +30,9 @@
         "Full connection"
       ],
       "answer": 1,
-      "explanation": "In the diagnose debug rating output, flags include: D (IP returned from DNS), I (Contract server contacted), T (being timed), F (failed)."
+      "q": "What does the 'F' flag in the diagnose debug rating output indicate?"
     },
     {
-      "id": "ch09-l3-q3",
-      "question": "What does the 'Curr Lost' field in diagnose debug rating output represent?",
       "choices": [
         "Total number of lost FortiGuard requests overall",
         "Current number of consecutive lost FortiGuard requests, which resets to 0 when one packet succeeds",
@@ -46,11 +40,9 @@
         "Number of expired web filter cache entries"
       ],
       "answer": 1,
-      "explanation": "Curr Lost is the current number of consecutive lost FortiGuard requests (in a row, it resets to 0 when one packet succeeds)."
+      "q": "What does the 'Curr Lost' field in diagnose debug rating output represent?"
     },
     {
-      "id": "ch09-l3-q4",
-      "question": "What is the default port FortiGate uses to perform live filtering with FortiGuard?",
       "choices": [
         "UDP port 53",
         "UDP port 8888",
@@ -58,11 +50,9 @@
         "HTTP port 80"
       ],
       "answer": 2,
-      "explanation": "By default, FortiGate enforces the use of HTTPS port 443 to perform live filtering with FortiGuard or FortiManager."
+      "q": "What is the default port FortiGate uses to perform live filtering with FortiGuard?"
     },
     {
-      "id": "ch09-l3-q5",
-      "question": "When fortiguard-anycast is enabled, what does the FortiGuard domain name resolve to?",
       "choices": [
         "A list of multiple regional servers",
         "A single anycast IP address",
@@ -70,11 +60,9 @@
         "A round-robin DNS pool"
       ],
       "answer": 1,
-      "explanation": "When the fortiguard-anycast command is enabled, the FortiGuard domain name resolves to a single anycast IP address, which is the only entry in the list of FortiGuard servers."
+      "q": "When fortiguard-anycast is enabled, what does the FortiGuard domain name resolve to?"
     },
     {
-      "id": "ch09-l3-q6",
-      "question": "Why might using UDP port 53 for FortiGuard rating requests cause issues?",
       "choices": [
         "FortiGuard does not support UDP protocols",
         "Any kind of inspection may reveal that this traffic is not DNS and prevent the service from working",
@@ -82,11 +70,9 @@
         "The FortiGuard anycast address does not respond on port 53"
       ],
       "answer": 1,
-      "explanation": "If you are using UDP port 53, any kind of inspection may reveal that this traffic is not DNS and prevent the service from working."
+      "q": "Why might using UDP port 53 for FortiGuard rating requests cause issues?"
     },
     {
-      "id": "ch09-l3-q7",
-      "question": "What is the benefit of enabling Web Filter cache on FortiGate?",
       "choices": [
         "It permanently stores all web filter logs for audit purposes",
         "It reduces the number of rating requests by caching recent website rating responses in memory",
@@ -94,11 +80,9 @@
         "It allows FortiGate to perform offline category lookups indefinitely"
       ],
       "answer": 1,
-      "explanation": "Once Web Filter cache is enabled, FortiGate maintains a list of recent website rating responses in memory. If the URL is already known, FortiGate does not send a rating request, reducing the amount of time to establish a rating."
+      "q": "What is the benefit of enabling Web Filter cache on FortiGate?"
     },
     {
-      "id": "ch09-l3-q8",
-      "question": "If web filtering is not performing inspection despite a live FortiGuard connection, what should you verify first?",
       "choices": [
         "That the FortiGuard contract has not expired",
         "That the SSL Inspection field includes at least one profile with an SSL certification inspection method",
@@ -106,11 +90,9 @@
         "That the DNS server is reachable"
       ],
       "answer": 1,
-      "explanation": "Most issues are caused by misconfiguration. You should make sure that the SSL Inspection field includes at least one profile with an SSL certification inspection method."
+      "q": "If web filtering is not performing inspection despite a live FortiGuard connection, what should you verify first?"
     },
     {
-      "id": "ch09-l3-q9",
-      "question": "What information is included in web filter log entries?",
       "choices": [
         "Only the blocked URL and the source IP",
         "FortiGuard quota and category, which web filter profile was used, the URL, and other event details",
@@ -118,11 +100,9 @@
         "The full HTTP request and response headers"
       ],
       "answer": 1,
-      "explanation": "Log entries include information about the FortiGuard quota and category (if enabled), which web filter profile was used to inspect the traffic, the URL, and more details about the event."
+      "q": "What information is included in web filter log entries?"
     },
     {
-      "id": "ch09-l3-q10",
-      "question": "In what format is the raw log data file downloaded from the web filter logs?",
       "choices": [
         "CSV format",
         "JSON format",
@@ -130,11 +110,9 @@
         "XML format"
       ],
       "answer": 2,
-      "explanation": "You can view the raw log data by clicking the download icon. The file downloaded is a plaintext file in syslog format."
+      "q": "In what format is the raw log data file downloaded from the web filter logs?"
     },
     {
-      "id": "ch09-l3-q11",
-      "question": "What factor does the 'Weight' field in diagnose debug rating output reflect?",
       "choices": [
         "The number of requests already sent to that server",
         "The difference in time zones between FortiGate and the server, to reduce the use of remote servers",
@@ -142,11 +120,9 @@
         "The round-trip time to the server"
       ],
       "answer": 1,
-      "explanation": "Weight is based on the difference in time zones between FortiGate and the server, to reduce the possibility of using a remote server."
+      "q": "What factor does the 'Weight' field in diagnose debug rating output reflect?"
     },
     {
-      "id": "ch09-l3-q12",
-      "question": "Which of the following is one of the alternative ports available when FortiGuard anycast is disabled?",
       "choices": [
         "TCP port 25",
         "UDP port 443",
@@ -154,11 +130,9 @@
         "UDP port 1194"
       ],
       "answer": 1,
-      "explanation": "By disabling the FortiGuard anycast setting on the CLI, other ports and protocols become available, including HTTPS port 53 and port 8888, UDP port 443, port 53, and port 8888."
+      "q": "Which of the following is one of the alternative ports available when FortiGuard anycast is disabled?"
     },
     {
-      "id": "ch09-l3-q13",
-      "question": "What should you verify regarding the web filter profile when troubleshooting web filtering issues?",
       "choices": [
         "That the web filter profile is running in CLI mode",
         "That the correct web filter profile is applied on the firewall policy",
@@ -166,11 +140,9 @@
         "That the web filter profile has no quotas configured"
       ],
       "answer": 1,
-      "explanation": "Make sure that the correct web filter profile is applied on the firewall policy."
+      "q": "What should you verify regarding the web filter profile when troubleshooting web filtering issues?"
     },
     {
-      "id": "ch09-l3-q14",
-      "question": "What does the 'I' flag in the diagnose debug rating output indicate?",
       "choices": [
         "IP returned from DNS",
         "Inactive server",
@@ -178,11 +150,9 @@
         "IPS engine response"
       ],
       "answer": 2,
-      "explanation": "In the diagnose debug rating flags, I indicates that the Contract server was contacted."
+      "q": "What does the 'I' flag in the diagnose debug rating output indicate?"
     },
     {
-      "id": "ch09-l3-q15",
-      "question": "What should you verify regarding inspection mode when troubleshooting a misconfigured web filter?",
       "choices": [
         "That the inspection mode is always set to deep inspection",
         "That the inspection mode setting matches the feature set in the corresponding web filter profile",
@@ -190,13 +160,11 @@
         "That the inspection mode matches the FortiGuard contract type"
       ],
       "answer": 1,
-      "explanation": "Verify the inspection mode setting with the feature set in the corresponding web filter profile."
+      "q": "What should you verify regarding inspection mode when troubleshooting a misconfigured web filter?"
     }
   ],
   "quiz": [
     {
-      "id": "ch09-l3-q1",
-      "question": "Which CLI command is used to verify the connection to FortiGuard servers for web filtering?",
       "choices": [
         "diagnose sys top",
         "diagnose debug rating",
@@ -204,11 +172,9 @@
         "diagnose webfilter status"
       ],
       "answer": 1,
-      "explanation": "You can verify the connection to FortiGuard servers by running the diagnose debug rating CLI command."
+      "q": "Which CLI command is used to verify the connection to FortiGuard servers for web filtering?"
     },
     {
-      "id": "ch09-l3-q4",
-      "question": "What is the default port FortiGate uses to perform live filtering with FortiGuard?",
       "choices": [
         "UDP port 53",
         "UDP port 8888",
@@ -216,11 +182,9 @@
         "HTTP port 80"
       ],
       "answer": 2,
-      "explanation": "By default, FortiGate enforces the use of HTTPS port 443 to perform live filtering with FortiGuard or FortiManager."
+      "q": "What is the default port FortiGate uses to perform live filtering with FortiGuard?"
     },
     {
-      "id": "ch09-l3-q7",
-      "question": "What is the benefit of enabling Web Filter cache on FortiGate?",
       "choices": [
         "It permanently stores all web filter logs for audit purposes",
         "It reduces the number of rating requests by caching recent website rating responses in memory",
@@ -228,11 +192,9 @@
         "It allows FortiGate to perform offline category lookups indefinitely"
       ],
       "answer": 1,
-      "explanation": "Once Web Filter cache is enabled, FortiGate maintains a list of recent website rating responses in memory. If the URL is already known, FortiGate does not send a rating request, reducing the amount of time to establish a rating."
+      "q": "What is the benefit of enabling Web Filter cache on FortiGate?"
     },
     {
-      "id": "ch09-l3-q8",
-      "question": "If web filtering is not performing inspection despite a live FortiGuard connection, what should you verify first?",
       "choices": [
         "That the FortiGuard contract has not expired",
         "That the SSL Inspection field includes at least one profile with an SSL certification inspection method",
@@ -240,11 +202,9 @@
         "That the DNS server is reachable"
       ],
       "answer": 1,
-      "explanation": "Most issues are caused by misconfiguration. You should make sure that the SSL Inspection field includes at least one profile with an SSL certification inspection method."
+      "q": "If web filtering is not performing inspection despite a live FortiGuard connection, what should you verify first?"
     },
     {
-      "id": "ch09-l3-q10",
-      "question": "In what format is the raw log data file downloaded from the web filter logs?",
       "choices": [
         "CSV format",
         "JSON format",
@@ -252,7 +212,7 @@
         "XML format"
       ],
       "answer": 2,
-      "explanation": "You can view the raw log data by clicking the download icon. The file downloaded is a plaintext file in syslog format."
+      "q": "In what format is the raw log data file downloaded from the web filter logs?"
     }
   ]
 }

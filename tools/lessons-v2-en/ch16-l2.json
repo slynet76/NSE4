@@ -13,9 +13,7 @@
   ],
   "questionPool": [
     {
-      "id": "ch16-l2-q1",
       "type": "mcq",
-      "question": "In FortiSASE agent-based deployment, what VPN protocol is used by default for remote user connectivity?",
       "choices": [
         "SSL VPN",
         "IPsec VPN",
@@ -23,12 +21,10 @@
         "PPTP"
       ],
       "answer": 1,
-      "explanation": "By default, FortiSASE supports remote user connectivity using IPsec VPN. FortiClient connects to FortiSASE using a secure VPN tunnel."
+      "q": "In FortiSASE agent-based deployment, what VPN protocol is used by default for remote user connectivity?"
     },
     {
-      "id": "ch16-l2-q2",
       "type": "mcq",
-      "question": "In FortiSASE agentless deployment, what file is distributed to end users to enable the SWG service?",
       "choices": [
         "A VPN configuration profile",
         "A proxy auto-configuration (PAC) file",
@@ -36,12 +32,10 @@
         "An SSL certificate bundle"
       ],
       "answer": 1,
-      "explanation": "In agentless deployment, FortiSASE acts as a SWG and distributes a proxy auto-configuration (PAC) file to end users, enabling the FortiSASE SWG service as an explicit web proxy."
+      "q": "In FortiSASE agentless deployment, what file is distributed to end users to enable the SWG service?"
     },
     {
-      "id": "ch16-l2-q3",
       "type": "mcq",
-      "question": "What traffic does FortiSASE SWG (agentless) mode secure?",
       "choices": [
         "All traffic including UDP, DNS, and VoIP",
         "Only web traffic protocols such as HTTP and HTTPS",
@@ -49,12 +43,10 @@
         "Only DNS traffic for web filtering"
       ],
       "answer": 1,
-      "explanation": "SWG deployment secures only web traffic protocols, such as HTTP and HTTPS. All other non-web traffic bypasses FortiSASE and is forwarded directly to the internet."
+      "q": "What traffic does FortiSASE SWG (agentless) mode secure?"
     },
     {
-      "id": "ch16-l2-q4",
       "type": "mcq",
-      "question": "For which type of users is the agentless FortiSASE deployment mode typically recommended?",
       "choices": [
         "Full-time employees using corporate laptops",
         "Branch office staff connecting via SD-WAN",
@@ -62,12 +54,10 @@
         "Executive users requiring the highest security level"
       ],
       "answer": 2,
-      "explanation": "The agentless use case is usually recommended for unmanaged endpoints like contractors or temporary employees."
+      "q": "For which type of users is the agentless FortiSASE deployment mode typically recommended?"
     },
     {
-      "id": "ch16-l2-q5",
       "type": "mcq",
-      "question": "What technology is established over the IPsec tunnel between FortiExtender/FortiGate and FortiSASE in LAN extension mode?",
       "choices": [
         "GRE tunnel",
         "MPLS circuit",
@@ -75,12 +65,10 @@
         "802.1Q VLAN trunk"
       ],
       "answer": 2,
-      "explanation": "A virtual eXtensible LAN (VXLAN) is established over the IPsec tunnels to create a layer 2 network between FortiSASE and the network behind the remote FortiExtender or FortiGate."
+      "q": "What technology is established over the IPsec tunnel between FortiExtender/FortiGate and FortiSASE in LAN extension mode?"
     },
     {
-      "id": "ch16-l2-q6",
       "type": "mcq",
-      "question": "What security policies are applied in the SIA use case for remote users?",
       "choices": [
         "Only web filtering and antivirus",
         "Common security policies for IPS, application control, web filtering, DNS filtering, antimalware, sandboxing, antibotnet, and C&C",
@@ -88,12 +76,10 @@
         "Firewall rules only, without inspection features"
       ],
       "answer": 1,
-      "explanation": "SIA extends an organization's security perimeter to remote users by enforcing common security policies for IPS, application control, web filtering, DNS filtering, antimalware, sandboxing, antibotnet, and C&C."
+      "q": "What security policies are applied in the SIA use case for remote users?"
     },
     {
-      "id": "ch16-l2-q7",
       "type": "mcq",
-      "question": "What advantage does FortiSASE SPA application access through POPs provide compared to direct access?",
       "choices": [
         "Lower latency since traffic bypasses the internet",
         "Inline security inspection plus SD-WAN traffic optimization between the POP and the datacenter",
@@ -101,12 +87,10 @@
         "Automatic load balancing across all application instances"
       ],
       "answer": 1,
-      "explanation": "Application access through FortiSASE POPs provides inline security inspection for robust threat protection, plus the benefits of SD-WAN which optimizes traffic flow between the POP and your SD-WAN hub or FortiGate at the datacenter."
+      "q": "What advantage does FortiSASE SPA application access through POPs provide compared to direct access?"
     },
     {
-      "id": "ch16-l2-q8",
       "type": "mcq",
-      "question": "What does continuous posture verification in ZTNA check in near real time?",
       "choices": [
         "Network bandwidth availability and latency",
         "The user's identity and device posture",
@@ -114,12 +98,10 @@
         "SSL certificate validity and expiry"
       ],
       "answer": 1,
-      "explanation": "Both SPA options support ZTNA, and user traffic undergoes continuous posture verification. This process checks the user's identity and device posture in near real time, creating a dynamic security model."
+      "q": "What does continuous posture verification in ZTNA check in near real time?"
     },
     {
-      "id": "ch16-l2-q9",
       "type": "mcq",
-      "question": "What is the difference between inline CASB and out-of-band CASB in FortiSASE?",
       "choices": [
         "Inline CASB inspects data in motion as it passes to cloud applications; out-of-band CASB uses an API to scan data at rest already uploaded to SaaS",
         "Inline CASB only works for HTTP traffic; out-of-band CASB works for all protocols",
@@ -127,12 +109,10 @@
         "They are identical features with different names for licensing purposes"
       ],
       "answer": 0,
-      "explanation": "Inline CASB detects data in motion as it passes through to the cloud application from the endpoint. Out-of-band CASB uses an API to connect to the cloud application and scans the data at rest — data already uploaded to the SaaS application."
+      "q": "What is the difference between inline CASB and out-of-band CASB in FortiSASE?"
     },
     {
-      "id": "ch16-l2-q10",
       "type": "mcq",
-      "question": "How does FortiSASE SSL inspection benefit organizations in the SIA use case?",
       "choices": [
         "It provides SSL inspection only for premium subscribers at extra cost",
         "FortiSASE provides native support for full SSL inspection at no additional cost, ensuring even encrypted traffic is fully protected",
@@ -140,12 +120,10 @@
         "SSL inspection is only available in agent-based mode"
       ],
       "answer": 1,
-      "explanation": "FortiSASE provides native support for full SSL inspection at no additional cost, ensuring that even encrypted traffic is fully protected."
+      "q": "How does FortiSASE SSL inspection benefit organizations in the SIA use case?"
     },
     {
-      "id": "ch16-l2-q11",
       "type": "mcq",
-      "question": "Which authentication servers does FortiSASE support for user authentication?",
       "choices": [
         "Only RADIUS and Active Directory",
         "Local database, RADIUS, LDAP, and SAML for SSO",
@@ -153,12 +131,10 @@
         "Kerberos, NTLM, and local database only"
       ],
       "answer": 1,
-      "explanation": "FortiSASE provides support for many authentication servers, including local database, RADIUS, LDAP, and SAML for SSO."
+      "q": "Which authentication servers does FortiSASE support for user authentication?"
     },
     {
-      "id": "ch16-l2-q12",
       "type": "mcq",
-      "question": "What does DLP (data loss prevention) in FortiSASE do?",
       "choices": [
         "Prevents FortiGate configuration changes from being lost during reboot",
         "Prevents sensitive data from leaving or entering the network by defining data patterns, scanning traffic, and allowing, blocking, or logging matches",
@@ -166,12 +142,10 @@
         "Backs up user data to FortiCloud automatically"
       ],
       "answer": 1,
-      "explanation": "FortiSASE uses DLP to prevent sensitive data from leaving or entering your network by defining various sensitive data patterns, scanning for the patterns while inspecting traffic, and allowing, blocking, or logging only when traffic matches the patterns."
+      "q": "What does DLP (data loss prevention) in FortiSASE do?"
     },
     {
-      "id": "ch16-l2-q13",
       "type": "mcq",
-      "question": "How does inline CASB detect application traffic even when using nonstandard ports?",
       "choices": [
         "It blocks all traffic on nonstandard ports by default",
         "It uses IPS protocol decoders to analyze network traffic and detect application traffic even on nonstandard ports or protocols",
@@ -179,12 +153,10 @@
         "It relies on deep packet inspection of DNS queries only"
       ],
       "answer": 1,
-      "explanation": "Application control with inline CASB using IPS protocol decoders can analyze network traffic to detect application traffic, even if the traffic uses nonstandard ports or protocols."
+      "q": "How does inline CASB detect application traffic even when using nonstandard ports?"
     },
     {
-      "id": "ch16-l2-q14",
       "type": "mcq",
-      "question": "How does FortiSASE select which POP to route remote user traffic to?",
       "choices": [
         "It uses a round-robin algorithm across all available POPs",
         "It redirects internet traffic to the closest FortiSASE POP using geolocation selection",
@@ -192,12 +164,10 @@
         "Traffic always routes through the primary datacenter POP"
       ],
       "answer": 1,
-      "explanation": "FortiSASE redirects the internet traffic of remote users to the closest FortiSASE POP using geolocation selection."
+      "q": "How does FortiSASE select which POP to route remote user traffic to?"
     },
     {
-      "id": "ch16-l2-q15",
       "type": "mcq",
-      "question": "Where is the FortiCASB out-of-band CASB configured, and what licensing includes access to it?",
       "choices": [
         "Configured in FortiManager and included with FortiGate NGFW licensing",
         "Configured on the FortiCASB portal, included with per-user and per-endpoint FortiSASE licensing",
@@ -205,14 +175,12 @@
         "Configured in the FortiSASE console and included only with enterprise contracts"
       ],
       "answer": 1,
-      "explanation": "Access to the FortiCASB portal is included with per-user and per-endpoint FortiSASE licensing. Out-of-band CASB is configured on the FortiCASB portal and is independent of FortiSASE configurations."
+      "q": "Where is the FortiCASB out-of-band CASB configured, and what licensing includes access to it?"
     }
   ],
   "quiz": [
     {
-      "id": "ch16-l2-q1",
       "type": "mcq",
-      "question": "In FortiSASE agent-based deployment, what VPN protocol is used by default for remote user connectivity?",
       "choices": [
         "SSL VPN",
         "IPsec VPN",
@@ -220,12 +188,10 @@
         "PPTP"
       ],
       "answer": 1,
-      "explanation": "By default, FortiSASE supports remote user connectivity using IPsec VPN. FortiClient connects to FortiSASE using a secure VPN tunnel."
+      "q": "In FortiSASE agent-based deployment, what VPN protocol is used by default for remote user connectivity?"
     },
     {
-      "id": "ch16-l2-q4",
       "type": "mcq",
-      "question": "For which type of users is the agentless FortiSASE deployment mode typically recommended?",
       "choices": [
         "Full-time employees using corporate laptops",
         "Branch office staff connecting via SD-WAN",
@@ -233,12 +199,10 @@
         "Executive users requiring the highest security level"
       ],
       "answer": 2,
-      "explanation": "The agentless use case is usually recommended for unmanaged endpoints like contractors or temporary employees."
+      "q": "For which type of users is the agentless FortiSASE deployment mode typically recommended?"
     },
     {
-      "id": "ch16-l2-q9",
       "type": "mcq",
-      "question": "What is the difference between inline CASB and out-of-band CASB in FortiSASE?",
       "choices": [
         "Inline CASB inspects data in motion as it passes to cloud applications; out-of-band CASB uses an API to scan data at rest already uploaded to SaaS",
         "Inline CASB only works for HTTP traffic; out-of-band CASB works for all protocols",
@@ -246,12 +210,10 @@
         "They are identical features with different names for licensing purposes"
       ],
       "answer": 0,
-      "explanation": "Inline CASB detects data in motion as it passes through to the cloud application from the endpoint. Out-of-band CASB uses an API to connect to the cloud application and scans the data at rest — data already uploaded to the SaaS application."
+      "q": "What is the difference between inline CASB and out-of-band CASB in FortiSASE?"
     },
     {
-      "id": "ch16-l2-q12",
       "type": "mcq",
-      "question": "What does DLP (data loss prevention) in FortiSASE do?",
       "choices": [
         "Prevents FortiGate configuration changes from being lost during reboot",
         "Prevents sensitive data from leaving or entering the network by defining data patterns, scanning traffic, and allowing, blocking, or logging matches",
@@ -259,12 +221,10 @@
         "Backs up user data to FortiCloud automatically"
       ],
       "answer": 1,
-      "explanation": "FortiSASE uses DLP to prevent sensitive data from leaving or entering your network by defining various sensitive data patterns, scanning for the patterns while inspecting traffic, and allowing, blocking, or logging only when traffic matches the patterns."
+      "q": "What does DLP (data loss prevention) in FortiSASE do?"
     },
     {
-      "id": "ch16-l2-q14",
       "type": "mcq",
-      "question": "How does FortiSASE select which POP to route remote user traffic to?",
       "choices": [
         "It uses a round-robin algorithm across all available POPs",
         "It redirects internet traffic to the closest FortiSASE POP using geolocation selection",
@@ -272,7 +232,7 @@
         "Traffic always routes through the primary datacenter POP"
       ],
       "answer": 1,
-      "explanation": "FortiSASE redirects the internet traffic of remote users to the closest FortiSASE POP using geolocation selection."
+      "q": "How does FortiSASE select which POP to route remote user traffic to?"
     }
   ]
 }

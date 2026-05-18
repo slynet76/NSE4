@@ -13,8 +13,6 @@
   ],
   "questionPool": [
     {
-      "id": "ch10-l4-q1",
-      "question": "Which application control action passes the traffic and generates a log message?",
       "choices": [
         "Allow",
         "Block",
@@ -22,11 +20,9 @@
         "Quarantine"
       ],
       "answer": 2,
-      "explanation": "The Monitor action passes the traffic, but also generates a log message."
+      "q": "Which application control action passes the traffic and generates a log message?"
     },
     {
-      "id": "ch10-l4-q2",
-      "question": "Which application control action is recommended if an application requires feedback to prevent instability?",
       "choices": [
         "Allow",
         "Block",
@@ -34,11 +30,9 @@
         "Quarantine"
       ],
       "answer": 3,
-      "explanation": "If an application requires feedback to prevent instability or other unwanted behavior, you might choose Quarantine instead of Block."
+      "q": "Which application control action is recommended if an application requires feedback to prevent instability?"
     },
     {
-      "id": "ch10-l4-q3",
-      "question": "What does the Network Protocol Enforcement option do?",
       "choices": [
         "Blocks all traffic that uses non-standard application signatures",
         "Allows you to configure network services on known ports while blocking those services on other ports",
@@ -46,11 +40,9 @@
         "Prevents users from bypassing application control via VPN"
       ],
       "answer": 1,
-      "explanation": "Network Protocol Enforcement allows you to configure network services (for example, FTP, HTTP, and HTTPS) on known ports, while blocking those services on other ports."
+      "q": "What does the Network Protocol Enforcement option do?"
     },
     {
-      "id": "ch10-l4-q4",
-      "question": "What is the scan order for application control profile matching?",
       "choices": [
         "Categories first, then application and filter overrides",
         "Application and filter overrides first, then categories",
@@ -58,11 +50,9 @@
         "Network Protocol Enforcement first, then overrides, then categories"
       ],
       "answer": 1,
-      "explanation": "FortiGate scans in this order: first application and filter overrides (top of the list first), then categories."
+      "q": "What is the scan order for application control profile matching?"
     },
     {
-      "id": "ch10-l4-q5",
-      "question": "What does the block page for HTTP-based applications NOT include?",
       "choices": [
         "The signature that detected the application",
         "The URL that was specifically blocked",
@@ -70,11 +60,9 @@
         "The UUID of the policy governing the traffic"
       ],
       "answer": 2,
-      "explanation": "The block page contains the signature, signature category, blocked URL, user name, group name, and UUID of the policy. It does not include the user's browser history."
+      "q": "What does the block page for HTTP-based applications NOT include?"
     },
     {
-      "id": "ch10-l4-q6",
-      "question": "What is the purpose of the Policy UUID field in application control logs?",
       "choices": [
         "To identify the FortiGuard signature version",
         "To help identify which policy on FortiGate blocked the page, even across many policies and devices",
@@ -82,11 +70,9 @@
         "To correlate logs with FortiAnalyzer reports"
       ],
       "answer": 1,
-      "explanation": "The UUID of the policy governing the traffic can help you identify which policy on FortiGate blocked the page, even if you have a large number of policies with many FortiGate devices."
+      "q": "What is the purpose of the Policy UUID field in application control logs?"
     },
     {
-      "id": "ch10-l4-q7",
-      "question": "Where can you view application control events on the FortiGate GUI?",
       "choices": [
         "Dashboard > Interfaces only",
         "Log & Report > Security Events > Application Control",
@@ -94,11 +80,9 @@
         "Network > Routing > Application Monitor"
       ],
       "answer": 1,
-      "explanation": "FortiGate logs all application control events on the Log & Report > Security Events page. You can view the logs by clicking Application Control."
+      "q": "Where can you view application control events on the FortiGate GUI?"
     },
     {
-      "id": "ch10-l4-q8",
-      "question": "What happens when a filter override for Excessive-Bandwidth is placed above an application override for Dailymotion (set to Monitor)?",
       "choices": [
         "Dailymotion is allowed because the application override takes precedence",
         "Dailymotion is blocked because the filter override is checked first and Dailymotion uses excessive bandwidth",
@@ -106,11 +90,9 @@
         "Dailymotion generates only a Monitor log and is not blocked"
       ],
       "answer": 1,
-      "explanation": "The priority in which application and filter overrides are placed takes precedence. If a filter override (Excessive-Bandwidth) is placed above an application override, Dailymotion is blocked even though it is set to Monitor in the overrides section."
+      "q": "What happens when a filter override for Excessive-Bandwidth is placed above an application override for Dailymotion (set to Monitor)?"
     },
     {
-      "id": "ch10-l4-q9",
-      "question": "What action does 'Block applications detected on non-default ports' take?",
       "choices": [
         "It logs non-default port usage for review",
         "It redirects non-default port traffic to a proxy",
@@ -118,11 +100,9 @@
         "It quarantines the source host when non-default ports are used"
       ],
       "answer": 2,
-      "explanation": "When the Block applications detected on non-default ports option is enabled, FortiGate compares the ports used by the application with the ones defined in FortiGuard application signatures. The traffic is blocked if it does not match."
+      "q": "What action does 'Block applications detected on non-default ports' take?"
     },
     {
-      "id": "ch10-l4-q10",
-      "question": "Which page allows you to drill down into session and bytes information for a specific application?",
       "choices": [
         "Log & Report > Security Events > Application Control",
         "Dashboard > FortiView Applications",
@@ -130,11 +110,9 @@
         "Forward Traffic logs"
       ],
       "answer": 1,
-      "explanation": "You can check the traffic matching with application control profiles on the Dashboard > FortiView Applications page. You can select a specific application and drill down to view the sessions and bytes information."
+      "q": "Which page allows you to drill down into session and bytes information for a specific application?"
     },
     {
-      "id": "ch10-l4-q11",
-      "question": "What must you do after configuring an application control profile for it to take effect?",
       "choices": [
         "Restart the IPS engine service",
         "Apply the profile to a firewall policy",
@@ -142,11 +120,9 @@
         "Download updated application signatures"
       ],
       "answer": 1,
-      "explanation": "After you configure an application control profile, you must apply it to a firewall policy. This instructs FortiGate to start scanning application traffic that is subject to the firewall policy."
+      "q": "What must you do after configuring an application control profile for it to take effect?"
     },
     {
-      "id": "ch10-l4-q12",
-      "question": "What is the most efficient use of FortiGate resources when an application does not require feedback to prevent instability?",
       "choices": [
         "Monitor",
         "Allow",
@@ -154,11 +130,9 @@
         "Block"
       ],
       "answer": 3,
-      "explanation": "Otherwise (when an application does not require feedback to prevent instability), the most efficient use of FortiGate resources is to block."
+      "q": "What is the most efficient use of FortiGate resources when an application does not require feedback to prevent instability?"
     },
     {
-      "id": "ch10-l4-q13",
-      "question": "For non-HTTP/HTTPS applications, what does FortiGate do when application control blocks the traffic?",
       "choices": [
         "Displays a block page to the user",
         "Only drops the packets or resets the TCP connection",
@@ -166,11 +140,9 @@
         "Sends an SNMP trap to FortiManager"
       ],
       "answer": 1,
-      "explanation": "For non-HTTP/HTTPS applications, FortiGate only drops the packets or resets the TCP connection."
+      "q": "For non-HTTP/HTTPS applications, what does FortiGate do when application control blocks the traffic?"
     },
     {
-      "id": "ch10-l4-q14",
-      "question": "What action should you take first when studying a new network before applying application control blocks?",
       "choices": [
         "Set all categories to Block and monitor for false positives",
         "Use Monitor to study network traffic and then fine-tune",
@@ -178,11 +150,9 @@
         "Disable application control until the baseline is established"
       ],
       "answer": 1,
-      "explanation": "If you are not sure which action to choose, Monitor can be useful initially while you study your network. Later, after you have studied your network traffic, you can fine-tune your filter selection."
+      "q": "What action should you take first when studying a new network before applying application control blocks?"
     },
     {
-      "id": "ch10-l4-q15",
-      "question": "Which log page records both application control events and the firewall policy activity that governs that traffic?",
       "choices": [
         "Security Events > IPS",
         "Forward Traffic logs",
@@ -190,13 +160,11 @@
         "VPN > Monitor"
       ],
       "answer": 1,
-      "explanation": "You can also view the details on the Forward Traffic logs page, where firewall policies record activity. You can find a summary of the traffic to which FortiGate applied application control."
+      "q": "Which log page records both application control events and the firewall policy activity that governs that traffic?"
     }
   ],
   "quiz": [
     {
-      "id": "ch10-l4-q1",
-      "question": "Which application control action passes the traffic and generates a log message?",
       "choices": [
         "Allow",
         "Block",
@@ -204,11 +172,9 @@
         "Quarantine"
       ],
       "answer": 2,
-      "explanation": "The Monitor action passes the traffic, but also generates a log message."
+      "q": "Which application control action passes the traffic and generates a log message?"
     },
     {
-      "id": "ch10-l4-q4",
-      "question": "What is the scan order for application control profile matching?",
       "choices": [
         "Categories first, then application and filter overrides",
         "Application and filter overrides first, then categories",
@@ -216,11 +182,9 @@
         "Network Protocol Enforcement first, then overrides, then categories"
       ],
       "answer": 1,
-      "explanation": "FortiGate scans in this order: first application and filter overrides (top of the list first), then categories."
+      "q": "What is the scan order for application control profile matching?"
     },
     {
-      "id": "ch10-l4-q6",
-      "question": "What is the purpose of the Policy UUID field in application control logs?",
       "choices": [
         "To identify the FortiGuard signature version",
         "To help identify which policy on FortiGate blocked the page, even across many policies and devices",
@@ -228,11 +192,9 @@
         "To correlate logs with FortiAnalyzer reports"
       ],
       "answer": 1,
-      "explanation": "The UUID of the policy governing the traffic can help you identify which policy on FortiGate blocked the page, even if you have a large number of policies with many FortiGate devices."
+      "q": "What is the purpose of the Policy UUID field in application control logs?"
     },
     {
-      "id": "ch10-l4-q11",
-      "question": "What must you do after configuring an application control profile for it to take effect?",
       "choices": [
         "Restart the IPS engine service",
         "Apply the profile to a firewall policy",
@@ -240,11 +202,9 @@
         "Download updated application signatures"
       ],
       "answer": 1,
-      "explanation": "After you configure an application control profile, you must apply it to a firewall policy. This instructs FortiGate to start scanning application traffic that is subject to the firewall policy."
+      "q": "What must you do after configuring an application control profile for it to take effect?"
     },
     {
-      "id": "ch10-l4-q3",
-      "question": "What does the Network Protocol Enforcement option do?",
       "choices": [
         "Blocks all traffic that uses non-standard application signatures",
         "Allows you to configure network services on known ports while blocking those services on other ports",
@@ -252,7 +212,7 @@
         "Prevents users from bypassing application control via VPN"
       ],
       "answer": 1,
-      "explanation": "Network Protocol Enforcement allows you to configure network services (for example, FTP, HTTP, and HTTPS) on known ports, while blocking those services on other ports."
+      "q": "What does the Network Protocol Enforcement option do?"
     }
   ]
 }

@@ -13,9 +13,7 @@
   ],
   "questionPool": [
     {
-      "id": "ch15-l2-q1",
       "type": "mcq",
-      "question": "What does FWaaS stand for in the context of FortiGate CNF?",
       "choices": [
         "Firewall with Advanced Security Service",
         "Firewall-as-a-Service",
@@ -23,12 +21,10 @@
         "FortiWAN-as-a-Service"
       ],
       "answer": 1,
-      "explanation": "FortiGate CNF is a FWaaS (Firewall-as-a-Service) that reduces network security operations workloads."
+      "q": "What does FWaaS stand for in the context of FortiGate CNF?"
     },
     {
-      "id": "ch15-l2-q2",
       "type": "mcq",
-      "question": "What are the three main licensing models for FortiGate VM in the cloud?",
       "choices": [
         "PAYG, BYOL, and FortiFlex",
         "Annual, Monthly, and Perpetual",
@@ -36,12 +32,10 @@
         "PAYG, Subscription, and Open Source"
       ],
       "answer": 0,
-      "explanation": "The main licensing models are pay-as-you-go (PAYG), bring your own license (BYOL), and FortiFlex."
+      "q": "What are the three main licensing models for FortiGate VM in the cloud?"
     },
     {
-      "id": "ch15-l2-q3",
       "type": "mcq",
-      "question": "Which FortiGate VM feature is not included in AWS native services by default?",
       "choices": [
         "Virtual machine instances",
         "VPN, SD-WAN, and dynamic routing",
@@ -49,12 +43,10 @@
         "IAM role-based access control"
       ],
       "answer": 1,
-      "explanation": "FortiGate for AWS delivers critical features that are not included by default in AWS native services, such as VPN, SD-WAN, and dynamic routing."
+      "q": "Which FortiGate VM feature is not included in AWS native services by default?"
     },
     {
-      "id": "ch15-l2-q4",
       "type": "mcq",
-      "question": "What is FortiFlex and how is resource consumption tracked?",
       "choices": [
         "A pay-per-traffic model billed by gigabyte through AWS marketplace",
         "A prepaid enterprise license for Fortinet VM use, trackable through the FortiCloud portal using a point-based system",
@@ -62,12 +54,10 @@
         "A free tier license for testing FortiGate VM in the cloud"
       ],
       "answer": 1,
-      "explanation": "FortiFlex is a prepaid enterprise license for Fortinet VM use, trackable through the FortiCloud portal. Resource consumption is calculated using a point-based system."
+      "q": "What is FortiFlex and how is resource consumption tracked?"
     },
     {
-      "id": "ch15-l2-q5",
       "type": "mcq",
-      "question": "How does FortiGate VM's IPS perform threat detection beyond signature matching?",
       "choices": [
         "It uses AI-based behavioral analysis only",
         "Performs anomaly-based detection, alerting users to traffic matching attack behavior profiles",
@@ -75,12 +65,10 @@
         "It blocks all unknown traffic by default"
       ],
       "answer": 1,
-      "explanation": "In addition to signature-based threat detection, IPS performs anomaly-based detection, which alerts users to any traffic that matches attack behavior profiles."
+      "q": "How does FortiGate VM's IPS perform threat detection beyond signature matching?"
     },
     {
-      "id": "ch15-l2-q6",
       "type": "mcq",
-      "question": "Which AWS service can FortiGate VM integrate with for automated incident response?",
       "choices": [
         "AWS CloudWatch",
         "AWS GuardDuty threat intelligence feeds",
@@ -88,12 +76,10 @@
         "AWS Trusted Advisor"
       ],
       "answer": 1,
-      "explanation": "FortiGate VM can be integrated with AWS GuardDuty threat intelligence feeds for automated incident response."
+      "q": "Which AWS service can FortiGate VM integrate with for automated incident response?"
     },
     {
-      "id": "ch15-l2-q7",
       "type": "mcq",
-      "question": "When should you choose FortiGate CNF over FortiGate VM?",
       "choices": [
         "When you require VPN, SD-WAN, or NAT functionality",
         "When your primary requirement is NGFW functionality and ease of management",
@@ -101,12 +87,10 @@
         "When you need to run FortiOS on bare metal hardware"
       ],
       "answer": 1,
-      "explanation": "FortiGate CNF is the preferred choice if your primary requirement is NGFW functionality. It is also the better choice if ease of management and scalability are important factors."
+      "q": "When should you choose FortiGate CNF over FortiGate VM?"
     },
     {
-      "id": "ch15-l2-q8",
       "type": "mcq",
-      "question": "What does the Zero operations overhead benefit of FortiGate CNF mean?",
       "choices": [
         "FortiGate CNF requires no licensing",
         "A single FortiGate CNF instance can secure an entire AWS or Azure region, protecting multiple accounts, subnets, VPCs, and availability zones",
@@ -114,12 +98,10 @@
         "FortiGate CNF runs without any CPU or memory resources"
       ],
       "answer": 1,
-      "explanation": "FortiGate CNF simplifies security delivery by using a single FortiGate CNF instance to secure an entire AWS or Azure region. It can protect multiple accounts, subnets, VPCs, and availability zones."
+      "q": "What does the Zero operations overhead benefit of FortiGate CNF mean?"
     },
     {
-      "id": "ch15-l2-q9",
       "type": "mcq",
-      "question": "What AWS service does FortiGate CNF use for traffic forwarding and inspection?",
       "choices": [
         "AWS Network Load Balancer",
         "AWS Application Load Balancer",
@@ -127,12 +109,10 @@
         "AWS Transit Gateway"
       ],
       "answer": 2,
-      "explanation": "Cloud-native integration with AWS Gateway Load Balancer (GWLB) helps network security teams move at the speed and scale of application teams."
+      "q": "What AWS service does FortiGate CNF use for traffic forwarding and inspection?"
     },
     {
-      "id": "ch15-l2-q10",
       "type": "mcq",
-      "question": "How long can creating a FortiGate CNF instance take?",
       "choices": [
         "Up to one minute",
         "Up to five minutes",
@@ -140,12 +120,10 @@
         "Up to thirty minutes"
       ],
       "answer": 2,
-      "explanation": "You must define an instance name and select the cloud region in which to deploy the instance. This process can take up to ten minutes."
+      "q": "How long can creating a FortiGate CNF instance take?"
     },
     {
-      "id": "ch15-l2-q11",
       "type": "mcq",
-      "question": "What is the primary use case for FortiGate CNF outbound traffic inspection?",
       "choices": [
         "Encrypting all outbound traffic with IPsec",
         "Protecting against threats like malware downloads, data exfiltration, C&C communication, cryptomining, and compliance violations",
@@ -153,12 +131,10 @@
         "Generating compliance reports for cloud workloads"
       ],
       "answer": 1,
-      "explanation": "A primary use case for FortiGate CNF is outbound traffic inspection, protecting against malware, data exfiltration, command and control server communication, cryptomining, and compliance violations."
+      "q": "What is the primary use case for FortiGate CNF outbound traffic inspection?"
     },
     {
-      "id": "ch15-l2-q12",
       "type": "mcq",
-      "question": "In FortiGate CNF for AWS, what happens to traffic after it passes security policy enforcement?",
       "choices": [
         "Traffic is stored in an S3 bucket for logging",
         "Traffic not blocked is sent back to the GWLBe it was received from and then passes out through the internet gateway",
@@ -166,12 +142,10 @@
         "Traffic is encrypted and sent to FortiAnalyzer for inspection"
       ],
       "answer": 1,
-      "explanation": "If traffic is not blocked, it is sent back to the GWLBe it was received from, then traffic passes out through the internet gateway."
+      "q": "In FortiGate CNF for AWS, what happens to traffic after it passes security policy enforcement?"
     },
     {
-      "id": "ch15-l2-q13",
       "type": "mcq",
-      "question": "Can a FortiGate CNF instance serve multiple customers?",
       "choices": [
         "Yes, CNF is a multi-tenant service shared across customers",
         "No, a FortiGate CNF instance is dedicated to one customer, but it can connect to multiple VPCs, accounts, and availability zones",
@@ -179,12 +153,10 @@
         "No, each CNF instance serves only one VPC"
       ],
       "answer": 1,
-      "explanation": "A FortiGate CNF instance is dedicated to one customer; however, it can connect to multiple VPCs, accounts, and availability zones."
+      "q": "Can a FortiGate CNF instance serve multiple customers?"
     },
     {
-      "id": "ch15-l2-q14",
       "type": "mcq",
-      "question": "Which tool can be used to centrally manage FortiGate CNF policies in a hybrid cloud deployment?",
       "choices": [
         "AWS CloudFormation",
         "Azure Policy",
@@ -192,12 +164,10 @@
         "FortiAnalyzer"
       ],
       "answer": 2,
-      "explanation": "For hybrid cloud deployments, you can use a centralized management tool like FortiManager to define, deploy, and manage advanced security policies for FortiGate CNF."
+      "q": "Which tool can be used to centrally manage FortiGate CNF policies in a hybrid cloud deployment?"
     },
     {
-      "id": "ch15-l2-q15",
       "type": "mcq",
-      "question": "In Azure, what does traffic pass through after FortiGate CNF determines it is not blocked?",
       "choices": [
         "Azure Application Gateway",
         "Azure Firewall",
@@ -205,14 +175,12 @@
         "Azure Traffic Manager"
       ],
       "answer": 2,
-      "explanation": "In Azure, if traffic is not blocked, it is sent back to the GWLB it was received from, then traffic passes out through the Azure NAT Gateway."
+      "q": "In Azure, what does traffic pass through after FortiGate CNF determines it is not blocked?"
     }
   ],
   "quiz": [
     {
-      "id": "ch15-l2-q2",
       "type": "mcq",
-      "question": "What are the three main licensing models for FortiGate VM in the cloud?",
       "choices": [
         "Traffic not blocked is sent back to the GWLBe it was received from and then passes out through the internet gateway",
         "Annual, Monthly, and Perpetual",
@@ -220,12 +188,10 @@
         "PAYG, Subscription, and Open Source"
       ],
       "answer": 0,
-      "explanation": "The main licensing models are pay-as-you-go (PAYG), bring your own license (BYOL), and FortiFlex."
+      "q": "What are the three main licensing models for FortiGate VM in the cloud?"
     },
     {
-      "id": "ch15-l2-q7",
       "type": "mcq",
-      "question": "When should you choose FortiGate CNF over FortiGate VM?",
       "choices": [
         "When you require VPN, SD-WAN, or NAT functionality",
         "Traffic not blocked is sent back to the GWLBe it was received from and then passes out through the internet gateway",
@@ -233,12 +199,10 @@
         "When you need to run FortiOS on bare metal hardware"
       ],
       "answer": 1,
-      "explanation": "FortiGate CNF is the preferred choice if your primary requirement is NGFW functionality. It is also the better choice if ease of management and scalability are important factors."
+      "q": "When should you choose FortiGate CNF over FortiGate VM?"
     },
     {
-      "id": "ch15-l2-q9",
       "type": "mcq",
-      "question": "What AWS service does FortiGate CNF use for traffic forwarding and inspection?",
       "choices": [
         "AWS Network Load Balancer",
         "AWS Application Load Balancer",
@@ -246,12 +210,10 @@
         "AWS Transit Gateway"
       ],
       "answer": 2,
-      "explanation": "Cloud-native integration with AWS Gateway Load Balancer (GWLB) helps network security teams move at the speed and scale of application teams."
+      "q": "What AWS service does FortiGate CNF use for traffic forwarding and inspection?"
     },
     {
-      "id": "ch15-l2-q11",
       "type": "mcq",
-      "question": "What is the primary use case for FortiGate CNF outbound traffic inspection?",
       "choices": [
         "Encrypting all outbound traffic with IPsec",
         "Traffic not blocked is sent back to the GWLBe it was received from and then passes out through the internet gateway",
@@ -259,12 +221,10 @@
         "Generating compliance reports for cloud workloads"
       ],
       "answer": 1,
-      "explanation": "A primary use case for FortiGate CNF is outbound traffic inspection, protecting against malware, data exfiltration, command and control server communication, cryptomining, and compliance violations."
+      "q": "What is the primary use case for FortiGate CNF outbound traffic inspection?"
     },
     {
-      "id": "ch15-l2-q13",
       "type": "mcq",
-      "question": "Can a FortiGate CNF instance serve multiple customers?",
       "choices": [
         "Yes, CNF is a multi-tenant service shared across customers",
         "Traffic not blocked is sent back to the GWLBe it was received from and then passes out through the internet gateway",
@@ -272,7 +232,7 @@
         "No, each CNF instance serves only one VPC"
       ],
       "answer": 1,
-      "explanation": "A FortiGate CNF instance is dedicated to one customer; however, it can connect to multiple VPCs, accounts, and availability zones."
+      "q": "Can a FortiGate CNF instance serve multiple customers?"
     }
   ]
 }
