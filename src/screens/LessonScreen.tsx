@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, useWindowDimensions, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable, useWindowDimensions, Image, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Markdown, { MarkdownIt } from 'react-native-markdown-display';
 import { SvgXml } from 'react-native-svg';
@@ -17,7 +17,8 @@ const md = MarkdownIt({ typographer: true, linkify: false });
 export default function LessonScreen({ route, navigation }: Props) {
   const { lessons } = useLang();
   const lesson = lessonById(route.params.id, lessons);
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
+  const [zoomSource, setZoomSource] = useState<any>(null);
 
   if (!lesson) {
     return (
@@ -38,14 +39,14 @@ export default function LessonScreen({ route, navigation }: Props) {
         if (d) {
           const w = width - 40;
           const h = d.height ?? Math.round(w * 0.6);
+          const imgSrc = lessonImages[lesson.id];
           return (
             <View key={node.key} style={styles.diagram}>
-              {lessonImages[lesson.id] ? (
-                <Image
-                  source={lessonImages[lesson.id]}
-                  style={{ width: w, height: h }}
-                  resizeMode="contain"
-                />
+              {imgSrc ? (
+                <Pressable onPress={() => setZoomSource(imgSrc)} style={styles.diagramPressable}>
+                  <Image source={imgSrc} style={{ width: w, height: h }} resizeMode="contain" />
+                  <Text style={styles.zoomHint}>🔍 Appuyer pour agrandir</Text>
+                </Pressable>
               ) : d.svg ? (
                 <SvgXml xml={d.svg} width={w} height={h} />
               ) : null}
@@ -60,6 +61,16 @@ export default function LessonScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <Modal visible={zoomSource !== null} transparent animationType="fade" onRequestClose={() => setZoomSource(null)}>
+        <Pressable style={styles.zoomOverlay} onPress={() => setZoomSource(null)}>
+          <Image
+            source={zoomSource}
+            style={{ width: width, height: height * 0.85 }}
+            resizeMode="contain"
+          />
+          <Text style={styles.zoomClose}>✕ Fermer</Text>
+        </Pressable>
+      </Modal>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.module}>{lesson.module}</Text>
         <Text style={styles.title}>{lesson.title}</Text>
@@ -94,7 +105,22 @@ const styles = StyleSheet.create({
     marginVertical: 12,
     alignItems: 'center',
   },
+  diagramPressable: { alignItems: 'center', width: '100%' },
+  zoomHint: { color: '#888', fontSize: 11, marginTop: 4, fontStyle: 'italic' },
   caption: { color: '#222', fontSize: 13, marginTop: 6, fontStyle: 'italic' },
+  zoomOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.92)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  zoomClose: {
+    color: '#fff',
+    marginTop: 16,
+    fontSize: 15,
+    fontWeight: '700',
+    opacity: 0.8,
+  },
   cta: {
     marginTop: 24,
     backgroundColor: theme.primary,
