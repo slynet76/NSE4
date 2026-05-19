@@ -6,6 +6,7 @@ import { SvgXml } from 'react-native-svg';
 import { theme } from '@/lib/theme';
 import { lessonById } from '@/lib/lessons';
 import lessonImages from '@/data/lessonImages';
+import { useLang } from '@/context/LanguageContext';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation';
 
@@ -14,7 +15,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Lesson'>;
 const md = MarkdownIt({ typographer: true, linkify: false });
 
 export default function LessonScreen({ route, navigation }: Props) {
-  const lesson = lessonById(route.params.id);
+  const { lessons } = useLang();
+  const lesson = lessonById(route.params.id, lessons);
   const { width } = useWindowDimensions();
 
   if (!lesson) {

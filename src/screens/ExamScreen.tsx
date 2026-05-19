@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '@/lib/theme';
 import { pickExamQuestions, passingScore } from '@/lib/lessons';
 import { recordExamAttempt } from '@/lib/db';
+import { useLang } from '@/context/LanguageContext';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation';
 
@@ -17,9 +18,10 @@ function fmtMmSs(sec: number) {
 }
 
 export default function ExamScreen({ route, navigation }: Props) {
+  const { lessons } = useLang();
   const count = route.params?.count ?? 30;
   const durationMin = route.params?.durationMin ?? 50; // proportional to NSE4 (105 min / 60 Q)
-  const questions = useMemo(() => pickExamQuestions(count), [count]);
+  const questions = useMemo(() => pickExamQuestions(count, lessons), [count, lessons]);
   const startedAt = useRef<number>(Date.now());
   const deadline = useRef<number>(Date.now() + durationMin * 60_000);
 

@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '@/lib/theme';
-import { ALL_LESSONS, pickTodayLesson, totalAvailableQuestions } from '@/lib/lessons';
+import { pickTodayLesson, totalAvailableQuestions } from '@/lib/lessons';
 import { getAllProgress, getStreak, getExamHistory } from '@/lib/db';
+import { useLang } from '@/context/LanguageContext';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation';
 
@@ -12,19 +13,20 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 export default function HomeScreen({ navigation }: Props) {
   const [tick, setTick] = useState(0);
   const refresh = () => setTick((t) => t + 1);
+  const { lessons } = useLang();
 
   useEffect(() => {
     const unsub = navigation.addListener('focus', refresh);
     return unsub;
   }, [navigation]);
 
-  const today = pickTodayLesson();
+  const today = pickTodayLesson(lessons);
   const streak = getStreak();
   const progress = getAllProgress();
   const done = progress.filter((p) => p.status === 'done').length;
-  const total = ALL_LESSONS.length;
+  const total = lessons.length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-  const totalQ = totalAvailableQuestions();
+  const totalQ = totalAvailableQuestions(lessons);
   const lastExam = getExamHistory(1)[0];
 
   return (

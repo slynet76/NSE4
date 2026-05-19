@@ -4,13 +4,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '@/lib/theme';
 import { lessonById, passingScore, pickQuizQuestions } from '@/lib/lessons';
 import { setLessonResult } from '@/lib/db';
+import { useLang } from '@/context/LanguageContext';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Quiz'>;
 
 export default function QuizScreen({ route, navigation }: Props) {
-  const lesson = lessonById(route.params.id);
+  const { lessons } = useLang();
+  const lesson = lessonById(route.params.id, lessons);
   // Pick a random selection ONCE at mount — preserved through the run.
   const questions = useMemo(() => (lesson ? pickQuizQuestions(lesson, 5) : []), [lesson]);
   const [idx, setIdx] = useState(0);

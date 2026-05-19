@@ -31,17 +31,17 @@ export type Lesson = {
 
 export const ALL_LESSONS: Lesson[] = lessons as Lesson[];
 
-export function lessonById(id: string): Lesson | undefined {
-  return ALL_LESSONS.find((l) => l.id === id);
+export function lessonById(id: string, pool: Lesson[] = ALL_LESSONS): Lesson | undefined {
+  return pool.find((l) => l.id === id);
 }
 
-export function pickTodayLesson(): Lesson {
+export function pickTodayLesson(pool: Lesson[] = ALL_LESSONS): Lesson {
   const progress = new Map(getAllProgress().map((p) => [p.lessonId, p]));
-  const failed = ALL_LESSONS.find((l) => progress.get(l.id)?.status === 'failed');
+  const failed = pool.find((l) => progress.get(l.id)?.status === 'failed');
   if (failed) return failed;
-  const next = ALL_LESSONS.find((l) => !progress.has(l.id));
+  const next = pool.find((l) => !progress.has(l.id));
   if (next) return next;
-  return ALL_LESSONS[Math.floor(Math.random() * ALL_LESSONS.length)];
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 export function passingScore(total: number) {
@@ -72,8 +72,8 @@ export function pickQuizQuestions(lesson: Lesson, n = 5): QuizQuestion[] {
  * Aggregate every available question across all lessons (using questionPool when present,
  * falling back to legacy quiz). Returns the global question bank size, useful for the UI.
  */
-export function totalAvailableQuestions(): number {
-  return ALL_LESSONS.reduce((acc, l) => {
+export function totalAvailableQuestions(pool: Lesson[] = ALL_LESSONS): number {
+  return pool.reduce((acc, l) => {
     const pool = l.questionPool && l.questionPool.length > 0 ? l.questionPool : l.quiz;
     return acc + pool.length;
   }, 0);
@@ -83,9 +83,9 @@ export function totalAvailableQuestions(): number {
  * Pick N random questions across the ENTIRE corpus (all lessons combined).
  * Used for exam mode. Returns fewer if the corpus is smaller than N.
  */
-export function pickExamQuestions(n = 30): QuizQuestion[] {
+export function pickExamQuestions(n = 30, pool: Lesson[] = ALL_LESSONS): QuizQuestion[] {
   const all: QuizQuestion[] = [];
-  for (const l of ALL_LESSONS) {
+  for (const l of pool) {
     const pool = l.questionPool && l.questionPool.length > 0 ? l.questionPool : l.quiz;
     all.push(...pool);
   }

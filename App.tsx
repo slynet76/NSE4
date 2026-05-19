@@ -15,6 +15,7 @@ import SettingsScreen from '@/screens/SettingsScreen';
 import { initDb } from '@/lib/db';
 import { ensurePermissions, getReminder, scheduleDailyReminder } from '@/lib/notifications';
 import { theme } from '@/lib/theme';
+import { LanguageProvider } from '@/context/LanguageContext';
 import type { RootStackParamList } from '@/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -44,6 +45,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
+      <LanguageProvider>
       <NavigationContainer theme={navTheme}>
         <StatusBar style="light" />
         <Stack.Navigator
@@ -74,6 +76,7 @@ export default function App() {
           />
         </Stack.Navigator>
       </NavigationContainer>
+      </LanguageProvider>
     </SafeAreaProvider>
   );
 }

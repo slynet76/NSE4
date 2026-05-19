@@ -4,8 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { theme } from '@/lib/theme';
 import { getReminder, scheduleDailyReminder } from '@/lib/notifications';
+import { useLang } from '@/context/LanguageContext';
 
 export default function SettingsScreen() {
+  const { lang, setLang } = useLang();
   const [enabled, setEnabled] = useState(true);
   const [hour, setHour] = useState(19);
   const [minute, setMinute] = useState(0);
@@ -79,6 +81,29 @@ export default function SettingsScreen() {
           />
         )}
 
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.label}>Langue / Language</Text>
+              <Text style={styles.dim}>Contenu des leçons et questions</Text>
+            </View>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <Pressable
+                style={[styles.langBtn, lang === 'en' && styles.langBtnActive]}
+                onPress={() => setLang('en')}
+              >
+                <Text style={[styles.langBtnText, lang === 'en' && styles.langBtnTextActive]}>EN</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.langBtn, lang === 'fr' && styles.langBtnActive]}
+                onPress={() => setLang('fr')}
+              >
+                <Text style={[styles.langBtnText, lang === 'fr' && styles.langBtnTextActive]}>FR</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+
         <Text style={styles.dim}>
           Astuce : sur Android 13+, autorise les notifications à la première utilisation.
         </Text>
@@ -103,4 +128,14 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: theme.border },
   time: { color: theme.primary, fontSize: 18, fontWeight: '700' },
   disabledText: { opacity: 0.4 },
+  langBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  langBtnActive: { backgroundColor: theme.primary, borderColor: theme.primary },
+  langBtnText: { color: theme.textDim, fontWeight: '700', fontSize: 14 },
+  langBtnTextActive: { color: '#fff' },
 });

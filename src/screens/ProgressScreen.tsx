@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '@/lib/theme';
-import { ALL_LESSONS } from '@/lib/lessons';
 import { getAllProgress } from '@/lib/db';
+import { useLang } from '@/context/LanguageContext';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation';
 
@@ -12,11 +12,12 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Progress'>;
 export default function ProgressScreen({ navigation }: Props) {
   const [tick, setTick] = useState(0);
   useEffect(() => navigation.addListener('focus', () => setTick((t) => t + 1)), [navigation]);
+  const { lessons } = useLang();
 
   const map = new Map(getAllProgress().map((p) => [p.lessonId, p]));
-  const modules = Array.from(new Set(ALL_LESSONS.map((l) => l.module)));
-  const done = ALL_LESSONS.filter((l) => map.get(l.id)?.status === 'done').length;
-  const total = ALL_LESSONS.length;
+  const modules = Array.from(new Set(lessons.map((l) => l.module)));
+  const done = lessons.filter((l) => map.get(l.id)?.status === 'done').length;
+  const total = lessons.length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
   return (
@@ -37,7 +38,7 @@ export default function ProgressScreen({ navigation }: Props) {
         {modules.map((mod) => (
           <View key={mod} style={{ gap: 8 }}>
             <Text style={styles.module}>{mod}</Text>
-            {ALL_LESSONS.filter((l) => l.module === mod).map((l) => {
+            {lessons.filter((l) => l.module === mod).map((l) => {
               const p = map.get(l.id);
               const status = p?.status ?? 'available';
               const icon = status === 'done' ? '✅' : status === 'failed' ? '❌' : '○';
